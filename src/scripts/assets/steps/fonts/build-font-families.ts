@@ -37,6 +37,10 @@ interface FamilyEntry {
   classification: FontClassification;
 }
 
+function sourcesFor(providerHosts: string[]): FontFamilyRecord["sources"] {
+  return providerHosts.length > 0 ? ["font-face", "webfont-load"] : ["font-face"];
+}
+
 export function buildFontFamilies(faces: ParsedFace[], providerHosts: string[]): FontFamilyRecord[] {
   const byFamily = new Map<string, FamilyEntry>();
 
@@ -52,15 +56,13 @@ export function buildFontFamilies(faces: ParsedFace[], providerHosts: string[]):
     byFamily.set(face.family, entry);
   }
 
-  const sources: FontFamilyRecord["sources"] = providerHosts.length > 0 ? ["font-face", "webfont-load"] : ["font-face"];
-
   return [...byFamily.entries()]
     .map(([family, entry]) => ({
       family,
       weights: [...entry.weights].sort(),
       styles: [...entry.styles].sort((a, b) => STYLE_RANK[a] - STYLE_RANK[b]),
       classification: entry.classification,
-      sources,
+      sources: sourcesFor(providerHosts),
     }))
     .sort((a, b) => a.family.localeCompare(b.family));
 }

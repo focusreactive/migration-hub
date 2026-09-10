@@ -1,3 +1,4 @@
+import type { FetchClient } from "#lib/fetch/create-fetch-client/index.ts";
 import { loadHtml } from "#lib/html.ts";
 
 import {
@@ -6,6 +7,7 @@ import {
   FONT_FACE_BLOCK_PATTERN,
   FONT_PROVIDER_HOSTS,
 } from "../../constants/fonts.ts";
+import { HTTP_ERROR_STATUS_THRESHOLD } from "../../constants/http.ts";
 import { extractCssUrls } from "../../utils/extract-css-urls.ts";
 
 import type { ParsedFace } from "./build-font-families.ts";
@@ -81,4 +83,20 @@ export function providerStylesheetUrls(html: string, baseUrl: string): string[] 
   });
 
   return [...urls];
+}
+
+export async function fetchProviderFontFaces(client: FetchClient, urls: readonly string[]): Promise<ParsedFace[]> {
+  const faces: ParsedFace[] = [];
+
+  for (const url of urls) {
+    try {
+      const response = await client.fetch(url);
+      if (response.status >= HTTP_ERROR_STATUS_THRESHOLD) continue;
+      faces.push(...parseFontFaces(response.body.toString("utf8"), url));
+    } catch {
+      continue;
+    }
+  }
+
+  return faces;
 }
