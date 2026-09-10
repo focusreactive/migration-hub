@@ -4,8 +4,6 @@ export interface ClassifiedPage {
   route: string;
   kind: "static" | "item";
   collectionKey?: string;
-  slug?: string;
-  localeId?: string;
 }
 
 type PageRecord = PagesData["pages"][number];

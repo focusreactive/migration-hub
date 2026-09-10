@@ -46,7 +46,7 @@ export async function runInventory(projectPath: string, force: boolean): Promise
         store,
       });
 
-      const { pages } = await crawl({
+      const { pages, truncated } = await crawl({
         origin,
         sourceUrl: runConfig.sourceUrl,
         sitemapUrls,
@@ -59,19 +59,23 @@ export async function runInventory(projectPath: string, force: boolean): Promise
       await writeArtifact(projectPath, pagesArtifact, data);
       await recordArtifact(projectPath, INVENTORY_STEP_ID, "pages", artifactPath(projectPath, pagesArtifact));
 
-      return data;
+      return { data, truncated };
     },
     { force },
   );
 
-  const data: PagesData = wasSkipped ? await readArtifact(projectPath, pagesArtifact) : (computed as PagesData);
+  const result: { data: PagesData; truncated: boolean } =
+    wasSkipped ?
+      { data: await readArtifact(projectPath, pagesArtifact), truncated: false }
+    : (computed as { data: PagesData; truncated: boolean });
 
   console.log(
     JSON.stringify({
       step: INVENTORY_STEP_ID,
       status: wasSkipped ? "skipped" : "done",
-      pages: data.pages.length,
-      collections: data.collections.length,
+      pages: result.data.pages.length,
+      collections: result.data.collections.length,
+      ...(result.truncated ? { truncated: true } : {}),
     }),
   );
 }

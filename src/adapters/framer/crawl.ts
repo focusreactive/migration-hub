@@ -1,3 +1,5 @@
+import { join } from "node:path/posix";
+
 import { parseHydrateV2 } from "#adapters/framer/hydrate.ts";
 import type { ClassifiedPage } from "#adapters/shared/pages.ts";
 import { extractAnchorHrefs } from "#lib/html.ts";
@@ -6,14 +8,12 @@ import { normalizeUrl, routeFromUrl } from "#lib/url.ts";
 
 import { parseSearchIndexPaths } from "./searchindex.ts";
 
+const SEARCH_INDEX_RELATIVE_PATH = join("discovery", "search-index.json");
+
 export interface CrawlResult {
   pages: ClassifiedPage[];
   warnings: string[];
-}
-
-function firstPathVariable(pathVariables: Record<string, string> | undefined): string | undefined {
-  if (pathVariables === undefined) return undefined;
-  return Object.values(pathVariables)[0];
+  truncated: boolean;
 }
 
 export async function crawlFramer(opts: {
@@ -66,7 +66,7 @@ export async function crawlFramer(opts: {
   } else {
     if (searchIndexUrl !== undefined) {
       try {
-        const entry = await store.fetchInto(searchIndexUrl, "page");
+        const entry = await store.fetchInto(searchIndexUrl, "page", { relativePath: SEARCH_INDEX_RELATIVE_PATH });
         const body = await store.readBody(entry);
         const paths = parseSearchIndexPaths(body.toString("utf8"));
         for (const path of paths) {
@@ -82,12 +82,14 @@ export async function crawlFramer(opts: {
 
   const classifiedByUrl = new Map<string, ClassifiedPage>();
   let fetchedCount = 0;
+  let truncated = false;
 
   for (;;) {
     const url = queue.shift();
     if (url === undefined) break;
 
     if (fetchedCount >= maxPages) {
+      truncated = true;
       warn(`maxPages reached (${maxPages})`);
       break;
     }
@@ -122,14 +124,11 @@ export async function crawlFramer(opts: {
     const route = routeFromUrl(entry.http.finalUrl);
 
     const kind: ClassifiedPage["kind"] = hydrate.collectionItemId !== undefined ? "item" : "static";
-    const slug = firstPathVariable(hydrate.pathVariables);
 
     classifiedByUrl.set(url, {
       route,
       kind,
       ...(kind === "item" && { collectionKey: hydrate.routeId }),
-      ...(slug !== undefined && { slug }),
-      ...(hydrate.localeId !== undefined && { localeId: hydrate.localeId }),
     });
 
     if (!followLinks) continue;
@@ -149,5 +148,5 @@ export async function crawlFramer(opts: {
     }
   }
 
-  return { pages: Array.from(classifiedByUrl.values()), warnings };
+  return { pages: Array.from(classifiedByUrl.values()), warnings, truncated };
 }

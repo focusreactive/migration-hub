@@ -9,6 +9,7 @@ import { findPaginations, paginationUrls } from "./pagination.ts";
 export interface CrawlResult {
   pages: ClassifiedPage[];
   warnings: string[];
+  truncated: boolean;
 }
 
 export async function crawlWebflow(opts: {
@@ -43,12 +44,14 @@ export async function crawlWebflow(opts: {
   const classifiedByUrl = new Map<string, ClassifiedPage>();
   const collectionKeysByPageId = new Map<string, Set<string>>();
   let fetchedCount = 0;
+  let truncated = false;
 
   for (;;) {
     const url = queue.shift();
     if (url === undefined) break;
 
     if (fetchedCount >= maxPages) {
+      truncated = true;
       warn(`maxPages reached (${maxPages})`);
       break;
     }
@@ -86,8 +89,6 @@ export async function crawlWebflow(opts: {
       route,
       kind: classified.kind,
       ...(classified.collectionKey !== undefined && { collectionKey: classified.collectionKey }),
-      ...(classified.slug !== undefined && { slug: classified.slug }),
-      ...(classified.localeId !== undefined && { localeId: classified.localeId }),
     });
 
     if (classified.kind === "item" && classified.pageId !== undefined && classified.collectionKey !== undefined) {
@@ -126,5 +127,5 @@ export async function crawlWebflow(opts: {
     }
   }
 
-  return { pages: Array.from(classifiedByUrl.values()), warnings };
+  return { pages: Array.from(classifiedByUrl.values()), warnings, truncated };
 }

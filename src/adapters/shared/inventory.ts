@@ -14,6 +14,7 @@ export interface InventoryCrawlContext {
 export interface InventoryCrawlResult {
   pages: ClassifiedPage[];
   warnings: string[];
+  truncated: boolean;
 }
 
 export type InventoryCrawler = (context: InventoryCrawlContext) => Promise<InventoryCrawlResult>;
