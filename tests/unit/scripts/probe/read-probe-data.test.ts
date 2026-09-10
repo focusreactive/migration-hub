@@ -3,6 +3,11 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import type { ProbeData } from "../../../../src/scripts/probe/read-probe-data.ts";
+import type { ProbeHttpSnapshot } from "../../../../src/scripts/probe/types.ts";
+
+export function emptyProbeHttpSnapshot(status: number): ProbeHttpSnapshot {
+  return { status, finalUrl: "", redirectChain: [], headers: {} };
+}
 
 export async function probeFixture(platform: "framer" | "webflow", sourceUrl: string): Promise<ProbeData> {
   const dir = join(process.cwd(), "tests", "fixtures", "probe", platform);
