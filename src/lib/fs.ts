@@ -28,18 +28,24 @@ export function sanitizeFileName(rawName: string, opts?: { existing?: ReadonlySe
   const extension = rawExtension ? `.${rawExtension.toLowerCase()}` : "";
   const base = extensionMatch ? decoded.slice(0, extensionMatch.index) : decoded;
 
-  const cleanBase =
-    base
-      .toLowerCase()
-      .replace(/[^a-z0-9._-]+/g, "-")
-      .replace(/-{2,}/g, "-")
-      .replace(/^[-.]+|[-.]+$/g, "") || FALLBACK_NAME;
+  const normalizedBase = base
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^[-.]+|[-.]+$/g, "");
+
+  const cleanBase = normalizedBase || `${FALLBACK_NAME}-${shortHash(rawName)}`;
 
   const candidate = `${cleanBase}${extension}`;
   if (!opts?.existing?.has(candidate)) return candidate;
 
-  const hash = createHash("sha256").update(rawName).digest("hex").slice(0, COLLISION_HASH_LENGTH);
-  return `${cleanBase}-${hash}${extension}`;
+  return `${cleanBase}-${shortHash(rawName)}${extension}`;
+}
+
+function shortHash(value: string): string {
+  return createHash("sha256").update(value).digest("hex").slice(0, COLLISION_HASH_LENGTH);
 }
 
 function tryDecodeUri(value: string): string {

@@ -14,4 +14,18 @@ describe("routeDir", () => {
   it("keeps nested segments", () => {
     expect(routeDir("/journal/why-good-design-wins")).toBe("journal/why-good-design-wins");
   });
+
+  it("normalizes accented characters to their unaccented form", () => {
+    expect(routeDir("/über")).toBe("uber");
+  });
+
+  it("decodes a percent-encoded segment before normalizing", () => {
+    expect(routeDir("/caf%C3%A9")).toBe("cafe");
+  });
+
+  it("maps distinct non-Latin routes to distinct directories", () => {
+    const japan = routeDir("/日本");
+    const korea = routeDir("/한국");
+    expect(japan).not.toBe(korea);
+  });
 });
