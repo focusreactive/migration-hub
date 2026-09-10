@@ -1,6 +1,5 @@
 import { assetFileSegment, type CanonicalAsset } from "#adapters/shared/media.ts";
 import type { MediaNormalizer } from "#assets/types.ts";
-import { sanitizeFileName } from "#lib/fs.ts";
 
 const WEBFLOW_CANONICAL_HOST = "cdn.prod.website-files.com";
 
@@ -45,10 +44,6 @@ export function isWebflowVariantUrl(url: string): boolean {
   return width !== undefined && WEBFLOW_VARIANT_WIDTHS.has(Number(width));
 }
 
-export function webflowAssetFileName(canonicalUrl: string): string {
-  return sanitizeFileName(assetNameParts(canonicalUrl).name);
-}
-
 export const webflowMediaNormalizer: MediaNormalizer = {
   canonicalize(rawUrl): CanonicalAsset {
     const canonicalUrl = canonicalizeWebflowAssetUrl(rawUrl);
@@ -60,5 +55,4 @@ export const webflowMediaNormalizer: MediaNormalizer = {
     };
   },
   isVariant: isWebflowVariantUrl,
-  fileName: webflowAssetFileName,
 };

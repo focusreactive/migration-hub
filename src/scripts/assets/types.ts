@@ -6,7 +6,6 @@ export type MediaAssetKind = MediaAssetRecord["kind"];
 export interface MediaNormalizer {
   canonicalize(rawUrl: string): CanonicalAsset;
   isVariant(rawUrl: string): boolean;
-  fileName(canonicalUrl: string): string;
 }
 
 export interface ScannedMediaRef {
