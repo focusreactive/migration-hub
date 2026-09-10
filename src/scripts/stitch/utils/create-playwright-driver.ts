@@ -1,9 +1,8 @@
-import type { CDPSession, Page } from "playwright";
+import type { Page } from "playwright";
 
 import { preScrollPage } from "#lib/capture/page-scripts.ts";
 
 import {
-  DEVICE_SCALE_FACTOR,
   NETWORK_IDLE_TIMEOUT_MS,
   PRE_SCROLL_MAX_STEPS,
   PRE_SCROLL_STEP_DELAY_MS,
@@ -15,17 +14,6 @@ import {
 import type { CaptureViewport } from "../types.ts";
 
 import { scrollPageTo, settlePage } from "./page-scripts.ts";
-
-export async function applyViewport(page: Page, cdp: CDPSession, viewport: CaptureViewport): Promise<void> {
-  await page.setViewportSize({ width: viewport.width, height: viewport.height });
-
-  await cdp.send("Emulation.setDeviceMetricsOverride", {
-    width: viewport.width,
-    height: viewport.height,
-    deviceScaleFactor: DEVICE_SCALE_FACTOR,
-    mobile: false,
-  });
-}
 
 export async function waitForNetworkIdle(page: Page): Promise<void> {
   try {

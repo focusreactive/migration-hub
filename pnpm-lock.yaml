@@ -14,9 +14,6 @@ importers:
       '@types/node':
         specifier: ^26.1.0
         version: 26.5.1
-      '@types/pngjs':
-        specifier: ^6.0.5
-        version: 6.0.5
       cheerio:
         specifier: ^1.2.0
         version: 1.2.0
@@ -29,9 +26,6 @@ importers:
       playwright:
         specifier: 1.61.1
         version: 1.61.1
-      pngjs:
-        specifier: ^7.0.0
-        version: 7.0.0
       prettier:
         specifier: ^3.9.4
         version: 3.9.6
@@ -408,9 +402,6 @@ packages:
 
   '@types/node@26.5.1':
     resolution: {integrity: sha512-CzNm2FezW4VR/LjG6yUdiEgLE/rAQ9Slj5gCu/C2VrdcW7I0ahNZ8DRbHT7zOZ6r3ONgd/bsQIeSaoDGrd1C6g==}
-
-  '@types/pngjs@6.0.5':
-    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
 
   '@typescript-eslint/eslint-plugin@8.70.0':
     resolution: {integrity: sha512-/v8HZt6RlyIZxB3ntehELOcUcfxKPVGWXnQdJuHRmzrqgF8nQypcC/oxGW+Ot4VGKDq81XugPKxx0n5PBtf9PA==}
@@ -917,10 +908,6 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  pngjs@7.0.0:
-    resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
-    engines: {node: '>=14.19.0'}
-
   postcss@8.5.28:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
@@ -1361,10 +1348,6 @@ snapshots:
   '@types/node@26.5.1':
     dependencies:
       undici-types: 8.9.0
-
-  '@types/pngjs@6.0.5':
-    dependencies:
-      '@types/node': 26.5.1
 
   '@typescript-eslint/eslint-plugin@8.70.0(@typescript-eslint/parser@8.70.0(eslint@10.10.0)(typescript@6.0.3))(eslint@10.10.0)(typescript@6.0.3)':
     dependencies:
@@ -1919,8 +1902,6 @@ snapshots:
       playwright-core: 1.61.1
     optionalDependencies:
       fsevents: 2.3.2
-
-  pngjs@7.0.0: {}
 
   postcss@8.5.28:
     dependencies:
