@@ -1,0 +1,69 @@
+# Assets phase
+
+Building the site's asset inventory: every image and video it references, and
+every font family it uses. Two independent sub-steps, one script.
+
+Entered once `inventory` is `done`. Every state change runs the script —
+never write `.estimate/*` by hand.
+
+## Step 1 · media (script, manifest step `assets:media`)
+
+```
+pnpm tsx src/scripts/assets/index.ts --project <projectPath> --media [--force]
+```
+
+```json
+{ "step": "assets:media", "status": "done" | "skipped", "images": <n>, "videos": <n>, "duplicates": <n> }
+```
+
+Report the image and video counts, and flag `duplicates` whenever it is above
+zero — those are records whose `ETag` matched another record's, so they are
+the same upload served from two URLs, and are not counted twice by the
+report.
+
+Every mirrored page body already on disk (from `probe` and `inventory`) and
+every mirrored stylesheet is scanned for image and video references, grouped
+into one record per canonical URL. Each record is then HEAD-probed (no full
+download) to read its `ETag` and `Content-Type` — this is what makes the
+duplicate check below free of any asset-weight download.
+
+**Repeating is safe.** On a project where the step is already `done` the
+script re-reads the existing artifact instead of re-scanning, prints
+`{"step":"assets:media","status":"skipped",…}` with the same counts, makes no
+network request and exits 0. Pass `--force` to rebuild, which you want after a
+forced `inventory` re-run.
+
+## Step 2 · fonts (script, manifest step `assets:fonts`)
+
+```
+pnpm tsx src/scripts/assets/index.ts --project <projectPath> --fonts [--force]
+```
+
+```json
+{ "step": "assets:fonts", "status": "done" | "skipped", "families": <n> }
+```
+
+Pure parsing of what is already mirrored — no network. `@font-face` rules from
+every page's HTML and every mirrored stylesheet, plus provider stylesheets
+(Google Fonts and similar) discovered in the markup, are folded per family and
+classified `google` / `fontshare` / `adobe` / `custom`.
+
+**Repeating is safe**, the same way step 1 is: an already-`done` step re-reads
+its artifact and prints `status: "skipped"`.
+
+One of `--media` or `--fonts` is required on every invocation of this script —
+there is no flag that runs both at once, so both commands above are needed to
+finish the phase.
+
+## Verify
+
+Read `<projectPath>/.estimate/manifest.json`: `steps["assets:media"].status`
+and `steps["assets:fonts"].status` are both `"done"`.
+
+Read `<projectPath>/.estimate/artifacts/assets/media.json`:
+`{assets: [{assetId, canonicalUrl, kind, contentType, etag, sources,
+duplicateOf}]}` — `duplicateOf` is the asset id of the original when this
+record is a recognized duplicate, otherwise `null`.
+
+Read `<projectPath>/.estimate/artifacts/assets/fonts.json`:
+`{families: [{family, weights, styles, classification, sources}]}`.
