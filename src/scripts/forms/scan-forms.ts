@@ -14,7 +14,9 @@ export function scanForms(html: string, route: string): FormRecord[] {
     form.find(FIELD_SELECTOR).each((__, node) => {
       const field = $(node);
       const type = field.attr("type") ?? (node as { tagName?: string }).tagName ?? "text";
-      if (type === "submit" || type === "button") return;
+      if (type === "submit" || type === "button" || type === "hidden") return;
+      if (field.attr("aria-hidden") === "true") return;
+      if (field.attr("tabindex") === "-1") return;
 
       fields.push({
         name: field.attr("name") ?? "",

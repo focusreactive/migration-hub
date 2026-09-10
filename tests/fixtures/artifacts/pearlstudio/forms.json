@@ -5,10 +5,11 @@
       "name": null,
       "action": null,
       "method": "get",
-      "fieldCount": 2,
+      "fieldCount": 3,
       "fields": [
         { "name": "Name", "type": "text", "required": true },
-        { "name": "Email", "type": "email", "required": true }
+        { "name": "Email", "type": "email", "required": true },
+        { "name": "company", "type": "text", "required": false }
       ]
     },
     {
@@ -16,10 +17,11 @@
       "name": null,
       "action": null,
       "method": "get",
-      "fieldCount": 2,
+      "fieldCount": 3,
       "fields": [
         { "name": "Name", "type": "text", "required": true },
-        { "name": "Email", "type": "email", "required": true }
+        { "name": "Email", "type": "email", "required": true },
+        { "name": "company", "type": "text", "required": false }
       ]
     },
     {
@@ -27,12 +29,13 @@
       "name": null,
       "action": null,
       "method": "get",
-      "fieldCount": 4,
+      "fieldCount": 5,
       "fields": [
         { "name": "Name", "type": "text", "required": true },
         { "name": "Email", "type": "email", "required": true },
-        { "name": "Company", "type": "text", "required": false },
-        { "name": "Message", "type": "text", "required": false }
+        { "name": "Subject", "type": "text", "required": true },
+        { "name": "Message", "type": "text", "required": true },
+        { "name": "website", "type": "text", "required": false }
       ]
     }
   ]

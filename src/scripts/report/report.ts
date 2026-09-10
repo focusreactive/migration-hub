@@ -7,13 +7,13 @@ import { discoveryBlocksArtifact, discoveryGlobalsArtifact } from "#ir/discovery
 import { formsArtifact } from "#ir/forms.ts";
 import { pagesArtifact } from "#ir/pages.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
-import { readManifest, withStep } from "#lib/manifest/index.ts";
+import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
 import { loadRunConfig } from "#run-config/load.ts";
 
 import { REPORT_STEP_ID } from "./constants/ids.ts";
 import { renderReport, type ReportInput } from "./render-report.ts";
 
-export function reportPath(projectPath: string): string {
+function reportPath(projectPath: string): string {
   return join(projectPath, "report.md");
 }
 
@@ -54,7 +54,9 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
         globals,
       };
 
-      await writeFileAtomic(reportPath(projectPath), renderReport(input));
+      const path = reportPath(projectPath);
+      await writeFileAtomic(path, renderReport(input));
+      await recordArtifact(projectPath, REPORT_STEP_ID, "report", path);
     },
     { force },
   );

@@ -92,10 +92,7 @@ describe("renderReport forms deduplication", () => {
     expect(md).toMatch(/\| Forms \| 1 \|/);
 
     const formsRow = md.split("\n").find((line) => line.startsWith("| Newsletter |"));
-    expect(formsRow).toBeDefined();
-    expect(formsRow).toContain("/");
-    expect(formsRow).toContain("/about");
-    expect(formsRow).toContain("/contact");
+    expect(formsRow).toBe("| Newsletter | 1 | handled by the platform | /, /about, /contact |");
   });
 
   it("counts two genuinely distinct forms on the same route as two forms", () => {
@@ -113,5 +110,173 @@ describe("renderReport forms deduplication", () => {
     expect(md).toMatch(/\| Forms \| 2 \|/);
     expect(md).toContain("| Newsletter |");
     expect(md).toContain("| Contact |");
+  });
+});
+
+describe("renderReport anonymous form labels", () => {
+  it("labels an unnamed form from its required fields", () => {
+    const input: ReportInput = {
+      ...INPUT,
+      forms: {
+        forms: [
+          {
+            route: "/contact",
+            name: null,
+            action: null,
+            method: "get",
+            fieldCount: 3,
+            fields: [
+              { name: "Name", type: "text", required: true },
+              { name: "Email", type: "email", required: true },
+              { name: "website", type: "text", required: false },
+            ],
+          },
+        ],
+      },
+    };
+
+    expect(renderReport(input)).toContain("| Name, Email | 3 |");
+  });
+
+  it("falls back to all named fields when none are required", () => {
+    const input: ReportInput = {
+      ...INPUT,
+      forms: {
+        forms: [
+          {
+            route: "/contact",
+            name: null,
+            action: null,
+            method: "get",
+            fieldCount: 2,
+            fields: [
+              { name: "A", type: "text", required: false },
+              { name: "B", type: "text", required: false },
+            ],
+          },
+        ],
+      },
+    };
+
+    expect(renderReport(input)).toContain("| A, B | 2 |");
+  });
+
+  it("filters out unnamed fields instead of rendering empty commas", () => {
+    const input: ReportInput = {
+      ...INPUT,
+      forms: {
+        forms: [
+          {
+            route: "/contact",
+            name: null,
+            action: null,
+            method: "get",
+            fieldCount: 2,
+            fields: [
+              { name: "", type: "text", required: true },
+              { name: "Name", type: "text", required: true },
+            ],
+          },
+        ],
+      },
+    };
+
+    const md = renderReport(input);
+    expect(md).toContain("| Name | 2 |");
+    expect(md).not.toContain(", ,");
+  });
+
+  it("falls back to an em dash when no field carries a name", () => {
+    const input: ReportInput = {
+      ...INPUT,
+      forms: {
+        forms: [
+          {
+            route: "/contact",
+            name: null,
+            action: null,
+            method: "get",
+            fieldCount: 1,
+            fields: [{ name: "", type: "text", required: false }],
+          },
+        ],
+      },
+    };
+
+    expect(renderReport(input)).toContain("| — | 1 |");
+  });
+
+  it("caps a long field list with an ellipsis", () => {
+    const input: ReportInput = {
+      ...INPUT,
+      forms: {
+        forms: [
+          {
+            route: "/contact",
+            name: null,
+            action: null,
+            method: "get",
+            fieldCount: 7,
+            fields: Array.from({ length: 7 }, (_, index) => ({
+              name: `F${index + 1}`,
+              type: "text",
+              required: true,
+            })),
+          },
+        ],
+      },
+    };
+
+    expect(renderReport(input)).toContain("| F1, F2, F3, F4, F5, … | 7 |");
+  });
+});
+
+describe("renderReport form ordering", () => {
+  it("sorts distinct forms by field count numerically, not lexicographically", () => {
+    const tenFields = Array.from({ length: 10 }, (_, index) => ({
+      name: `C${index + 1}`,
+      type: "text",
+      required: true,
+    }));
+
+    const input: ReportInput = {
+      ...INPUT,
+      forms: {
+        forms: [
+          { route: "/x", name: null, action: null, method: "get", fieldCount: 10, fields: tenFields },
+          {
+            route: "/x",
+            name: null,
+            action: null,
+            method: "get",
+            fieldCount: 2,
+            fields: [
+              { name: "A", type: "text", required: true },
+              { name: "B", type: "text", required: true },
+            ],
+          },
+        ],
+      },
+    };
+
+    const md = renderReport(input);
+    const twoFieldIndex = md.indexOf("| A, B | 2 |");
+    const tenFieldIndex = md.indexOf("| C1, C2, C3, C4, C5, … | 10 |");
+    expect(twoFieldIndex).toBeGreaterThan(-1);
+    expect(tenFieldIndex).toBeGreaterThan(-1);
+    expect(twoFieldIndex).toBeLessThan(tenFieldIndex);
+  });
+});
+
+describe("renderReport table cell escaping", () => {
+  it("escapes a pipe character in a form name", () => {
+    const input: ReportInput = {
+      ...INPUT,
+      forms: {
+        forms: [{ route: "/contact", name: "A | B", action: null, method: "post", fieldCount: 0, fields: [] }],
+      },
+    };
+
+    expect(renderReport(input)).toContain("| A \\| B | 0 |");
   });
 });

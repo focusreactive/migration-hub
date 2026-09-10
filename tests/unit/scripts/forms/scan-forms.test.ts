@@ -95,6 +95,26 @@ const SAME_FIELDS_DIFFERENT_ORDER_HTML = `
   </form>
 </body></html>`;
 
+const HONEYPOT_HTML = `
+<html><body>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="text" required name="Name" placeholder="Jane Smith" class="framer-form-input">
+    <input type="email" required name="Email">
+    <input type="hidden" name="page-id" value="abc">
+    <input type="text" tabindex="-1" aria-hidden="true" autocomplete="one-time-code" style="position:absolute;transform:scale(0)" name="website">
+    <input type="text" aria-hidden="true" name="company">
+    <input type="text" tabindex="-1" name="message">
+  </form>
+</body></html>`;
+
+describe("scanForms honeypot fields", () => {
+  it("excludes hidden, aria-hidden and tabindex=-1 inputs from the field list", () => {
+    const [contact] = scanForms(HONEYPOT_HTML, "/contact");
+    expect(contact?.fieldCount).toBe(2);
+    expect(contact?.fields.map((field) => field.name)).toEqual(["Name", "Email"]);
+  });
+});
+
 describe("scanForms deduplication", () => {
   it("collapses byte-identical forms repeated on the same route into one record", () => {
     expect(scanForms(REPEATED_HTML, "/about")).toHaveLength(1);

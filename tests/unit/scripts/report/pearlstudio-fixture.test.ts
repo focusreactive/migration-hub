@@ -48,9 +48,7 @@ describe("renderReport against the pearlstudio fixture artifacts", () => {
     expect(markdown).toContain("| Header | 3 |");
     expect(markdown).toMatch(/\| Forms \| 2 \|/);
 
-    const newsletterRow = markdown.split("\n").find((line) => line.startsWith("| — | 2 |"));
-    expect(newsletterRow).toBeDefined();
-    expect(newsletterRow).toContain("/");
-    expect(newsletterRow).toContain("/about");
+    expect(markdown).toContain("| Name, Email | 3 | handled by the platform | /, /about |");
+    expect(markdown).toContain("| Name, Email, Subject, Message | 5 | handled by the platform | /contact |");
   });
 });
