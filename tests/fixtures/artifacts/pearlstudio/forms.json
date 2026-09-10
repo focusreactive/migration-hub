@@ -1,0 +1,39 @@
+{
+  "forms": [
+    {
+      "route": "/",
+      "name": null,
+      "action": null,
+      "method": "get",
+      "fieldCount": 2,
+      "fields": [
+        { "name": "Name", "type": "text", "required": true },
+        { "name": "Email", "type": "email", "required": true }
+      ]
+    },
+    {
+      "route": "/about",
+      "name": null,
+      "action": null,
+      "method": "get",
+      "fieldCount": 2,
+      "fields": [
+        { "name": "Name", "type": "text", "required": true },
+        { "name": "Email", "type": "email", "required": true }
+      ]
+    },
+    {
+      "route": "/contact",
+      "name": null,
+      "action": null,
+      "method": "get",
+      "fieldCount": 4,
+      "fields": [
+        { "name": "Name", "type": "text", "required": true },
+        { "name": "Email", "type": "email", "required": true },
+        { "name": "Company", "type": "text", "required": false },
+        { "name": "Message", "type": "text", "required": false }
+      ]
+    }
+  ]
+}

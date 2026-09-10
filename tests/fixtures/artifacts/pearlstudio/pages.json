@@ -1,0 +1,13 @@
+{
+  "pages": [
+    { "route": "/", "kind": "static" },
+    { "route": "/about", "kind": "static" },
+    { "route": "/contact", "kind": "static" },
+    { "route": "/journal", "kind": "static" },
+    { "route": "/journal/why-good-design-is-your-silent-salesperson", "kind": "item", "collectionKey": "k5H8aKNmw" },
+    { "route": "/journal/founders-your-first-website-shouldn-t-just-look-good-it-should-work", "kind": "item", "collectionKey": "k5H8aKNmw" }
+  ],
+  "collections": [
+    { "key": "k5H8aKNmw", "routePattern": "/journal/:slug", "itemCount": 2 }
+  ]
+}

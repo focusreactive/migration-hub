@@ -1,0 +1,28 @@
+{
+  "types": [
+    {
+      "id": "header",
+      "name": "Header",
+      "role": "header",
+      "instanceCount": 3,
+      "members": [
+        { "route": "/", "order": 0 },
+        { "route": "/about", "order": 0 },
+        { "route": "/contact", "order": 0 }
+      ],
+      "exemplar": { "route": "/", "order": 0 }
+    },
+    {
+      "id": "footer",
+      "name": "Footer",
+      "role": "footer",
+      "instanceCount": 3,
+      "members": [
+        { "route": "/", "order": 9 },
+        { "route": "/about", "order": 9 },
+        { "route": "/contact", "order": 9 }
+      ],
+      "exemplar": { "route": "/", "order": 9 }
+    }
+  ]
+}

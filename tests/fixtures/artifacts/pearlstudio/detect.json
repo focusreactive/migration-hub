@@ -1,0 +1,39 @@
+{
+  "verdict": "framer",
+  "scores": {
+    "webflow": {
+      "score": 0,
+      "hasTier1Strong": false,
+      "signals": []
+    },
+    "framer": {
+      "score": 59,
+      "hasTier1Strong": true,
+      "signals": [
+        {
+          "id": "fr-meta-generator",
+          "tier": "strong",
+          "evidence": "<meta name=\"generator\" content=\"Framer d369d66\">"
+        },
+        {
+          "id": "fr-comment-madein",
+          "tier": "strong",
+          "evidence": "<!-- Made in Framer"
+        },
+        {
+          "id": "fr-asset-sites",
+          "tier": "strong",
+          "evidence": "framerusercontent.com/sites/"
+        }
+      ]
+    }
+  },
+  "thresholds": {
+    "confidence": 6,
+    "margin": 3
+  },
+  "platformHints": {
+    "framerSiteId": "6PDb1oivzLCqpPQmKo14n0",
+    "searchIndexUrl": "https://framerusercontent.com/sites/6PDb1oivzLCqpPQmKo14n0/searchIndex-kfaE6gK3igEV.json"
+  }
+}

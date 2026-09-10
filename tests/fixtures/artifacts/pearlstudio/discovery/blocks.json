@@ -1,0 +1,24 @@
+{
+  "types": [
+    {
+      "id": "hero",
+      "name": "Hero",
+      "role": "hero",
+      "instanceCount": 3,
+      "members": [
+        { "route": "/", "order": 0 },
+        { "route": "/about", "order": 0 },
+        { "route": "/contact", "order": 0 }
+      ],
+      "exemplar": { "route": "/", "order": 0 }
+    },
+    {
+      "id": "services-grid",
+      "name": "Services Grid",
+      "role": "feature-grid",
+      "instanceCount": 1,
+      "members": [{ "route": "/", "order": 1 }],
+      "exemplar": { "route": "/", "order": 1 }
+    }
+  ]
+}
