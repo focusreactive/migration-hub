@@ -2,8 +2,6 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { z } from "zod";
-
 import { ESTIMATE_DIR } from "#ir/artifact.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
 import { MANIFEST_SCHEMA_VERSION, manifestSchema, type Manifest, type StepRecord } from "#lib/manifest/schema.ts";
@@ -27,15 +25,19 @@ async function writeManifest(projectPath: string, manifest: Manifest): Promise<v
   await writeFileAtomic(manifestPath(projectPath), `${JSON.stringify(manifest, null, 2)}\n`);
 }
 
-const versionProbeSchema = z.looseObject({ schemaVersion: z.number() });
+function schemaVersionOf(raw: unknown): number | undefined {
+  if (typeof raw !== "object" || raw === null) return undefined;
+  const value = (raw as Record<string, unknown>)["schemaVersion"];
+  return typeof value === "number" ? value : undefined;
+}
 
 export async function readManifest(projectPath: string): Promise<Manifest> {
   const raw: unknown = JSON.parse(await readFile(manifestPath(projectPath), "utf8"));
 
-  const probe = versionProbeSchema.parse(raw);
-  if (probe.schemaVersion !== MANIFEST_SCHEMA_VERSION) {
+  const foundVersion = schemaVersionOf(raw);
+  if (foundVersion !== undefined && foundVersion !== MANIFEST_SCHEMA_VERSION) {
     throw new ManifestVersionError({
-      found: probe.schemaVersion,
+      found: foundVersion,
       expected: MANIFEST_SCHEMA_VERSION,
     });
   }
@@ -117,6 +119,7 @@ export async function withStep<T>(
     await updateStep(projectPath, stepId, {
       status: "done",
       finishedAt: new Date().toISOString(),
+      error: undefined,
     });
     return result;
   } catch (error) {
