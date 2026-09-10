@@ -1,6 +1,6 @@
 import { BACKOFF_MULTIPLIER, INITIAL_BACKOFF_MS, MAX_REDIRECTS, MAX_RETRIES, REDIRECT_STATUSES } from "./constants.ts";
 import { defaultSleep, headersToRecord, isRetryableStatus } from "./utils.ts";
-import type { FetchClient, FetchClientOptions, FetchResponse, HopResult } from "./types.ts";
+import type { FetchClient, FetchClientOptions, FetchMethod, FetchRequestOpts, FetchResponse, HopResult } from "./types.ts";
 
 export type { FetchClient, FetchResponse } from "./types.ts";
 
@@ -79,28 +79,30 @@ export function createFetchClient({
     });
   }
 
-  async function performOnce(url: string): Promise<HopResult> {
+  async function performOnce(url: string, method: FetchMethod): Promise<HopResult> {
     const response = await fetchImpl(url, {
-      method: "GET",
+      method,
       redirect: "manual",
       headers: { "User-Agent": userAgent },
       signal: AbortSignal.timeout(timeoutMs),
     });
 
+    const body = method === "HEAD" ? Buffer.alloc(0) : Buffer.from(await response.arrayBuffer());
+
     return {
       status: response.status,
       headers: headersToRecord(response.headers),
-      body: Buffer.from(await response.arrayBuffer()),
+      body,
     };
   }
 
-  async function performHopWithRetries(url: string): Promise<HopResult> {
+  async function performHopWithRetries(url: string, method: FetchMethod): Promise<HopResult> {
     let attempt = 0;
 
     while (true) {
       let result: HopResult;
       try {
-        result = await schedule(() => performOnce(url));
+        result = await schedule(() => performOnce(url, method));
       } catch (error) {
         if (attempt < MAX_RETRIES) {
           await sleep(INITIAL_BACKOFF_MS * BACKOFF_MULTIPLIER ** attempt);
@@ -120,12 +122,13 @@ export function createFetchClient({
     }
   }
 
-  async function runFetch(url: string): Promise<FetchResponse> {
+  async function runFetch(url: string, opts?: FetchRequestOpts): Promise<FetchResponse> {
+    const method = opts?.method ?? "GET";
     const redirectChain: string[] = [];
     let currentUrl = url;
 
     while (true) {
-      const hop = await performHopWithRetries(currentUrl);
+      const hop = await performHopWithRetries(currentUrl, method);
       const location = hop.headers["location"];
 
       if (REDIRECT_STATUSES.has(hop.status) && location !== undefined) {

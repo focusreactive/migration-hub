@@ -1,3 +1,9 @@
+export type FetchMethod = "GET" | "HEAD";
+
+export interface FetchRequestOpts {
+  method?: FetchMethod;
+}
+
 export interface FetchClientOptions {
   concurrency: number;
   requestDelayMs: number;
@@ -16,7 +22,7 @@ export interface FetchResponse {
 }
 
 export interface FetchClient {
-  fetch(url: string): Promise<FetchResponse>;
+  fetch(url: string, opts?: FetchRequestOpts): Promise<FetchResponse>;
   setCrawlDelayMs(ms: number): void;
 }
 
