@@ -43,6 +43,9 @@ confidence (`ambiguous`), point them at
 consultation, and stop — do not continue to `inventory`.
 
 The project stays on disk with `detect` marked `done`, so re-running
-`--prepare --url <sourceUrl>` on the same URL later resumes from here; nothing
-downstream can complete until a fresh `--force` detect run against a
-different site returns a recognized verdict.
+`--prepare --url <sourceUrl>` on the same URL later resumes from here. A
+project is pinned to the one hostname it was created for, so `--force` on
+`detect` can only rescore that same site's signals after a re-probe — it
+cannot point the run at a different site. If the site genuinely runs on
+neither platform, or was misidentified, that is a new project
+(`--prepare --url <different-url>`), not a forced re-run of this one.

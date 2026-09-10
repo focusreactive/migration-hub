@@ -43,10 +43,18 @@ pnpm tsx src/scripts/assets/index.ts --project <projectPath> --fonts [--force]
 { "step": "assets:fonts", "status": "done" | "skipped", "families": <n> }
 ```
 
-Pure parsing of what is already mirrored — no network. `@font-face` rules from
-every page's HTML and every mirrored stylesheet, plus provider stylesheets
-(Google Fonts and similar) discovered in the markup, are folded per family and
-classified `google` / `fontshare` / `adobe` / `custom`.
+Parses `@font-face` rules from every page's mirrored HTML and every mirrored
+stylesheet — that half is offline, no network. It then **does** make live
+requests: every `<link rel="stylesheet">` pointing at a known font-provider
+host (Google Fonts, Typekit, Bunny Fonts, Fontshare) is fetched at run time,
+because the `@font-face` rules for a provider-hosted family live in that
+remote CSS, not in the mirror. A provider stylesheet that 404s, times out, or
+fails to fetch is skipped — it does not abort the step, it just means that
+family may come back with no weights or go undetected. **What is never
+fetched, mirrored or provider-fetched, is the font binary itself** — no
+`.woff2`, no `.ttf` is ever downloaded; only the `@font-face` text is read, to
+learn which families and weights exist. Every parsed face is folded per
+family and classified `google` / `fontshare` / `adobe` / `custom`.
 
 **Repeating is safe**, the same way step 1 is: an already-`done` step re-reads
 its artifact and prints `status: "skipped"`.

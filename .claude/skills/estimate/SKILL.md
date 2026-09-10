@@ -60,13 +60,18 @@ prepare/init split here, and no step ahead of the pipeline table to special-case
 
 Read `.estimate/manifest.json`'s `steps` object
 (`{ [stepId]: { status, error? } }`, status one of
-`pending`/`running`/`done`/`failed`/`skipped`). Walk "The pipeline" table in
-order; the first phase whose step(s) are not `done` (or `skipped`, which also
-means "nothing left to do here") is the next one to run — `failed` means it
-failed before (show the error, then retry), `running` means it was
-interrupted (retry). Open that phase's `PHASE.md` and follow it; the phase doc
-owns its own step ids, commands, `--force` semantics and (for `assets` and
-`discovery`) internal sub-steps. Never plan a step from this file alone.
+`pending`/`running`/`done`/`failed` — no script ever writes `skipped` into the
+manifest). Walk "The pipeline" table in order; the first phase whose step(s)
+are not `done` is the next one to run — `failed` means it failed before (show
+the error, then retry), `running` means it was interrupted (retry). Open that
+phase's `PHASE.md` and follow it; the phase doc owns its own step ids,
+commands, `--force` semantics and (for `assets` and `discovery`) internal
+sub-steps. Never plan a step from this file alone.
+
+`"skipped"` is something a phase's script **reports** on stdout when it finds
+the manifest step already `done` and re-runs nothing — it is not a manifest
+status. A step you see reported `"skipped"` still reads `"done"` in
+`manifest.json`; there is no third on-disk state to check for.
 
 `assets` is two manifest steps (`assets:media`, `assets:fonts`); `discovery`
 is nine (`discovery:sections:{schema,subject,judge,accept}`,
