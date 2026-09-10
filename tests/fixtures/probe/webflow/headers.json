@@ -1,0 +1,20 @@
+{
+  "status": 200,
+  "finalUrl": "https://nova-x.webflow.io/",
+  "redirectChain": [],
+  "headers": {
+    "age": "22662",
+    "alt-svc": "h3=\":443\"; ma=86400",
+    "cf-cache-status": "HIT",
+    "connection": "keep-alive",
+    "content-encoding": "gzip",
+    "content-security-policy": "frame-ancestors 'self' https://*.webflow.com http://*.webflow.com http://*.webflow.io http://webflow.com https://webflow.com",
+    "content-type": "text/html; charset=utf-8",
+    "date": "Tue, 08 Sep 2026 18:33:59 GMT",
+    "last-modified": "Tue, 08 Sep 2026 12:16:17 GMT",
+    "server": "cloudflare",
+    "surrogate-control": "max-age=432000",
+    "transfer-encoding": "chunked",
+    "vary": "accept-encoding"
+  }
+}
