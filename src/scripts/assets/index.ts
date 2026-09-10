@@ -1,17 +1,19 @@
 import { CliUsageError, parseServiceArgs } from "#lib/cli/index.ts";
 
+import { runFonts } from "./steps/fonts/fonts.ts";
 import { runMedia } from "./steps/media/media.ts";
 
 async function main(): Promise<void> {
   const args = parseServiceArgs(process.argv.slice(2), {
-    extraFlags: { media: { type: "boolean" } },
+    extraFlags: { media: { type: "boolean" }, fonts: { type: "boolean" } },
   });
 
-  if (args["media"] !== true) {
-    throw new CliUsageError("--media is required");
+  if (args["media"] !== true && args["fonts"] !== true) {
+    throw new CliUsageError("--media or --fonts is required");
   }
 
-  return runMedia(args.projectPath, args.force);
+  if (args["media"] === true) await runMedia(args.projectPath, args.force);
+  if (args["fonts"] === true) await runFonts(args.projectPath, args.force);
 }
 
 try {

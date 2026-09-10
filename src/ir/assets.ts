@@ -56,6 +56,7 @@ export const fontFamiliesDataSchema = z.strictObject({
 export type MediaAssetRecord = z.infer<typeof mediaAssetRecordSchema>;
 export type MediaAssetsData = z.infer<typeof mediaAssetsDataSchema>;
 export type MediaAssetSource = z.infer<typeof mediaAssetSourceSchema>;
+export type FontClassification = z.infer<typeof fontClassificationSchema>;
 export type FontFamilyRecord = z.infer<typeof fontFamilyRecordSchema>;
 export type FontFamiliesData = z.infer<typeof fontFamiliesDataSchema>;
 
