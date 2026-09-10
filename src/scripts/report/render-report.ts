@@ -91,9 +91,8 @@ function formatFieldList(names: string[]): string {
 }
 
 function anonymousFormLabel(fields: FormField[]): string {
-  const required = namedFieldNames(fields.filter((field) => field.required));
-  const candidates = required.length > 0 ? required : namedFieldNames(fields);
-  return candidates.length === 0 ? "—" : formatFieldList(candidates);
+  const named = namedFieldNames(fields);
+  return named.length === 0 ? "—" : formatFieldList(named);
 }
 
 function formLabel(form: DistinctForm): string {

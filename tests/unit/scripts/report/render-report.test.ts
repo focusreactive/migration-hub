@@ -114,7 +114,7 @@ describe("renderReport forms deduplication", () => {
 });
 
 describe("renderReport anonymous form labels", () => {
-  it("labels an unnamed form from its required fields", () => {
+  it("labels an unnamed form from all its named fields, including optional ones", () => {
     const input: ReportInput = {
       ...INPUT,
       forms: {
@@ -135,7 +135,7 @@ describe("renderReport anonymous form labels", () => {
       },
     };
 
-    expect(renderReport(input)).toContain("| Name, Email | 3 |");
+    expect(renderReport(input)).toContain("| Name, Email, website | 3 |");
   });
 
   it("falls back to all named fields when none are required", () => {
