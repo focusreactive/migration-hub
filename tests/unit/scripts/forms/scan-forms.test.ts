@@ -48,3 +48,36 @@ describe("scanForms", () => {
     expect(scanForms(HTML, "/contact").every((form) => form.route === "/contact")).toBe(true);
   });
 });
+
+const REPEATED_HTML = `
+<html><body>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="email" name="email" required>
+  </form>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="email" name="email" required>
+  </form>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="email" name="email" required>
+  </form>
+</body></html>`;
+
+const DISTINCT_HTML = `
+<html><body>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="email" name="email" required>
+  </form>
+  <form name="Newsletter" action="https://api.hsforms.com/submit/9/9" method="post">
+    <input type="email" name="subscriber">
+  </form>
+</body></html>`;
+
+describe("scanForms deduplication", () => {
+  it("collapses byte-identical forms repeated on the same route into one record", () => {
+    expect(scanForms(REPEATED_HTML, "/about")).toHaveLength(1);
+  });
+
+  it("keeps genuinely distinct forms on the same route separate", () => {
+    expect(scanForms(DISTINCT_HTML, "/about")).toHaveLength(2);
+  });
+});

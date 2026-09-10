@@ -34,5 +34,20 @@ export function scanForms(html: string, route: string): FormRecord[] {
     });
   });
 
-  return records;
+  return dedupeByRoute(records);
+}
+
+function dedupeByRoute(records: FormRecord[]): FormRecord[] {
+  const seen = new Set<string>();
+  const deduped: FormRecord[] = [];
+
+  for (const record of records) {
+    const signature = JSON.stringify([record.name, record.action, record.method, record.fields]);
+    if (seen.has(signature)) continue;
+
+    seen.add(signature);
+    deduped.push(record);
+  }
+
+  return deduped;
 }

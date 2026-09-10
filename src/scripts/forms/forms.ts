@@ -3,19 +3,13 @@ import { formsArtifact, type FormRecord, type FormsData } from "#ir/forms.ts";
 import { pagesArtifact } from "#ir/pages.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
 import { openMirrorStore, readOnlyClient } from "#lib/mirror-store/index.ts";
-import { pageMirrorPathForRoute } from "#lib/mirror-store/paths.ts";
-import type { MirrorEntry, MirrorStore } from "#lib/mirror-store/types.ts";
+import { loadRunConfig } from "#run-config/load.ts";
 
 import { FORMS_STEP_ID } from "./constants/ids.ts";
 import { scanForms } from "./scan-forms.ts";
 
-function findPageEntry(store: MirrorStore, route: string): MirrorEntry | undefined {
-  const relativePath = pageMirrorPathForRoute(route);
-
-  return store.entries().find((entry) => entry.paths.raw === relativePath);
-}
-
 export async function runForms(projectPath: string, force: boolean): Promise<void> {
+  const runConfig = await loadRunConfig(projectPath);
   const store = await openMirrorStore(projectPath, readOnlyClient());
 
   const manifest = await readManifest(projectPath);
@@ -26,10 +20,11 @@ export async function runForms(projectPath: string, force: boolean): Promise<voi
     FORMS_STEP_ID,
     async () => {
       const pages = await readArtifact(projectPath, pagesArtifact);
+      const origin = new URL(runConfig.sourceUrl).origin;
 
       const forms: FormRecord[] = [];
       for (const page of pages.pages) {
-        const entry = findPageEntry(store, page.route);
+        const entry = store.get(new URL(page.route, origin).toString());
         if (entry === undefined) continue;
 
         const html = (await store.readBody(entry)).toString("utf8");
