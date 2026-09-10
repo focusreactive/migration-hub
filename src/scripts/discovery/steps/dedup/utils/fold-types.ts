@@ -29,7 +29,6 @@ export function mintTypeId(role: string, used: Set<string>): string {
   return id;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function foldTypes(groups: DedupGroup[], _instances: DedupInstance[]): DiscoveryType[] {
   const used = new Set<string>();
 

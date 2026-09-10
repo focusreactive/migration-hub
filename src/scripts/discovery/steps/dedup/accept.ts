@@ -38,8 +38,8 @@ export async function runDedupAccept(projectPath: string): Promise<void> {
   const blockGroups = parsed.data.groups.filter((group) => group.kind === "block");
   const globalGroups = parsed.data.groups.filter((group) => group.kind === "global");
 
-  const blocks = foldTypes(blockGroups, []);
-  const globals = foldTypes(globalGroups, []);
+  const blocks = foldTypes(blockGroups, instances);
+  const globals = foldTypes(globalGroups, instances);
 
   await writeArtifact(projectPath, discoveryBlocksArtifact, { types: blocks });
   await writeArtifact(projectPath, discoveryGlobalsArtifact, { types: globals });
