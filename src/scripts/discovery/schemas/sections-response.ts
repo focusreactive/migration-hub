@@ -1,9 +1,11 @@
 import { z } from "zod";
 
+const nonBlankString = z.string().min(1).regex(/\S/);
+
 const sectionResponseSchema = z.strictObject({
   order: z.number().int().nonnegative(),
-  role: z.string().min(1),
-  summary: z.string().min(1),
+  role: nonBlankString,
+  summary: nonBlankString,
 });
 
 export const sectionsResponseSchema = z.strictObject({
