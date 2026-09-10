@@ -1,0 +1,4 @@
+{
+  "$schema": "./schemas/estimate.config.schema.json",
+  "workspace": { "path": "../estimates" }
+}

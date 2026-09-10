@@ -1,0 +1,44 @@
+{
+  "name": "migration-hub",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "packageManager": "pnpm@10.34.4",
+  "imports": {
+    "#adapters/*": "./src/adapters/*",
+    "#assets/*": "./src/scripts/assets/*",
+    "#detect/*": "./src/scripts/detect/*",
+    "#discovery/*": "./src/scripts/discovery/*",
+    "#forms/*": "./src/scripts/forms/*",
+    "#init-project/*": "./src/scripts/init-project/*",
+    "#inventory/*": "./src/scripts/inventory/*",
+    "#ir/*": "./src/ir/*",
+    "#lib/*": "./src/lib/*",
+    "#probe/*": "./src/scripts/probe/*",
+    "#report/*": "./src/scripts/report/*",
+    "#run-config/*": "./src/run-config/*",
+    "#stitch/*": "./src/scripts/stitch/*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p tests",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.0",
+    "cheerio": "^1.2.0",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "playwright": "1.61.1",
+    "prettier": "^3.9.4",
+    "tsx": "^4.23.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10",
+    "zod": "^4.4.3"
+  }
+}
