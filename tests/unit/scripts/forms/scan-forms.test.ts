@@ -72,6 +72,29 @@ const DISTINCT_HTML = `
   </form>
 </body></html>`;
 
+const SAME_ATTRS_DIFFERENT_FIELDS_HTML = `
+<html><body>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="email" name="email" required>
+  </form>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="email" name="email" required>
+    <input type="text" name="company">
+  </form>
+</body></html>`;
+
+const SAME_FIELDS_DIFFERENT_ORDER_HTML = `
+<html><body>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="text" name="first">
+    <input type="text" name="last">
+  </form>
+  <form name="Contact" action="https://api.hsforms.com/submit/1/2" method="post">
+    <input type="text" name="last">
+    <input type="text" name="first">
+  </form>
+</body></html>`;
+
 describe("scanForms deduplication", () => {
   it("collapses byte-identical forms repeated on the same route into one record", () => {
     expect(scanForms(REPEATED_HTML, "/about")).toHaveLength(1);
@@ -79,5 +102,13 @@ describe("scanForms deduplication", () => {
 
   it("keeps genuinely distinct forms on the same route separate", () => {
     expect(scanForms(DISTINCT_HTML, "/about")).toHaveLength(2);
+  });
+
+  it("keeps two forms separate when only their fields differ", () => {
+    expect(scanForms(SAME_ATTRS_DIFFERENT_FIELDS_HTML, "/about")).toHaveLength(2);
+  });
+
+  it("keeps two forms separate when their fields carry the same names in a different order", () => {
+    expect(scanForms(SAME_FIELDS_DIFFERENT_ORDER_HTML, "/about")).toHaveLength(2);
   });
 });
