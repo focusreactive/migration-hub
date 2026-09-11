@@ -11,7 +11,7 @@ import { loadRunConfig } from "#run-config/load.ts";
 
 import { STITCH_STEP_ID } from "./constants/ids.ts";
 import { createPlaywrightDriver } from "./create-playwright-driver.ts";
-import { staticRoutes } from "./utils/static-routes.ts";
+import { captureRoutes } from "./utils/capture-routes.ts";
 
 export function stitchPngPath(projectPath: string, route: string): string {
   return join(projectPath, ESTIMATE_DIR, "artifacts", "stitch", routeDir(route), "desktop.png");
@@ -21,7 +21,7 @@ export async function runStitch(projectPath: string, force: boolean): Promise<vo
   const runConfig = await loadRunConfig(projectPath);
   const config = loadEstimateConfig();
   const pages = await readArtifact(projectPath, pagesArtifact);
-  const routes = staticRoutes(pages);
+  const routes = captureRoutes(pages);
   const origin = new URL(runConfig.sourceUrl).origin;
 
   const manifest = await readManifest(projectPath);

@@ -2,9 +2,22 @@
 
 Builds the two site-wide inventories the report is built from —
 `discovery/blocks.json` and `discovery/globals.json` — in two judged passes:
-first every static route is segmented into its own sections (globals vs.
-blocks), then all of those per-route sections are folded into site-wide
-types. One script, nine manifest steps.
+first every route in the capture set is segmented into its own sections
+(globals vs. content), then all of those per-route sections are folded into
+site-wide types. One script, nine manifest steps.
+
+The capture set is `stitch`'s (see its phase doc): every static route, plus
+one exemplar item route per CMS collection. A page-builder block and a
+collection-template section can be the same design — a "CTA panel" reused
+both on a static page and inside a case-study template is one component, not
+two — so both flow into the same `blocks.json` type space and the dedup pass
+is free to merge them into one type. What's never lost is *where* a type
+showed up: every block type carries `kinds`, a non-empty array of
+`"block"` (found on a static, page-builder route) and/or `"collectionSection"`
+(found on a collection-exemplar route) — `["block"]`, `["collectionSection"]`,
+or `["block","collectionSection"]` when the same type was seen in both
+places. `kinds` is computed by code from each member's route, never asked of
+the model — see Step 2.
 
 ```
 pnpm tsx src/scripts/discovery/index.ts --project <projectPath> --state
@@ -24,9 +37,14 @@ error at once as `{"ok":false,"errors":[…]}` and writes nothing.
 
 ## Step 1 · sections schema, subject, accept (fan-out over routes)
 
-Segments every static route into its visible sections, splitting them into
-`globals` and `blocks` in the same pass — there is no separate globals step in
-this pipeline.
+Segments every route in the capture set — static pages and collection
+exemplars alike — into its visible sections, splitting them into `globals`
+and `blocks` in the same pass — there is no separate globals step in this
+pipeline, and no separate step for collection-exemplar routes either: a
+collection item template has a header, a footer and content sections just
+like a static page, so the same split applies. This step never looks at
+where a route came from — that distinction is resolved later, from the route
+alone, when Step 2 computes each type's `kinds`.
 
 ```
 pnpm tsx src/scripts/discovery/index.ts --project <projectPath> --sections-schema
@@ -108,10 +126,10 @@ empties `remaining` — one row per step, one closure for the whole fan-out.
 ## Step 2 · dedup schema, subject, accept
 
 Folds every route's sections into site-wide block and global types. Runs only
-once every static route has a shard (Step 1's `remaining` is empty). Unlike
-Step 1, the subject is delivered **inline** — the subject step prints every
-section instance from every route's shard, and the response must cover all of
-them.
+once every route in the capture set has a shard (Step 1's `remaining` is
+empty). Unlike Step 1, the subject is delivered **inline** — the subject step
+prints every section instance from every route's shard, and the response
+must cover all of them.
 
 ```
 pnpm tsx src/scripts/discovery/index.ts --project <projectPath> --dedup-schema
@@ -120,8 +138,13 @@ pnpm tsx src/scripts/discovery/index.ts --project <projectPath> --dedup-subject
 
 The first prints the JSON Schema:
 `{groups: [{kind: "global"|"block", name, role, members: [{route, order}],
-exemplar: {route, order}}]}`. The second prints every instance (`kind`,
-`route`, `order`, `role`, `summary`) and the path to write the response to.
+exemplar: {route, order}}]}` — still only two kinds, exactly as before
+collection exemplars existed: every non-global instance, whether its route is
+a static page or a collection exemplar, is printed as `kind: "block"`. The
+subagent is not asked to tell the two apart here; that split happens after
+folding, from each member's route, not from anything the model states (see
+below). The second prints every instance (`kind`, `route`, `order`, `role`,
+`summary`) and the path to write the response to.
 
 Run this as one subagent — one dedup pass, not one per route. Delegate with
 this instruction:
@@ -129,7 +152,11 @@ this instruction:
 Group the instances into site-wide types. **Actively look for the same design
 repeated across pages** — the type-to-instance ratio is the report's headline
 number, so merging what is genuinely the same section wherever it recurs
-matters as much as not merging what only looks similar. Merge two instances
+matters as much as not merging what only looks similar. This includes
+merging across a static page and a collection-exemplar route: if a section on
+`/about` and a section on the Blog template are genuinely the same design,
+put them in the same group — a shared component doesn't stop being shared
+just because one occurrence sits inside a CMS template. Merge two instances
 only on a clear role and structure match; a section that only exists on one
 page legitimately stays a singleton — a response that never merges anything
 (every instance its own group) is exactly as wrong as one that over-merges
@@ -150,9 +177,15 @@ groups (`DUPLICATE_MEMBER`), a global and a block sharing one group
 { "ok": true, "blocks": <n>, "globals": <n> }
 ```
 
-On success this writes `discovery/blocks.json` and `discovery/globals.json`
+On success this writes `discovery/blocks.json` and `discovery/globals.json`,
 and marks `discovery:dedup:subject`, `discovery:dedup:judge` and
-`discovery:dedup:accept` all `done`.
+`discovery:dedup:accept` all `done`. Writing `blocks.json` is where `kinds`
+gets computed (`src/scripts/discovery/steps/dedup/utils/fold-types.ts`,
+`foldBlockTypes`): for each accepted block group, every member's route is
+checked against the project's collection-exemplar routes
+(`src/scripts/stitch/utils/collection-exemplar-routes.ts`) and the type gets
+`"block"` if any member is a static route, `"collectionSection"` if any
+member is a collection-exemplar route — both, if it has both kinds of member.
 
 ## Step 3 · finalize (script, manifest step `discovery:finalize`)
 
@@ -184,8 +217,14 @@ Under `<projectPath>/.estimate/artifacts/discovery/`:
 | path              | holds                                                                             |
 | ----------------- | ---------------------------------------------------------------------------------- |
 | `sections/<routeKey>.json` | the per-route shard Step 1 wrote: `{route, globals, blocks}`             |
-| `blocks.json`     | site-wide block types: `{types: [{id, name, role, instanceCount, members, exemplar}]}` |
-| `globals.json`    | the same shape, for globals (header, footer, cookie banner, …)                    |
+| `blocks.json`     | site-wide block types: `{types: [{id, name, role, instanceCount, members, exemplar, kinds}]}` |
+| `globals.json`    | the same shape minus `kinds`, for globals (header, footer, cookie banner, …)       |
 
-The report phase reads only `blocks.json` and `globals.json` — the per-route
+A member's `route` in `blocks.json` can be a collection-exemplar item route
+(e.g. `/blog/some-post`) when the type's `kinds` includes
+`"collectionSection"` — the report resolves that back to the collection it
+represents (e.g. "Blog (collection template)") rather than showing the raw
+item route, since one exemplar stands for the whole collection.
+
+The report phase reads `blocks.json` and `globals.json` — the per-route
 shards under `sections/` are the intermediate, per-occurrence record.

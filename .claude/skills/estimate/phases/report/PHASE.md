@@ -20,12 +20,14 @@ pnpm tsx src/scripts/report/index.ts --project <projectPath> [--force]
 
 Reads `detect.json`, `pages.json`, `assets/media.json`, `assets/fonts.json`,
 `forms.json`, `discovery/blocks.json` and `discovery/globals.json`, and
-renders them into `<projectPath>/report.md`: page and collection counts, media
-and font counts, the distinct-form list, and the block/global inventory with
-its instance counts. The script refuses to run if `detect.json`'s verdict is
-not `webflow` or `framer` — which cannot happen if `phases/detect/PHASE.md`
-was followed, since the pipeline never reaches `inventory` on any other
-verdict.
+renders them into `<projectPath>/report.md`: page and collection counts,
+media and font counts, the distinct-form list, and the block/global
+inventory with its instance counts — including, per block, whether it was
+found on a page-builder page, inside a CMS collection template, or both
+(`kinds`, see `phases/discovery/PHASE.md`). The script refuses to run if
+`detect.json`'s verdict is not `webflow` or `framer` — which cannot happen if
+`phases/detect/PHASE.md` was followed, since the pipeline never reaches
+`inventory` on any other verdict.
 
 **Repeating is safe.** On a project where the step is already `done` the
 script prints `{"step":"report","status":"skipped","reportPath":"…"}` and

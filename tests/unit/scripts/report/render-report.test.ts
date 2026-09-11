@@ -25,7 +25,24 @@ const INPUT: ReportInput = {
   forms: { forms: [{ route: "/contact", name: "Contact", action: null, method: "post", fieldCount: 3, fields: [] }] },
   blocks: {
     types: [
-      { id: "hero", name: "Hero", role: "hero", instanceCount: 2, members: [{ route: "/", order: 1 }, { route: "/about", order: 1 }], exemplar: { route: "/", order: 1 } },
+      {
+        id: "hero",
+        name: "Hero",
+        role: "hero",
+        instanceCount: 2,
+        members: [{ route: "/", order: 1 }, { route: "/about", order: 1 }],
+        exemplar: { route: "/", order: 1 },
+        kinds: ["block"],
+      },
+      {
+        id: "cta",
+        name: "CTA panel",
+        role: "cta",
+        instanceCount: 2,
+        members: [{ route: "/about", order: 5 }, { route: "/journal/a", order: 5 }],
+        exemplar: { route: "/about", order: 5 },
+        kinds: ["block", "collectionSection"],
+      },
     ],
   },
   globals: {
@@ -58,6 +75,20 @@ describe("renderReport", () => {
 
   it("lists the block types with their instance counts", () => {
     expect(renderReport(INPUT)).toContain("| Hero | 2 |");
+  });
+
+  it("labels a block used only on page-builder pages as Block", () => {
+    const row = renderReport(INPUT)
+      .split("\n")
+      .find((line) => line.startsWith("| Hero |"));
+    expect(row).toBe("| Hero | 2 | /, /about | Block |");
+  });
+
+  it("labels a block merged from a page-builder page and a collection exemplar as both", () => {
+    const row = renderReport(INPUT)
+      .split("\n")
+      .find((line) => line.startsWith("| CTA panel |"));
+    expect(row).toBe("| CTA panel | 2 | /about, Journal (collection template) | Block, Collection section |");
   });
 
   it("lists a platform-handled form as having no endpoint", () => {

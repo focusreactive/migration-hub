@@ -1,5 +1,5 @@
 import type { FontFamiliesData, MediaAssetsData } from "#ir/assets.ts";
-import type { DiscoveryTypesData } from "#ir/discovery.ts";
+import type { DiscoveryBlocksData, DiscoveryContentKind, DiscoveryTypesData } from "#ir/discovery.ts";
 import type { FormField, FormRecord, FormsData } from "#ir/forms.ts";
 import type { PagesData } from "#ir/pages.ts";
 
@@ -14,7 +14,7 @@ export interface ReportInput {
   media: MediaAssetsData;
   fonts: FontFamiliesData;
   forms: FormsData;
-  blocks: DiscoveryTypesData;
+  blocks: DiscoveryBlocksData;
   globals: DiscoveryTypesData;
 }
 
@@ -28,6 +28,7 @@ interface DistinctForm {
 }
 
 const SOURCE_LABEL: Record<"webflow" | "framer", string> = { webflow: "Webflow", framer: "Framer" };
+const KIND_LABEL: Record<DiscoveryContentKind, string> = { block: "Block", collectionSection: "Collection section" };
 const MAX_LABEL_FIELDS = 5;
 
 function countMedia(media: MediaAssetsData, kind: "image" | "video"): number {
@@ -108,6 +109,23 @@ function table(header: string[], rows: string[][]): string {
   return [header, divider, ...rows].map((row) => `| ${row.map(escapeCell).join(" | ")} |`).join("\n");
 }
 
+function pageMemberLabel(pages: PagesData, route: string): string {
+  const page = pages.pages.find((candidate) => candidate.route === route);
+  if (page?.kind !== "item") return route;
+
+  const collection = pages.collections.find((candidate) => candidate.key === page.collectionKey);
+  const name = collection === undefined ? route : collectionNameFromRoutePattern(collection.routePattern);
+  return `${name} (collection template)`;
+}
+
+function memberPagesList(pages: PagesData, members: { route: string }[]): string {
+  return members.map((member) => pageMemberLabel(pages, member.route)).join(", ");
+}
+
+function kindsLabel(kinds: DiscoveryContentKind[]): string {
+  return kinds.map((kind) => KIND_LABEL[kind]).join(", ");
+}
+
 export function renderReport(input: ReportInput): string {
   const staticPages = input.pages.pages.filter((page) => page.kind === "static");
   const images = countMedia(input.media, "image");
@@ -167,11 +185,12 @@ export function renderReport(input: ReportInput): string {
     input.blocks.types.length === 0
       ? "No blocks found."
       : table(
-          ["Block", "Instances", "Pages"],
+          ["Block", "Instances", "Pages", "Used as"],
           input.blocks.types.map((type) => [
             type.name,
             String(type.instanceCount),
-            type.members.map((member) => member.route).join(", "),
+            memberPagesList(input.pages, type.members),
+            kindsLabel(type.kinds),
           ]),
         ),
   );
@@ -185,7 +204,7 @@ export function renderReport(input: ReportInput): string {
           input.globals.types.map((type) => [
             type.name,
             String(type.instanceCount),
-            type.members.map((member) => member.route).join(", "),
+            memberPagesList(input.pages, type.members),
           ]),
         ),
   );

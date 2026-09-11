@@ -5,7 +5,7 @@ import { readArtifact } from "#ir/artifact.ts";
 import { sectionsShardArtifactFor } from "#ir/discovery.ts";
 import { pagesArtifact } from "#ir/pages.ts";
 import { routeDir } from "#lib/route-dir.ts";
-import { staticRoutes } from "#stitch/utils/static-routes.ts";
+import { captureRoutes } from "#stitch/utils/capture-routes.ts";
 
 import { dedupResponseRelativePath } from "../../constants/paths.ts";
 
@@ -13,7 +13,7 @@ import type { DedupInstance } from "./utils/fold-types.ts";
 
 export async function readDedupInstances(projectPath: string): Promise<DedupInstance[]> {
   const pages = await readArtifact(projectPath, pagesArtifact);
-  const routes = staticRoutes(pages);
+  const routes = captureRoutes(pages);
 
   const instances: DedupInstance[] = [];
   for (const route of routes) {

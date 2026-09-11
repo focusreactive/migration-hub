@@ -1,8 +1,10 @@
 import { z } from "zod";
 
-import { writeArtifact } from "#ir/artifact.ts";
+import { readArtifact, writeArtifact } from "#ir/artifact.ts";
 import { discoveryBlocksArtifact, discoveryGlobalsArtifact } from "#ir/discovery.ts";
+import { pagesArtifact } from "#ir/pages.ts";
 import { updateStep } from "#lib/manifest/index.ts";
+import { collectionExemplarRoutes } from "#stitch/utils/collection-exemplar-routes.ts";
 
 import {
   DISCOVERY_DEDUP_ACCEPT_STEP_ID,
@@ -16,7 +18,7 @@ import { readResponse } from "../../utils/read-response.ts";
 import { reportAcceptErrors } from "../../utils/report-accept-errors.ts";
 
 import { readDedupInstances } from "./subject.ts";
-import { foldTypes } from "./utils/fold-types.ts";
+import { foldBlockTypes, foldTypes } from "./utils/fold-types.ts";
 import { validateDedupResponse } from "./utils/validate-dedup-response.ts";
 
 export async function runDedupAccept(projectPath: string): Promise<void> {
@@ -38,7 +40,10 @@ export async function runDedupAccept(projectPath: string): Promise<void> {
   const blockGroups = parsed.data.groups.filter((group) => group.kind === "block");
   const globalGroups = parsed.data.groups.filter((group) => group.kind === "global");
 
-  const blocks = foldTypes(blockGroups, instances);
+  const pages = await readArtifact(projectPath, pagesArtifact);
+  const exemplarRoutes = new Set(collectionExemplarRoutes(pages));
+
+  const blocks = foldBlockTypes(blockGroups, instances, exemplarRoutes);
   const globals = foldTypes(globalGroups, instances);
 
   await writeArtifact(projectPath, discoveryBlocksArtifact, { types: blocks });

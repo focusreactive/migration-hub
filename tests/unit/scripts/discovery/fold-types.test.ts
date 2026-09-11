@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { foldTypes, mintTypeId } from "../../../../src/scripts/discovery/steps/dedup/utils/fold-types.ts";
+import { foldBlockTypes, foldTypes, mintTypeId } from "../../../../src/scripts/discovery/steps/dedup/utils/fold-types.ts";
 
 describe("mintTypeId", () => {
   it("slugs the role", () => {
@@ -47,5 +47,51 @@ describe("foldTypes", () => {
       { route: "/", order: 1 },
       { route: "/about", order: 1 },
     ]);
+  });
+});
+
+describe("foldBlockTypes", () => {
+  const exemplarRoutes = new Set(["/blog/a"]);
+
+  it("marks a group built only from page-builder members as a block", () => {
+    const groups = [
+      {
+        kind: "block" as const,
+        name: "Hero",
+        role: "hero",
+        members: [{ route: "/", order: 1 }, { route: "/about", order: 1 }],
+        exemplar: { route: "/", order: 1 },
+      },
+    ];
+
+    expect(foldBlockTypes(groups, [], exemplarRoutes)[0]?.kinds).toEqual(["block"]);
+  });
+
+  it("marks a group built only from collection-exemplar members as a collectionSection", () => {
+    const groups = [
+      {
+        kind: "block" as const,
+        name: "Byline",
+        role: "byline",
+        members: [{ route: "/blog/a", order: 1 }],
+        exemplar: { route: "/blog/a", order: 1 },
+      },
+    ];
+
+    expect(foldBlockTypes(groups, [], exemplarRoutes)[0]?.kinds).toEqual(["collectionSection"]);
+  });
+
+  it("marks a group merged across a page-builder page and a collection exemplar as both", () => {
+    const groups = [
+      {
+        kind: "block" as const,
+        name: "CTA panel",
+        role: "cta",
+        members: [{ route: "/about", order: 5 }, { route: "/blog/a", order: 5 }],
+        exemplar: { route: "/about", order: 5 },
+      },
+    ];
+
+    expect(foldBlockTypes(groups, [], exemplarRoutes)[0]?.kinds).toEqual(["block", "collectionSection"]);
   });
 });

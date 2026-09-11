@@ -35,11 +35,30 @@ export const discoveryTypesDataSchema = z.strictObject({
   types: z.array(discoveryTypeSchema),
 });
 
+export const discoveryContentKindSchema = z.enum(["block", "collectionSection"]);
+
+export const discoveryBlockTypeSchema = z.strictObject({
+  id: typeIdSchema,
+  name: z.string().min(1),
+  role: z.string().min(1),
+  instanceCount: z.number().int().positive(),
+  members: z.array(memberSchema).min(1),
+  exemplar: memberSchema,
+  kinds: z.array(discoveryContentKindSchema).min(1),
+});
+
+export const discoveryBlocksDataSchema = z.strictObject({
+  types: z.array(discoveryBlockTypeSchema),
+});
+
 export type Section = z.infer<typeof sectionSchema>;
 export type SectionsShardData = z.infer<typeof sectionsShardDataSchema>;
 export type Member = z.infer<typeof memberSchema>;
 export type DiscoveryType = z.infer<typeof discoveryTypeSchema>;
 export type DiscoveryTypesData = z.infer<typeof discoveryTypesDataSchema>;
+export type DiscoveryContentKind = z.infer<typeof discoveryContentKindSchema>;
+export type DiscoveryBlockType = z.infer<typeof discoveryBlockTypeSchema>;
+export type DiscoveryBlocksData = z.infer<typeof discoveryBlocksDataSchema>;
 
 export function sectionsShardArtifactFor(routeKey: string): ArtifactDef<SectionsShardData> {
   return {
@@ -49,10 +68,10 @@ export function sectionsShardArtifactFor(routeKey: string): ArtifactDef<Sections
   };
 }
 
-export const discoveryBlocksArtifact: ArtifactDef<DiscoveryTypesData> = {
+export const discoveryBlocksArtifact: ArtifactDef<DiscoveryBlocksData> = {
   kind: "discovery-blocks",
   relativePath: join("discovery", "blocks.json"),
-  dataSchema: discoveryTypesDataSchema,
+  dataSchema: discoveryBlocksDataSchema,
 };
 
 export const discoveryGlobalsArtifact: ArtifactDef<DiscoveryTypesData> = {

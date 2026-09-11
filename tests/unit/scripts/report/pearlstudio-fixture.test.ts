@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { fontFamiliesDataSchema, mediaAssetsDataSchema } from "../../../../src/ir/assets.ts";
 import { detectDataSchema } from "../../../../src/ir/detect.ts";
-import { discoveryTypesDataSchema } from "../../../../src/ir/discovery.ts";
+import { discoveryBlocksDataSchema, discoveryTypesDataSchema } from "../../../../src/ir/discovery.ts";
 import { formsDataSchema } from "../../../../src/ir/forms.ts";
 import { pagesDataSchema } from "../../../../src/ir/pages.ts";
 import { renderReport, type ReportInput } from "../../../../src/scripts/report/render-report.ts";
@@ -26,7 +26,7 @@ describe("renderReport against the pearlstudio fixture artifacts", () => {
     const media = mediaAssetsDataSchema.parse(await readJson("assets/media.json"));
     const fonts = fontFamiliesDataSchema.parse(await readJson("assets/fonts.json"));
     const forms = formsDataSchema.parse(await readJson("forms.json"));
-    const blocks = discoveryTypesDataSchema.parse(await readJson("discovery/blocks.json"));
+    const blocks = discoveryBlocksDataSchema.parse(await readJson("discovery/blocks.json"));
     const globals = discoveryTypesDataSchema.parse(await readJson("discovery/globals.json"));
 
     const input: ReportInput = {
@@ -50,5 +50,6 @@ describe("renderReport against the pearlstudio fixture artifacts", () => {
 
     expect(markdown).toContain("| Name, Email, company | 3 | handled by the platform | /, /about |");
     expect(markdown).toContain("| Name, Email, Subject, Message, website | 5 | handled by the platform | /contact |");
+    expect(markdown).toContain("| Byline | 1 | Journal (collection template) | Collection section |");
   });
 });

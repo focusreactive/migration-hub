@@ -10,7 +10,8 @@
         { "route": "/about", "order": 0 },
         { "route": "/contact", "order": 0 }
       ],
-      "exemplar": { "route": "/", "order": 0 }
+      "exemplar": { "route": "/", "order": 0 },
+      "kinds": ["block"]
     },
     {
       "id": "services-grid",
@@ -18,7 +19,19 @@
       "role": "feature-grid",
       "instanceCount": 1,
       "members": [{ "route": "/", "order": 1 }],
-      "exemplar": { "route": "/", "order": 1 }
+      "exemplar": { "route": "/", "order": 1 },
+      "kinds": ["block"]
+    },
+    {
+      "id": "byline",
+      "name": "Byline",
+      "role": "byline",
+      "instanceCount": 1,
+      "members": [
+        { "route": "/journal/why-good-design-is-your-silent-salesperson", "order": 1 }
+      ],
+      "exemplar": { "route": "/journal/why-good-design-is-your-silent-salesperson", "order": 1 },
+      "kinds": ["collectionSection"]
     }
   ]
 }

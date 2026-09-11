@@ -5,7 +5,7 @@ import { sectionsShardArtifactFor } from "#ir/discovery.ts";
 import { pagesArtifact } from "#ir/pages.ts";
 import { updateStep } from "#lib/manifest/index.ts";
 import { routeDir } from "#lib/route-dir.ts";
-import { staticRoutes } from "#stitch/utils/static-routes.ts";
+import { captureRoutes } from "#stitch/utils/capture-routes.ts";
 
 import {
   DISCOVERY_SECTIONS_ACCEPT_STEP_ID,
@@ -45,7 +45,7 @@ export async function runSectionsAccept(projectPath: string, route: string): Pro
   });
 
   const pages = await readArtifact(projectPath, pagesArtifact);
-  const remaining = routesMissingShard(projectPath, staticRoutes(pages));
+  const remaining = routesMissingShard(projectPath, captureRoutes(pages));
   if (remaining.length === 0) {
     const finishedAt = new Date().toISOString();
     for (const stepId of [
