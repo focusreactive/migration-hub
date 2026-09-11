@@ -6,13 +6,38 @@ import { detectArtifact } from "#ir/detect.ts";
 import { pagesArtifact, type PagesData } from "#ir/pages.ts";
 import { loadEstimateConfig } from "#lib/estimate-config/index.ts";
 import { createFetchClient } from "#lib/fetch/create-fetch-client/index.ts";
+import { extractStylesheetHrefs } from "#lib/html.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
 import { openMirrorStore } from "#lib/mirror-store/index.ts";
+import type { MirrorStore } from "#lib/mirror-store/types.ts";
 import { readProbeData } from "#probe/read-probe-data.ts";
 import { loadRunConfig } from "#run-config/load.ts";
 
 import { INVENTORY_STEP_ID } from "./constants/ids.ts";
 import { inventoryCrawlerFor } from "./inventory-crawler-for.ts";
+
+async function mirrorStylesheets(store: MirrorStore): Promise<void> {
+  const stylesheetUrls = new Set<string>();
+
+  for (const entry of store.entries().filter((candidate) => candidate.kind === "page")) {
+    const html = (await store.readBody(entry)).toString("utf8");
+    for (const href of extractStylesheetHrefs(html)) {
+      try {
+        stylesheetUrls.add(new URL(href, entry.http.finalUrl).toString());
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  for (const url of stylesheetUrls) {
+    try {
+      await store.fetchInto(url, "style");
+    } catch {
+      continue;
+    }
+  }
+}
 
 export async function runInventory(projectPath: string, force: boolean): Promise<void> {
   const runConfig = await loadRunConfig(projectPath);
@@ -54,6 +79,8 @@ export async function runInventory(projectPath: string, force: boolean): Promise
         store,
         maxPages: config.crawl.maxPages,
       });
+
+      await mirrorStylesheets(store);
 
       const data = buildPagesData(pages);
       await writeArtifact(projectPath, pagesArtifact, data);

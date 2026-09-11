@@ -85,6 +85,44 @@ export function providerStylesheetUrls(html: string, baseUrl: string): string[] 
   return [...urls];
 }
 
+function extractBalanced(text: string, openIndex: number): string | undefined {
+  let depth = 0;
+  for (let i = openIndex; i < text.length; i++) {
+    if (text[i] === "(") depth++;
+    else if (text[i] === ")") {
+      depth--;
+      if (depth === 0) return text.slice(openIndex, i + 1);
+    }
+  }
+  return undefined;
+}
+
+export function webFontLoaderFamilySpecs(html: string): string[] {
+  const specs: string[] = [];
+
+  for (const call of html.matchAll(/WebFont\.load\(/g)) {
+    const openIndex = call.index + call[0].length - 1;
+    const config = extractBalanced(html, openIndex);
+    if (config === undefined) continue;
+
+    const familiesMatch = /google\s*:\s*\{[\s\S]*?families\s*:\s*\[([^\]]*)\]/.exec(config);
+    const familiesList = familiesMatch?.[1];
+    if (familiesList === undefined) continue;
+
+    for (const item of familiesList.matchAll(/["']([^"']+)["']/g)) {
+      const family = item[1];
+      if (family !== undefined) specs.push(family);
+    }
+  }
+
+  return specs;
+}
+
+export function googleFontsCssUrl(familySpecs: readonly string[]): string {
+  const familyParam = familySpecs.map((spec) => spec.replace(/\s+/g, "+")).join("|");
+  return `https://fonts.googleapis.com/css?family=${familyParam}`;
+}
+
 export async function fetchProviderFontFaces(client: FetchClient, urls: readonly string[]): Promise<ParsedFace[]> {
   const faces: ParsedFace[] = [];
 

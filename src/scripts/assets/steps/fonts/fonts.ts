@@ -10,7 +10,13 @@ import { loadRunConfig } from "#run-config/load.ts";
 import { ASSETS_FONTS_STEP_ID } from "../../constants/ids.ts";
 
 import { buildFontFamilies, type ParsedFace } from "./build-font-families.ts";
-import { fetchProviderFontFaces, parseFontFaces, providerStylesheetUrls } from "./parse-font-faces.ts";
+import {
+  fetchProviderFontFaces,
+  googleFontsCssUrl,
+  parseFontFaces,
+  providerStylesheetUrls,
+  webFontLoaderFamilySpecs,
+} from "./parse-font-faces.ts";
 
 export async function runFonts(projectPath: string, force: boolean): Promise<void> {
   const runConfig = await loadRunConfig(projectPath);
@@ -37,6 +43,7 @@ export async function runFonts(projectPath: string, force: boolean): Promise<voi
       const faces: ParsedFace[] = [];
       const providerUrls = new Set<string>();
       const providerHosts = new Set<string>();
+      const webFontLoaderFamilies = new Set<string>();
 
       for (const page of pages.pages) {
         const entry = store.get(new URL(page.route, origin).toString());
@@ -53,6 +60,15 @@ export async function runFonts(projectPath: string, force: boolean): Promise<voi
             continue;
           }
         }
+
+        for (const spec of webFontLoaderFamilySpecs(html)) {
+          webFontLoaderFamilies.add(spec);
+        }
+      }
+
+      if (webFontLoaderFamilies.size > 0) {
+        providerUrls.add(googleFontsCssUrl([...webFontLoaderFamilies]));
+        providerHosts.add("fonts.googleapis.com");
       }
 
       for (const entry of store.entries().filter((candidate) => candidate.kind === "style")) {
