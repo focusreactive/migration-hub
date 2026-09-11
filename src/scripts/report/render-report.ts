@@ -225,6 +225,7 @@ export function renderReport(input: ReportInput): string {
   );
 
   sections.push("## Migrate this site");
+  sections.push("You can use the following public FocusReactive tools as a demo of this migration:");
   sections.push(
     table(
       ["Target", "Tool"],
@@ -232,8 +233,20 @@ export function renderReport(input: ReportInput): string {
     ),
   );
 
+  sections.push("## 🚀 Need a full migration?");
   sections.push(
-    `Want this migration done for you? [Get a free migration consultation](${CONSULTATION_URL}) or write to ${CONTACT_EMAIL}.`,
+    "This pipeline is maintained by [FocusReactive](https://focusreactive.com) — a specialized Next.js and Headless CMS migration agency. We help enterprise businesses migrate from legacy monoliths and visual builders like Webflow and Framer to modern stacks such as Sanity, Payload CMS, Storyblok, and MedusaJS.",
+  );
+  sections.push("### Why FocusReactive?");
+  sections.push(
+    [
+      "- **Expertise:** Verified Sanity, Payload, and Storyblok partners.",
+      "- **Speed:** We use our proprietary [CMS Kit](https://github.com/focusreactive/cms-kit) to speed up migrations by 40%.",
+      "- **SEO & Performance:** Zero downtime migrations with 100/100 Lighthouse scores.",
+    ].join("\n"),
+  );
+  sections.push(
+    `👉 **[Get a Free Migration Consultation](${CONSULTATION_URL})** or contact us at ${CONTACT_EMAIL}.`,
   );
 
   return `${sections.join("\n\n")}\n`;
