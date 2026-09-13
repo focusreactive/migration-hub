@@ -1,1 +1,16 @@
-export const REPORT_STEP_ID = "report";
+export const REPORT_STEP_PREFIX = "report";
+
+export const REPORT_NARRATIVE_SCHEMA_STEP_ID = `${REPORT_STEP_PREFIX}:narrative:schema` as const;
+export const REPORT_NARRATIVE_SUBJECT_STEP_ID = `${REPORT_STEP_PREFIX}:narrative:subject` as const;
+export const REPORT_NARRATIVE_JUDGE_STEP_ID = `${REPORT_STEP_PREFIX}:narrative:judge` as const;
+export const REPORT_NARRATIVE_ACCEPT_STEP_ID = `${REPORT_STEP_PREFIX}:narrative:accept` as const;
+
+export const REPORT_STEP_ID = REPORT_STEP_PREFIX;
+
+export const REPORT_STEP_IDS = [
+  REPORT_NARRATIVE_SCHEMA_STEP_ID,
+  REPORT_NARRATIVE_SUBJECT_STEP_ID,
+  REPORT_NARRATIVE_JUDGE_STEP_ID,
+  REPORT_NARRATIVE_ACCEPT_STEP_ID,
+  REPORT_STEP_ID,
+] as const;
