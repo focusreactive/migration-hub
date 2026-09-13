@@ -7,7 +7,7 @@
     },
     "workspace": {
       "default": {
-        "path": "../estimates"
+        "path": "../assessments"
       },
       "type": "object",
       "properties": {
@@ -49,7 +49,7 @@
           "maximum": 9007199254740991
         },
         "userAgent": {
-          "default": "FocusReactiveEstimator/0.1 (+https://focusreactive.com)",
+          "default": "FocusReactiveAssessment/0.1 (+https://focusreactive.com)",
           "type": "string"
         }
       },

@@ -5,7 +5,7 @@ registries (`src/scripts/detect/signals/{webflow,framer}.ts`) and writing a
 verdict. One script, one step (`detect`).
 
 Entered once `probe` is `done` (see `phases/probe/PHASE.md`). Every state
-change runs the script — never write `.estimate/*` by hand.
+change runs the script — never write `.assessment/*` by hand.
 
 ## Step 1 · detect (script, manifest step `detect`)
 
@@ -26,13 +26,13 @@ shape. Pass `--force` to rescore — only useful if `probe` was re-run with
 
 ## Step 2 · if the verdict is not `webflow` or `framer`, stop
 
-This tool estimates Webflow and Framer migrations and nothing else. A verdict
+This tool assesses Webflow and Framer migrations and nothing else. A verdict
 of `unknown` (neither platform scored high enough with a strong signal) or
 `ambiguous` (the winner didn't clear the runner-up by enough of a margin) ends
 the run the same way: every phase after `inventory` resolves the adapter from
 this verdict and refuses to run on anything else.
 
-Read (do not write) `<projectPath>/.estimate/artifacts/detect.json`. Shape:
+Read (do not write) `<projectPath>/.assessment/artifacts/detect.json`. Shape:
 `{verdict, scores: {webflow: {score, hasTier1Strong, signals: [{id, tier,
 evidence}]}, framer: {…}}, thresholds, platformHints}`. For both platforms,
 show the top signals from `scores.<platform>.signals` ordered strong → medium

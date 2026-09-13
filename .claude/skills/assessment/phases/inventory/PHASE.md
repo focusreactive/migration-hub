@@ -7,7 +7,7 @@ classified into static pages and CMS collection items. One script, one step
 
 Entered once `detect` has resolved to `webflow` or `framer` (see
 `phases/detect/PHASE.md`). Every state change runs the script — never write
-`.estimate/*` by hand.
+`.assessment/*` by hand.
 
 ## Step 1 · inventory (script, manifest step `inventory`)
 
@@ -36,7 +36,7 @@ Pass `--force` to recrawl, which you want after a forced `probe` re-run.
 
 ## Verify
 
-Read `<projectPath>/.estimate/manifest.json`: `steps["inventory"].status` is
-`"done"`. Read `<projectPath>/.estimate/artifacts/pages.json`:
+Read `<projectPath>/.assessment/manifest.json`: `steps["inventory"].status` is
+`"done"`. Read `<projectPath>/.assessment/artifacts/pages.json`:
 `{pages: [...], collections: [...]}` — every phase from here on reads this
 artifact instead of crawling again.

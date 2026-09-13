@@ -4,7 +4,7 @@ import { collectSitemapUrls } from "#adapters/shared/sitemap-collect.ts";
 import { artifactPath, readArtifact, writeArtifact } from "#ir/artifact.ts";
 import { detectArtifact } from "#ir/detect.ts";
 import { pagesArtifact, type PagesData } from "#ir/pages.ts";
-import { loadEstimateConfig } from "#lib/estimate-config/index.ts";
+import { loadAssessmentConfig } from "#lib/assessment-config/index.ts";
 import { createFetchClient } from "#lib/fetch/create-fetch-client/index.ts";
 import { extractStylesheetHrefs } from "#lib/html.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
@@ -41,7 +41,7 @@ async function mirrorStylesheets(store: MirrorStore): Promise<void> {
 
 export async function runInventory(projectPath: string, force: boolean): Promise<void> {
   const runConfig = await loadRunConfig(projectPath);
-  const config = loadEstimateConfig();
+  const config = loadAssessmentConfig();
 
   const client = createFetchClient({
     concurrency: config.crawl.concurrency,

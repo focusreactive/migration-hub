@@ -1,9 +1,9 @@
 import { join } from "node:path";
 
-import { ESTIMATE_DIR } from "#ir/artifact.ts";
+import { ASSESSMENT_DIR } from "#ir/artifact.ts";
 
-const SECTIONS_STEP_DIR = join(ESTIMATE_DIR, "steps", "discovery", "sections");
-const DEDUP_STEP_DIR = join(ESTIMATE_DIR, "steps", "discovery", "dedup");
+const SECTIONS_STEP_DIR = join(ASSESSMENT_DIR, "steps", "discovery", "sections");
+const DEDUP_STEP_DIR = join(ASSESSMENT_DIR, "steps", "discovery", "dedup");
 
 export function sectionsResponseRelativePath(routeKey: string): string {
   return join(SECTIONS_STEP_DIR, `${routeKey}.response.json`);

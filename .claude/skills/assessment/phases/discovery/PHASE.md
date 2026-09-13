@@ -31,7 +31,7 @@ Both judgements share one shape: a subagent runs the schema step, runs the
 subject step, writes its answer to the path the subject printed, and runs
 acceptance itself until acceptance passes. `accept` writes **only** the
 artifact it validates into — an unvalidated answer never reaches
-`.estimate/artifacts/`. Exit `0` writes the artifact (and, for `sections`,
+`.assessment/artifacts/`. Exit `0` writes the artifact (and, for `sections`,
 the per-route shard) and marks the relevant steps; exit `1` prints **every**
 error at once as `{"ok":false,"errors":[…]}` and writes nothing.
 
@@ -212,7 +212,7 @@ All nine rows `done`. `discovery:sections:judge` and `discovery:dedup:judge`
 are marked by their respective `accept` step, never on their own — there is
 no separate `judge` command.
 
-Under `<projectPath>/.estimate/artifacts/discovery/`:
+Under `<projectPath>/.assessment/artifacts/discovery/`:
 
 | path              | holds                                                                             |
 | ----------------- | ---------------------------------------------------------------------------------- |

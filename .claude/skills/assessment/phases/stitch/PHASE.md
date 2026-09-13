@@ -4,7 +4,7 @@ Rendering every route `discovery` needs visual evidence for as a full-page
 desktop screenshot. One script, one step (`stitch`).
 
 Entered once `inventory` is `done`. Every state change runs the script —
-never write `.estimate/*` by hand.
+never write `.assessment/*` by hand.
 
 ## Step 1 · stitch (script, manifest step `stitch`)
 
@@ -25,7 +25,7 @@ one screenshot stands in for the whole collection; the other items are never
 captured. Report `routes` (size of this combined set) and `captured` (how many
 screenshots this run actually took). Each route is opened with Playwright at a
 single 1440×900 desktop viewport and rendered full-page to
-`.estimate/artifacts/stitch/<routeKey>/desktop.png`. A route whose PNG already
+`.assessment/artifacts/stitch/<routeKey>/desktop.png`. A route whose PNG already
 exists is skipped even without `--force` being passed, so a partially
 completed run resumes route by route, not just phase by phase.
 
@@ -37,9 +37,9 @@ route, which you want after the site itself changed or after a forced
 
 ## Verify
 
-Read `<projectPath>/.estimate/manifest.json`: `steps["stitch"].status` is
+Read `<projectPath>/.assessment/manifest.json`: `steps["stitch"].status` is
 `"done"`. For every route in the capture set (every static route in
-`<projectPath>/.estimate/artifacts/pages.json`, plus one item route per
-collection), `<projectPath>/.estimate/artifacts/stitch/<routeKey>/desktop.png`
+`<projectPath>/.assessment/artifacts/pages.json`, plus one item route per
+collection), `<projectPath>/.assessment/artifacts/stitch/<routeKey>/desktop.png`
 exists — the `discovery` subject step prints this path without checking it,
 so a missing PNG only surfaces when the subagent tries to read it.

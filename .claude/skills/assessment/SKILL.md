@@ -1,19 +1,19 @@
 ---
-name: estimate
-description: Estimate a Webflow or Framer site migration. Use when the user asks how big a migration is, or to resume an existing estimate.
+name: assessment
+description: Assess a Webflow or Framer site migration. Use when the user asks how big a migration is, or to resume an existing assessment.
 ---
 
-# /estimate
+# /assessment
 
-This skill **drives the estimator pipeline directly**: it resolves project
-state by reading `.estimate/`, then runs each phase's script in a fixed order.
+This skill **drives the assessment pipeline directly**: it resolves project
+state by reading `.assessment/`, then runs each phase's script in a fixed order.
 
 ## Hard rule: scripts own writes, the skill owns orchestration
 
 - The skill **reads** state directly with the Read tool:
-  `.estimate/manifest.json` and `.estimate/artifacts/**/*.json`. These are the
+  `.assessment/manifest.json` and `.assessment/artifacts/**/*.json`. These are the
   source of truth.
-- The skill **never writes** under `.estimate/` by hand. Every state change
+- The skill **never writes** under `.assessment/` by hand. Every state change
   runs a real script (`src/scripts/**/index.ts`) via Bash, invoked as
   `pnpm tsx src/scripts/<phase>/index.ts`.
 - If a script fails, the fix is another script run with better input — never a
@@ -21,11 +21,11 @@ state by reading `.estimate/`, then runs each phase's script in a fixed order.
 
 ## Hard rule: the tool repo is read-only
 
-An estimate run **never modifies this repository**. Not `src/`, not `tests/`,
-not configs (`package.json`, `estimate.config.json`), not `docs/`, not this
+An assessment run **never modifies this repository**. Not `src/`, not `tests/`,
+not configs (`package.json`, `assessment.config.json`), not `docs/`, not this
 skill. No edits, no new files, no `git` subcommand that touches the tree. A run
 writes only into `<workspace>/<project-name>`, where `<workspace>` is
-`estimate.config.json`'s `workspace.path`. Read the tool source as much as you
+`assessment.config.json`'s `workspace.path`. Read the tool source as much as you
 like — write nothing outside the project path.
 
 ## The pipeline
@@ -58,7 +58,7 @@ phase doc.
 resolves the project and creates it (see its phase doc); there is no separate
 prepare/init split here, and no step ahead of the pipeline table to special-case.
 
-Read `.estimate/manifest.json`'s `steps` object
+Read `.assessment/manifest.json`'s `steps` object
 (`{ [stepId]: { status, error? } }`, status one of
 `pending`/`running`/`done`/`failed` — no script ever writes `skipped` into the
 manifest). Walk "The pipeline" table in order; the first phase whose step(s)

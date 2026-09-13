@@ -1,0 +1,4 @@
+{
+  "$schema": "./schemas/assessment.config.schema.json",
+  "workspace": { "path": "../assessments" }
+}

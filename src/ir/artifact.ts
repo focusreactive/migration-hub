@@ -5,9 +5,9 @@ import { z } from "zod";
 
 import { writeFileAtomic } from "#lib/fs.ts";
 
-export const ESTIMATE_DIR = ".estimate";
+export const ASSESSMENT_DIR = ".assessment";
 
-const ARTIFACTS_DIR = join(ESTIMATE_DIR, "artifacts");
+const ARTIFACTS_DIR = join(ASSESSMENT_DIR, "artifacts");
 
 export interface ArtifactDef<D> {
   kind: string;

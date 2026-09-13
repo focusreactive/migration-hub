@@ -1,15 +1,15 @@
 import { z } from "zod";
 
-export const estimateConfigSchema = z.strictObject({
+export const assessmentConfigSchema = z.strictObject({
   $schema: z.string().optional(),
-  workspace: z.strictObject({ path: z.string() }).prefault({ path: "../estimates" }),
+  workspace: z.strictObject({ path: z.string() }).prefault({ path: "../assessments" }),
   crawl: z
     .strictObject({
       maxPages: z.number().int().positive().default(5000),
       concurrency: z.number().int().positive().default(4),
       requestDelayMs: z.number().int().nonnegative().default(250),
       timeoutMs: z.number().int().positive().default(30_000),
-      userAgent: z.string().default("FocusReactiveEstimator/0.1 (+https://focusreactive.com)"),
+      userAgent: z.string().default("FocusReactiveAssessment/0.1 (+https://focusreactive.com)"),
     })
     .prefault({}),
   stitch: z
@@ -22,4 +22,4 @@ export const estimateConfigSchema = z.strictObject({
     .prefault({}),
 });
 
-export type EstimateConfig = z.infer<typeof estimateConfigSchema>;
+export type AssessmentConfig = z.infer<typeof assessmentConfigSchema>;

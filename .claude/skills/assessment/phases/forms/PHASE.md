@@ -6,7 +6,7 @@ number. One script, one step (`forms`).
 
 Entered once `inventory` is `done`. Does not depend on `assets`; the two
 phases can run in either order. Every state change runs the script — never
-write `.estimate/*` by hand.
+write `.assessment/*` by hand.
 
 ## Step 1 · forms (script, manifest step `forms`)
 
@@ -34,7 +34,7 @@ nothing and exits 0. Pass `--force` to rescan, which you want after a forced
 
 ## Verify
 
-Read `<projectPath>/.estimate/manifest.json`: `steps["forms"].status` is
-`"done"`. Read `<projectPath>/.estimate/artifacts/forms.json`:
+Read `<projectPath>/.assessment/manifest.json`: `steps["forms"].status` is
+`"done"`. Read `<projectPath>/.assessment/artifacts/forms.json`:
 `{forms: [{route, name, action, method, fieldCount, fields: [{name, type,
 required}]}]}`.

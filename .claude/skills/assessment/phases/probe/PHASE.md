@@ -5,7 +5,7 @@ and a 404 page. Everything the next phase judges the platform on comes from
 here. One script, one step (`probe`).
 
 Entered once `init-project` is `done`. Every state change runs the script —
-never write `.estimate/*` by hand.
+never write `.assessment/*` by hand.
 
 ## Step 1 · probe (script, manifest step `probe`)
 
@@ -40,10 +40,10 @@ the source site itself has changed since the last run.
 
 ## Verify
 
-Read `<projectPath>/.estimate/manifest.json`: `steps["probe"].status` is
+Read `<projectPath>/.assessment/manifest.json`: `steps["probe"].status` is
 `"done"`.
 
-Under `<projectPath>/.estimate/mirror/probe/` there are up to five files:
+Under `<projectPath>/.assessment/mirror/probe/` there are up to five files:
 
 | file             | holds                                          |
 | ---------------- | ----------------------------------------------- |

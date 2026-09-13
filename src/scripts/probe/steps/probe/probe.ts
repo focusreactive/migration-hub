@@ -1,5 +1,5 @@
 import { createFetchClient } from "#lib/fetch/create-fetch-client/index.ts";
-import { loadEstimateConfig } from "#lib/estimate-config/index.ts";
+import { loadAssessmentConfig } from "#lib/assessment-config/index.ts";
 import { readManifest, withStep } from "#lib/manifest/index.ts";
 import { openMirrorStore } from "#lib/mirror-store/index.ts";
 import { loadRunConfig } from "#run-config/load.ts";
@@ -10,7 +10,7 @@ import { probeSite } from "./probe-site.ts";
 
 export async function runProbe(projectPath: string, force: boolean): Promise<void> {
   const runConfig = await loadRunConfig(projectPath);
-  const config = loadEstimateConfig();
+  const config = loadAssessmentConfig();
 
   const client = createFetchClient({
     concurrency: config.crawl.concurrency,

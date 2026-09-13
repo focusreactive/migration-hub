@@ -4,7 +4,7 @@ Building the site's asset inventory: every image and video it references, and
 every font family it uses. Two independent sub-steps, one script.
 
 Entered once `inventory` is `done`. Every state change runs the script —
-never write `.estimate/*` by hand.
+never write `.assessment/*` by hand.
 
 ## Step 1 · media (script, manifest step `assets:media`)
 
@@ -65,13 +65,13 @@ finish the phase.
 
 ## Verify
 
-Read `<projectPath>/.estimate/manifest.json`: `steps["assets:media"].status`
+Read `<projectPath>/.assessment/manifest.json`: `steps["assets:media"].status`
 and `steps["assets:fonts"].status` are both `"done"`.
 
-Read `<projectPath>/.estimate/artifacts/assets/media.json`:
+Read `<projectPath>/.assessment/artifacts/assets/media.json`:
 `{assets: [{assetId, canonicalUrl, kind, contentType, etag, sources,
 duplicateOf}]}` — `duplicateOf` is the asset id of the original when this
 record is a recognized duplicate, otherwise `null`.
 
-Read `<projectPath>/.estimate/artifacts/assets/fonts.json`:
+Read `<projectPath>/.assessment/artifacts/assets/fonts.json`:
 `{families: [{family, weights, styles, classification, sources}]}`.

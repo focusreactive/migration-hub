@@ -1,7 +1,7 @@
 import { artifactPath, readArtifact, writeArtifact } from "#ir/artifact.ts";
 import { fontFamiliesArtifact, type FontFamiliesData } from "#ir/assets.ts";
 import { pagesArtifact } from "#ir/pages.ts";
-import { loadEstimateConfig } from "#lib/estimate-config/index.ts";
+import { loadAssessmentConfig } from "#lib/assessment-config/index.ts";
 import { createFetchClient } from "#lib/fetch/create-fetch-client/index.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
 import { openMirrorStore, readOnlyClient } from "#lib/mirror-store/index.ts";
@@ -20,7 +20,7 @@ import {
 
 export async function runFonts(projectPath: string, force: boolean): Promise<void> {
   const runConfig = await loadRunConfig(projectPath);
-  const config = loadEstimateConfig();
+  const config = loadAssessmentConfig();
 
   const store = await openMirrorStore(projectPath, readOnlyClient());
   const client = createFetchClient({

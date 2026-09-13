@@ -134,7 +134,7 @@ export function renderReport(input: ReportInput): string {
 
   const sections: string[] = [];
 
-  sections.push(`# Migration estimate — ${new URL(input.sourceUrl).hostname}`);
+  sections.push(`# Migration assessment — ${new URL(input.sourceUrl).hostname}`);
   sections.push(`Source CMS: **${SOURCE_LABEL[input.verdict]}**`);
 
   sections.push("## Scope");

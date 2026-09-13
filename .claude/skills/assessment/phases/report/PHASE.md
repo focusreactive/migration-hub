@@ -6,7 +6,7 @@ last phase — running it is how the skill knows the pipeline is complete.
 
 Entered once `inventory`, `assets` (`assets:media` and `assets:fonts`),
 `forms`, `stitch` and `discovery` are all `done`. Every state change runs the
-script — never write `.estimate/*` or `report.md` by hand.
+script — never write `.assessment/*` or `report.md` by hand.
 
 ## Step 1 · report (script, manifest step `report`)
 
@@ -38,7 +38,7 @@ phase with `--force` and wanting the report to reflect it.
 
 ## Verify
 
-Read `<projectPath>/.estimate/manifest.json`: `steps["report"].status` is
+Read `<projectPath>/.assessment/manifest.json`: `steps["report"].status` is
 `"done"`. `<projectPath>/report.md` exists and opens as plain markdown — hand
 its path back to the user as the deliverable. This is the last phase in the
-table in `SKILL.md`; once it reports `done`, the estimate is finished.
+table in `SKILL.md`; once it reports `done`, the assessment is finished.
