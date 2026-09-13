@@ -1,85 +1,21 @@
-import type { FontFamiliesData, MediaAssetsData } from "#ir/assets.ts";
-import type { DiscoveryBlocksData, DiscoveryContentKind, DiscoveryTypesData } from "#ir/discovery.ts";
-import type { FormField, FormRecord, FormsData } from "#ir/forms.ts";
+import type { MediaAssetsData } from "#ir/assets.ts";
+import type { DiscoveryContentKind } from "#ir/discovery.ts";
+import type { FormField } from "#ir/forms.ts";
 import type { PagesData } from "#ir/pages.ts";
 
+import { distinctForms, type DistinctForm } from "./analysis/distinct-forms.ts";
+import { KIND_LABEL, SOURCE_LABEL } from "./constants/labels.ts";
 import { CONSULTATION_URL, CONTACT_EMAIL, TOOLS_BY_SOURCE } from "./constants/tools.ts";
+import type { ReportInput } from "./types.ts";
 import { collectionNameFromRoutePattern } from "./utils/collection-name.ts";
 import { pageLabel } from "./utils/page-label.ts";
 
-export interface ReportInput {
-  sourceUrl: string;
-  verdict: "webflow" | "framer";
-  pages: PagesData;
-  media: MediaAssetsData;
-  fonts: FontFamiliesData;
-  forms: FormsData;
-  blocks: DiscoveryBlocksData;
-  globals: DiscoveryTypesData;
-}
+export type { ReportInput };
 
-interface DistinctForm {
-  name: string | null;
-  action: string | null;
-  method: string;
-  fieldCount: number;
-  fields: FormField[];
-  routes: string[];
-}
-
-const SOURCE_LABEL: Record<"webflow" | "framer", string> = { webflow: "Webflow", framer: "Framer" };
-const KIND_LABEL: Record<DiscoveryContentKind, string> = { block: "Block", collectionSection: "Collection section" };
 const MAX_LABEL_FIELDS = 5;
 
 function countMedia(media: MediaAssetsData, kind: "image" | "video"): number {
   return media.assets.filter((asset) => asset.kind === kind && asset.duplicateOf === null).length;
-}
-
-function formSignature(form: FormRecord): string {
-  return JSON.stringify([form.name, form.action, form.method, form.fields]);
-}
-
-function compareForms(a: DistinctForm, b: DistinctForm): number {
-  const aName = a.name ?? "";
-  const bName = b.name ?? "";
-  if (aName !== bName) return aName < bName ? -1 : 1;
-
-  const aAction = a.action ?? "";
-  const bAction = b.action ?? "";
-  if (aAction !== bAction) return aAction < bAction ? -1 : 1;
-
-  if (a.method !== b.method) return a.method < b.method ? -1 : 1;
-
-  if (a.fieldCount !== b.fieldCount) return a.fieldCount - b.fieldCount;
-
-  const aRoute = a.routes[0] ?? "";
-  const bRoute = b.routes[0] ?? "";
-  if (aRoute !== bRoute) return aRoute < bRoute ? -1 : 1;
-
-  return 0;
-}
-
-function distinctForms(forms: FormRecord[]): DistinctForm[] {
-  const groups = new Map<string, DistinctForm>();
-
-  for (const form of forms) {
-    const signature = formSignature(form);
-    const existing = groups.get(signature);
-    if (existing === undefined) {
-      groups.set(signature, {
-        name: form.name,
-        action: form.action,
-        method: form.method,
-        fieldCount: form.fieldCount,
-        fields: form.fields,
-        routes: [form.route],
-      });
-    } else {
-      existing.routes.push(form.route);
-    }
-  }
-
-  return [...groups.values()].map((group) => ({ ...group, routes: [...group.routes].sort() })).sort(compareForms);
 }
 
 function namedFieldNames(fields: FormField[]): string[] {
