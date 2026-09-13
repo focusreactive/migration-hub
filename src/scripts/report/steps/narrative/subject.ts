@@ -43,7 +43,7 @@ export async function narrativeSubject(projectPath: string): Promise<NarrativeSu
     readArtifact(projectPath, discoveryGlobalsArtifact),
   ]);
 
-  const input: ReportInput = {
+  const input: Omit<ReportInput, "narrative"> = {
     sourceUrl: runConfig.sourceUrl,
     verdict: detect.verdict,
     pages,

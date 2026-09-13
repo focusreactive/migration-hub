@@ -5,6 +5,7 @@ import { fontFamiliesArtifact, mediaAssetsArtifact } from "#ir/assets.ts";
 import { detectArtifact } from "#ir/detect.ts";
 import { discoveryBlocksArtifact, discoveryGlobalsArtifact } from "#ir/discovery.ts";
 import { formsArtifact } from "#ir/forms.ts";
+import { narrativeArtifact } from "#ir/narrative.ts";
 import { pagesArtifact } from "#ir/pages.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
@@ -34,13 +35,14 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
         );
       }
 
-      const [pages, media, fonts, forms, blocks, globals] = await Promise.all([
+      const [pages, media, fonts, forms, blocks, globals, narrative] = await Promise.all([
         readArtifact(projectPath, pagesArtifact),
         readArtifact(projectPath, mediaAssetsArtifact),
         readArtifact(projectPath, fontFamiliesArtifact),
         readArtifact(projectPath, formsArtifact),
         readArtifact(projectPath, discoveryBlocksArtifact),
         readArtifact(projectPath, discoveryGlobalsArtifact),
+        readArtifact(projectPath, narrativeArtifact),
       ]);
 
       const input: ReportInput = {
@@ -52,6 +54,7 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
         forms,
         blocks,
         globals,
+        narrative,
       };
 
       const path = reportPath(projectPath);

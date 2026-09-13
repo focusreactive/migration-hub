@@ -41,7 +41,7 @@ function hostOf(url: string): string | undefined {
   }
 }
 
-export function computeMetrics(input: ReportInput): ReportMetrics {
+export function computeMetrics(input: Omit<ReportInput, "narrative">): ReportMetrics {
   const unique = uniqueAssets(input.media);
   const images = unique.filter((asset) => asset.kind === "image");
   const forms = distinctForms(input.forms.forms);

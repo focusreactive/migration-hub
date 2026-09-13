@@ -4,6 +4,7 @@ export function reportInput(overrides: Partial<ReportInput> = {}): ReportInput {
   return {
     sourceUrl: "https://example.webflow.io/",
     verdict: "webflow",
+    narrative: { site: "Example is a marketing site.", design: "The design is quiet." },
     pages: {
       pages: [
         { route: "/", kind: "static" },
