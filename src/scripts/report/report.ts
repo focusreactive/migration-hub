@@ -5,7 +5,7 @@ import { fontFamiliesArtifact, mediaAssetsArtifact } from "#ir/assets.ts";
 import { detectArtifact } from "#ir/detect.ts";
 import { discoveryBlocksArtifact, discoveryGlobalsArtifact } from "#ir/discovery.ts";
 import { formsArtifact } from "#ir/forms.ts";
-import { narrativeArtifact } from "#ir/narrative.ts";
+import { narrativeArtifact, type NarrativeData } from "#ir/narrative.ts";
 import { pagesArtifact } from "#ir/pages.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
@@ -16,6 +16,19 @@ import { renderReport, type ReportInput } from "./render-report.ts";
 
 function reportPath(projectPath: string): string {
   return join(projectPath, "report.md");
+}
+
+async function readNarrative(projectPath: string): Promise<NarrativeData> {
+  try {
+    return await readArtifact(projectPath, narrativeArtifact);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+
+    throw new Error(
+      `The report needs ${narrativeArtifact.relativePath}, which has not been written yet. Run the narrative step first: --narrative-subject to get the subject, then --narrative-accept once the response is written.`,
+      { cause: error },
+    );
+  }
 }
 
 export async function runReport(projectPath: string, force: boolean): Promise<void> {
@@ -42,7 +55,7 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
         readArtifact(projectPath, formsArtifact),
         readArtifact(projectPath, discoveryBlocksArtifact),
         readArtifact(projectPath, discoveryGlobalsArtifact),
-        readArtifact(projectPath, narrativeArtifact),
+        readNarrative(projectPath),
       ]);
 
       const input: ReportInput = {

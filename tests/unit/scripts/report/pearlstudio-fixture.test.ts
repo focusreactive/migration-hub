@@ -49,7 +49,7 @@ describe("renderReport against the pearlstudio fixture artifacts", () => {
     expect(markdown).toContain("| Header | 3 |");
     expect(markdown).toMatch(/\| Forms \| 2 \|/);
 
-    expect(markdown).toContain("| Name, Email, company | 3 (Name, Email, company) |");
+    expect(markdown).toContain("| Name, Email, company | 3 (`Name`, `Email`, `company`) |");
     expect(markdown).toContain("## How the migration runs");
     expect(markdown).toContain("| Byline | 1 | Journal (collection template) | Collection section |");
   });

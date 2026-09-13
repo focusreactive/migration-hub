@@ -70,16 +70,33 @@ pnpm tsx src/scripts/report/index.ts --project <projectPath> [--force]
 { "step": "report", "status": "done" | "skipped", "reportPath": "…/report.md" }
 ```
 
+**Run Step 1 first.** `report/narrative.json` is a hard input, not an
+optional one: with it missing the script stops with a message naming the
+narrative step and writes no `report.md`.
+
 Reads `detect.json`, `pages.json`, `assets/media.json`, `assets/fonts.json`,
-`forms.json`, `discovery/blocks.json` and `discovery/globals.json`, and
-renders them into `<projectPath>/report.md`: page and collection counts,
-media and font counts, the distinct-form list, and the block/global
-inventory with its instance counts — including, per block, whether it was
-found on a page-builder page, inside a CMS collection template, or both
-(`kinds`, see `phases/discovery/PHASE.md`). The script refuses to run if
-`detect.json`'s verdict is not `webflow` or `framer` — which cannot happen if
-`phases/detect/PHASE.md` was followed, since the pipeline never reaches
-`inventory` on any other verdict.
+`forms.json`, `discovery/blocks.json`, `discovery/globals.json` and
+`report/narrative.json`, and renders them into `<projectPath>/report.md`.
+The report opens with the two narrative paragraphs from Step 1, then a
+Scope-at-a-glance table of the page, collection, section, global, media,
+font and form counts; a complexity assessment rating five areas (content
+model, page composition, design system & assets, forms & integrations,
+content volume) Low/Medium/High from those counts, each with a paragraph
+derived from the same numbers; the content-model, page-builder-page,
+section-library, globals, forms and media inventories — including, per
+block, whether it was found on a page-builder page, inside a CMS collection
+template, or both (`kinds`, see `phases/discovery/PHASE.md`); a
+risks-and-watch-outs list assembled from rules over those counts (form
+handling, asset hosting, alt text, utility-page sections, dual-source
+sections, interactions, inferred fields, redirects — each rule fires only
+when its condition holds); the five migration steps; the tooling links for
+the detected platform; and the agency close.
+
+Every number and value in the file is derived from an artifact — the script
+never invents a reading, so a surprising sentence means a surprising
+artifact. The script refuses to run if `detect.json`'s verdict is not
+`webflow` or `framer` — which cannot happen if `phases/detect/PHASE.md` was
+followed, since the pipeline never reaches `inventory` on any other verdict.
 
 **Repeating is safe.** On a project where the step is already `done` the
 script prints `{"step":"report","status":"skipped","reportPath":"…"}` and

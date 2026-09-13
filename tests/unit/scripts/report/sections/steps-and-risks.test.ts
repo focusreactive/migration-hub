@@ -46,6 +46,26 @@ describe("migrationStepsSection", () => {
     expect(md).not.toContain("0 collection templates");
   });
 
+  it("keeps the route sentences singular on a single-route site", () => {
+    const md = migrationStepsSection({ ...METRICS, routes: 1, staticPages: 1, collections: 0, entries: 0 });
+
+    expect(md).toContain("**Page discovery.** The one published route is a page-builder page.");
+    expect(md).toContain(
+      "The content model is derived from the page structures first, then the content of the one route is "
+        + "extracted against it.",
+    );
+    expect(md).not.toContain("All 1 published routes");
+    expect(md).not.toContain("all 1 routes");
+  });
+
+  it("keeps the route sentences singular when the single route comes from a collection", () => {
+    const md = migrationStepsSection({ ...METRICS, routes: 1, staticPages: 0, collections: 1, entries: 1 });
+
+    expect(md).toContain("**Page discovery.** The one published route is split into one collection template.");
+    expect(md).toContain("the one collection entry and the content of the one route are extracted against it.");
+    expect(md).not.toContain("All 1 published routes");
+  });
+
   it("mentions videos only when the site has them", () => {
     expect(migrationStepsSection({ ...METRICS, videos: 3 })).toContain("and 3 videos");
     expect(migrationStepsSection(METRICS)).not.toContain("videos");

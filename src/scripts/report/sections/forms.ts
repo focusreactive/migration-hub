@@ -28,7 +28,7 @@ function fieldsCell(form: DistinctForm): string {
     return `${form.fieldCount} (\`${field.name}\`${field.required ? ", required" : ""})`;
   }
 
-  const names = named.join(", ");
+  const names = named.map((name) => `\`${name}\``).join(", ");
   const allRequired = form.fields.every((field) => field.required);
   return `${form.fieldCount} (${names}${allRequired ? " — all required" : ""})`;
 }

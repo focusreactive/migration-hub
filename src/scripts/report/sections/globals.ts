@@ -1,34 +1,9 @@
+import { coverageOf, coveredPages, isFullCoverage, totalPages, type GlobalCoverage } from "../analysis/global-coverage.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
 import { countLabel } from "../utils/count.ts";
 import { table } from "../utils/table.ts";
 import { wordNumber } from "../utils/word-number.ts";
-
-interface GlobalCoverage {
-  staticCovered: number;
-  staticTotal: number;
-  collectionsCovered: number;
-  collectionsTotal: number;
-}
-
-function coverageOf(input: ReportInput, members: { route: string }[]): GlobalCoverage {
-  const memberRoutes = new Set(members.map((member) => member.route));
-  const staticPages = input.pages.pages.filter((page) => page.kind === "static");
-  const staticCovered = staticPages.filter((page) => memberRoutes.has(page.route)).length;
-
-  const collectionsCovered = input.pages.collections.filter((collection) =>
-    input.pages.pages.some(
-      (page) => page.kind === "item" && page.collectionKey === collection.key && memberRoutes.has(page.route),
-    ),
-  ).length;
-
-  return {
-    staticCovered,
-    staticTotal: staticPages.length,
-    collectionsCovered,
-    collectionsTotal: input.pages.collections.length,
-  };
-}
 
 function collectionsClause(total: number): string {
   if (total === 0) return "";
@@ -37,12 +12,27 @@ function collectionsClause(total: number): string {
 }
 
 function appearsOnCell(coverage: GlobalCoverage): string {
-  const { staticCovered, staticTotal, collectionsCovered, collectionsTotal } = coverage;
-  const isFull = staticCovered === staticTotal && collectionsCovered === collectionsTotal;
+  if (isFullCoverage(coverage)) return `every page-builder page${collectionsClause(coverage.collectionsTotal)}`;
 
-  if (isFull) return `every page-builder page${collectionsClause(collectionsTotal)}`;
+  return `${coveredPages(coverage)} of ${totalPages(coverage)} pages`;
+}
 
-  return `${staticCovered + collectionsCovered} of ${staticTotal + collectionsTotal} pages`;
+function leadLine(input: ReportInput, metrics: ReportMetrics): string {
+  const coverages = input.globals.types.map((type) => coverageOf(input, type.members));
+  const subject = countLabel(metrics.globals, "section is", "sections are");
+
+  if (coverages.every((coverage) => isFullCoverage(coverage))) {
+    const collections = coverages[0]?.collectionsTotal ?? 0;
+    return (
+      `${subject} shared rather than placed per page. They wrap every page-builder page`
+      + `${collectionsClause(collections)}, so each is authored once and reused everywhere.`
+    );
+  }
+
+  return (
+    `${subject} shared rather than placed per page, so each is authored once and reused everywhere instead of `
+    + "being rebuilt page by page. The table below says which pages carry each one."
+  );
 }
 
 export function globalsSection(input: ReportInput, metrics: ReportMetrics): string {
@@ -51,8 +41,7 @@ export function globalsSection(input: ReportInput, metrics: ReportMetrics): stri
   return [
     "## Global sections",
     "",
-    `${countLabel(metrics.globals, "section is", "sections are")} shared rather than placed per page. They wrap `
-      + "every page-builder page and every collection template, so each is authored once and reused everywhere.",
+    leadLine(input, metrics),
     "",
     table(
       ["Global", "Instances", "Appears on"],

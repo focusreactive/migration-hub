@@ -5,6 +5,7 @@ import type { ReportMetrics } from "../analysis/metrics.ts";
 import { KIND_LABEL } from "../constants/labels.ts";
 import type { ReportInput } from "../types.ts";
 import { collectionNameFromRoutePattern } from "../utils/collection-name.ts";
+import { countLabel, countWord } from "../utils/count.ts";
 import { table } from "../utils/table.ts";
 
 function collectionNameForItemRoute(pages: PagesData, route: string): string | undefined {
@@ -57,11 +58,15 @@ export function sectionLibrarySection(input: ReportInput, metrics: ReportMetrics
   return [
     "## Section library",
     "",
-    `The pages are built from ${metrics.sectionTypes} distinct section types used ${metrics.sectionInstances} `
-      + `times in total: ${metrics.reusedSectionTypes} types appear more than once, `
-      + `${metrics.singleUseSectionTypes} appear exactly once, ${metrics.dualSourceSectionTypes} are used both as `
-      + `page-builder blocks and inside collection templates, and ${metrics.collectionOnlySectionTypes} exist `
-      + "only inside a collection template.",
+    `The pages are built from ${countLabel(metrics.sectionTypes, "distinct section type", "distinct section types")} `
+      + `used ${metrics.sectionInstances === 1 ? "once" : `${metrics.sectionInstances} times`} in total: `
+      + `${countLabel(metrics.reusedSectionTypes, "type appears", "types appear")} more than once, `
+      + `${countWord(metrics.singleUseSectionTypes)} `
+      + `${metrics.singleUseSectionTypes === 1 ? "appears" : "appear"} exactly once, `
+      + `${countWord(metrics.dualSourceSectionTypes)} `
+      + `${metrics.dualSourceSectionTypes === 1 ? "is" : "are"} used both as page-builder blocks and inside `
+      + `collection templates, and ${countWord(metrics.collectionOnlySectionTypes)} `
+      + `${metrics.collectionOnlySectionTypes === 1 ? "exists" : "exist"} only inside a collection template.`,
     "",
     table(
       ["Section", "Instances", "Where it appears", "Used as"],

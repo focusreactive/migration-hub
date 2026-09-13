@@ -1,19 +1,29 @@
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import { countLabel } from "../utils/count.ts";
 
+function routesSubject(routes: number): string {
+  return routes === 1 ? "The one published route is" : `All ${routes} published routes are`;
+}
+
+function routesPhrase(routes: number): string {
+  return routes === 1 ? "the one route" : `all ${routes} routes`;
+}
+
 function discovery(metrics: ReportMetrics): string {
+  const subject = routesSubject(metrics.routes);
+
   if (metrics.collections === 0) {
-    return `All ${metrics.routes} published routes are page-builder pages.`;
+    return `${subject} ${metrics.routes === 1 ? "a page-builder page" : "page-builder pages"}.`;
   }
 
   const collectionsClause = countLabel(metrics.collections, "collection template", "collection templates");
 
   if (metrics.staticPages === 0) {
-    return `All ${metrics.routes} published routes are split into ${collectionsClause}.`;
+    return `${subject} split into ${collectionsClause}.`;
   }
 
   return (
-    `All ${metrics.routes} published routes are split into `
+    `${subject} split into `
     + `${countLabel(metrics.staticPages, "page-builder page", "page-builder pages")} and `
     + `${collectionsClause}.`
   );
@@ -59,8 +69,8 @@ function assets(metrics: ReportMetrics): string {
 function extraction(metrics: ReportMetrics): string {
   if (metrics.collections === 0) {
     return (
-      "The content model is derived from the page structures first, then the content of all "
-      + `${metrics.routes} routes is extracted against it.`
+      "The content model is derived from the page structures first, then the content of "
+      + `${routesPhrase(metrics.routes)} is extracted against it.`
     );
   }
 
@@ -70,15 +80,15 @@ function extraction(metrics: ReportMetrics): string {
 
   if (metrics.entries === 0) {
     return (
-      `The content model is derived from ${collectionsClause}, then the content of all `
-      + `${metrics.routes} routes is extracted against it.`
+      `The content model is derived from ${collectionsClause}, then the content of `
+      + `${routesPhrase(metrics.routes)} is extracted against it.`
     );
   }
 
   return (
     `The content model is derived from ${collectionsClause}, then the `
     + `${countLabel(metrics.entries, "collection entry", "collection entries")} `
-    + `and the content of all ${metrics.routes} routes are extracted against it.`
+    + `and the content of ${routesPhrase(metrics.routes)} are extracted against it.`
   );
 }
 

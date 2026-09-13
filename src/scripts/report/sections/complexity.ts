@@ -6,7 +6,7 @@ import { table } from "../utils/table.ts";
 
 export function complexitySection(areas: ComplexityArea[], input: ReportInput, metrics: ReportMetrics): string {
   const paragraphs = areas.map(
-    (area) => `**${area.label}.** ${COMPLEXITY_PARAGRAPHS[area.id](metrics, input)}`,
+    (area) => `**${area.label}.** ${COMPLEXITY_PARAGRAPHS[area.id](metrics, input, area.rating)}`,
   );
 
   return [

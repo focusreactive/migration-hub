@@ -8,6 +8,27 @@ function idsFor(input = reportInput()) {
   return assessRisks(input, computeMetrics(input)).map((risk) => risk.id);
 }
 
+function riskFor(input: ReturnType<typeof reportInput>, id: string) {
+  return assessRisks(input, computeMetrics(input)).find((candidate) => candidate.id === id);
+}
+
+function singleOfEverything() {
+  return reportInput({
+    pages: { pages: [{ route: "/", kind: "static" }], collections: [] },
+    media: {
+      assets: [
+        { assetId: "a".repeat(16), canonicalUrl: "https://cdn.example.com/a.webp", kind: "image", contentType: "image/webp", etag: "e1", sources: ["img-src"], duplicateOf: null },
+      ],
+    },
+    blocks: {
+      types: [
+        { id: "hero", name: "Hero", role: "hero", instanceCount: 1, members: [{ route: "/", order: 1 }], exemplar: { route: "/", order: 1 }, kinds: ["block"] },
+        { id: "cta", name: "CTA", role: "cta", instanceCount: 1, members: [{ route: "/style-guide", order: 1 }], exemplar: { route: "/style-guide", order: 1 }, kinds: ["block", "collectionSection"] },
+      ],
+    },
+  });
+}
+
 describe("assessRisks", () => {
   it("always reports the redirect map and the inferred field model", () => {
     expect(idsFor()).toContain("redirects");
@@ -91,6 +112,72 @@ describe("assessRisks", () => {
 
   it("drops the interactions risk when no block type has a motion role", () => {
     expect(idsFor()).not.toContain("interactions");
+  });
+
+  it("reports asset hosting and names the real hosts the assets are served from", () => {
+    const input = reportInput();
+    input.media.assets = [
+      ...input.media.assets,
+      { assetId: "d".repeat(16), canonicalUrl: "https://assets.example.org/d.webp", kind: "image", contentType: "image/webp", etag: "e4", sources: ["img-src"], alt: "Logo", duplicateOf: null },
+    ];
+    const risk = riskFor(input, "assetHosting");
+
+    expect(risk?.title).toBe("Every image lives on the platform's CDN.");
+    expect(risk?.body).toContain("All 3 images are served from assets.example.org, cdn.example.com.");
+    expect(risk?.body).toContain("*Plan for:*");
+  });
+
+  it("reports the alt-text debt with both counts and a verb that agrees with them", () => {
+    const risk = riskFor(reportInput(), "altText");
+
+    expect(risk?.title).toBe("One of 2 images has no alt text.");
+    expect(risk?.body).toContain("accessibility and SEO debt");
+  });
+
+  it("reports utility-only section types against the full section-type count", () => {
+    const risk = riskFor(reportInput(), "utilitySections");
+
+    expect(risk?.title).toBe("One of the 4 section types exists only for the platform's own utility pages.");
+    expect(risk?.body).toContain("*Plan for:* an early decision to drop them");
+  });
+
+  it("reports dual-source section types with their count", () => {
+    const risk = riskFor(reportInput(), "dualSourceSections");
+
+    expect(risk?.title).toBe("One section is used in two different ways.");
+    expect(risk?.body).toContain("page-builder blocks and inside collection templates");
+  });
+
+  it("reports interactions and names the platform when a block carries a motion role", () => {
+    const input = reportInput({
+      blocks: {
+        types: [
+          { id: "carousel", name: "Related items carousel", role: "related-items-carousel", instanceCount: 2, members: [{ route: "/", order: 1 }, { route: "/about", order: 1 }], exemplar: { route: "/", order: 1 }, kinds: ["block"] },
+        ],
+      },
+    });
+    const risk = riskFor(input, "interactions");
+
+    expect(risk?.title).toBe("Interactive behaviour is not visible to static analysis.");
+    expect(risk?.body).toContain("Webflow interactions");
+  });
+
+  it("reports the redirect map with the route count", () => {
+    const risk = riskFor(reportInput(), "redirects");
+
+    expect(risk?.title).toBe("5 URLs need a redirect map.");
+  });
+
+  it("keeps subject and verb singular when every count is one", () => {
+    const input = singleOfEverything();
+
+    expect(riskFor(input, "redirects")?.title).toBe("One URL needs a redirect map.");
+    expect(riskFor(input, "utilitySections")?.title).toBe(
+      "One of the 2 section types exists only for the platform's own utility pages.",
+    );
+    expect(riskFor(input, "dualSourceSections")?.title).toBe("One section is used in two different ways.");
+    expect(riskFor(input, "altText")?.title).toBe("One of 1 image has no alt text.");
+    expect(riskFor(input, "assetHosting")?.body).toContain("The one image is served from cdn.example.com.");
   });
 
   it("keeps the risks in the declared order", () => {

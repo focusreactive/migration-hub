@@ -24,6 +24,76 @@ describe("complexitySection", () => {
     expect(md.indexOf("**Forms & integrations.**")).toBeLessThan(md.indexOf("**Content volume.**"));
   });
 
+  it("states the route shape of collections only when every route pattern really has one dynamic segment", () => {
+    const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
+
+    expect(md).toContain("one collection, each with a single dynamic segment in its route.");
+    expect(md).not.toContain("no cross-referencing");
+    expect(md).not.toContain("all flat");
+
+    const nested = reportInput({
+      pages: {
+        pages: [
+          { route: "/", kind: "static" },
+          { route: "/docs/guides/a", kind: "item", collectionKey: "k1" },
+        ],
+        collections: [{ key: "k1", routePattern: "/docs/:category/:slug", itemCount: 1 }],
+      },
+    });
+    const nestedMetrics = computeMetrics(nested);
+    const nestedMd = complexitySection(assessComplexity(nestedMetrics).areas, nested, nestedMetrics);
+
+    expect(nestedMd).toContain("one collection. Collections like these map");
+    expect(nestedMd).not.toContain("single dynamic segment");
+  });
+
+  it("names the real asset hosts, the same ones the asset-hosting risk names", () => {
+    const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
+
+    expect(md).toContain("the assets are served from cdn.example.com, and those URLs stop working");
+    expect(md).not.toContain("Webflow's CDN");
+  });
+
+  it("drops the re-hosting claim when no asset resolves to a host", () => {
+    const hostless = reportInput({
+      media: {
+        assets: [
+          { assetId: "a".repeat(16), canonicalUrl: "not-a-valid-url", kind: "image", contentType: "image/webp", etag: "e1", sources: ["img-src"], alt: "Team", duplicateOf: null },
+        ],
+      },
+    });
+    const hostlessMetrics = computeMetrics(hostless);
+    const md = complexitySection(assessComplexity(hostlessMetrics).areas, hostless, hostlessMetrics);
+
+    expect(md).not.toContain("re-hosting");
+  });
+
+  it("only claims a project-pacing role for page composition above the lowest rating", () => {
+    const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
+
+    expect(assessComplexity(METRICS).areas.find((area) => area.id === "pageComposition")?.rating).toBe("Low");
+    expect(md).not.toContain("sets the pace of the whole project");
+
+    const wide = reportInput();
+    const wideMetrics = { ...computeMetrics(wide), sectionTypes: 30 };
+    const wideMd = complexitySection(assessComplexity(wideMetrics).areas, wide, wideMetrics);
+
+    expect(wideMd).toContain("sets the pace of the whole project");
+  });
+
+  it("only promises a record-by-record review when content volume is at the lowest rating", () => {
+    const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
+
+    expect(md).toContain("room to review every record by hand afterwards");
+
+    const heavy = reportInput();
+    const heavyMetrics = { ...computeMetrics(heavy), entries: 900 };
+    const heavyMd = complexitySection(assessComplexity(heavyMetrics).areas, heavy, heavyMetrics);
+
+    expect(heavyMd).not.toContain("room to review every record by hand afterwards");
+    expect(heavyMd).toContain("the import runs in batches with sampled checks");
+  });
+
   it("never repeats a rating inside its own paragraph", () => {
     const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
     const paragraphs = md.split("\n\n").filter((block) => block.startsWith("**"));
@@ -52,6 +122,26 @@ describe("inventory sections", () => {
 
     expect(md).toContain("4 distinct section types used 6 times in total");
     expect(md).toContain("2 appear exactly once");
+  });
+
+  it("keeps every clause of the section-library lead line singular at a count of one", () => {
+    const md = sectionLibrarySection(INPUT, {
+      ...METRICS,
+      sectionTypes: 1,
+      sectionInstances: 1,
+      reusedSectionTypes: 1,
+      singleUseSectionTypes: 1,
+      dualSourceSectionTypes: 1,
+      collectionOnlySectionTypes: 1,
+    });
+
+    expect(md).toContain(
+      "The pages are built from one distinct section type used once in total: one type appears more than once, "
+        + "one appears exactly once, one is used both as page-builder blocks and inside collection templates, "
+        + "and one exists only inside a collection template.",
+    );
+    expect(md).not.toContain("1 distinct section types");
+    expect(md).not.toContain("1 times");
   });
 
   it("dedupes a repeated route and groups collection templates under one pluralised suffix", () => {
@@ -100,6 +190,42 @@ describe("inventory sections", () => {
 
   it("explains that globals are authored once", () => {
     expect(globalsSection(INPUT, METRICS)).toContain("authored once and reused everywhere");
+  });
+
+  it("does not claim total coverage in the lead line when coverage is partial", () => {
+    const md = globalsSection(INPUT, METRICS);
+
+    expect(md).toContain("shared rather than placed per page");
+    expect(md).not.toContain("They wrap every page-builder page");
+    expect(md).toContain("The table below says which pages carry each one.");
+  });
+
+  it("claims total coverage in the lead line only when every page really carries every global", () => {
+    const input = reportInput({
+      globals: {
+        types: [
+          {
+            id: "header",
+            name: "Header",
+            role: "header",
+            instanceCount: 4,
+            members: [
+              { route: "/", order: 0 },
+              { route: "/about", order: 0 },
+              { route: "/utility-pages/style-guide", order: 0 },
+              { route: "/journal/a", order: 0 },
+            ],
+            exemplar: { route: "/", order: 0 },
+          },
+        ],
+      },
+    });
+    const md = globalsSection(input, computeMetrics(input));
+
+    expect(md).toContain(
+      "one section is shared rather than placed per page. They wrap every page-builder page and the collection "
+        + "template, so each is authored once and reused everywhere.",
+    );
   });
 
   it("prints the three-column globals header and states genuine coverage, not a tautological max", () => {

@@ -183,7 +183,7 @@ describe("renderReport anonymous form labels", () => {
       },
     };
 
-    expect(renderReport(input)).toContain("| Name, Email, website | 3 (Name, Email, website) |");
+    expect(renderReport(input)).toContain("| Name, Email, website | 3 (`Name`, `Email`, `website`) |");
   });
 
   it("falls back to all named fields when none are required", () => {
@@ -206,7 +206,7 @@ describe("renderReport anonymous form labels", () => {
       },
     };
 
-    expect(renderReport(input)).toContain("| A, B | 2 (A, B) |");
+    expect(renderReport(input)).toContain("| A, B | 2 (`A`, `B`) |");
   });
 
   it("filters out unnamed fields instead of rendering empty commas", () => {
@@ -230,7 +230,7 @@ describe("renderReport anonymous form labels", () => {
     };
 
     const md = renderReport(input);
-    expect(md).toContain("| Name | 2 (Name — all required) |");
+    expect(md).toContain("| Name | 2 (`Name` — all required) |");
     expect(md).not.toContain(", ,");
   });
 
@@ -276,7 +276,7 @@ describe("renderReport anonymous form labels", () => {
     };
 
     expect(renderReport(input)).toContain(
-      "| F1, F2, F3, F4, F5, F6, F7 | 7 (F1, F2, F3, F4, F5, F6, F7 — all required) |",
+      "| F1, F2, F3, F4, F5, F6, F7 | 7 (`F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F7` — all required) |",
     );
   });
 });
@@ -310,9 +310,9 @@ describe("renderReport form ordering", () => {
     };
 
     const md = renderReport(input);
-    const twoFieldIndex = md.indexOf("| A, B | 2 (A, B — all required) |");
+    const twoFieldIndex = md.indexOf("| A, B | 2 (`A`, `B` — all required) |");
     const tenFieldIndex = md.indexOf(
-      "| C1, C2, C3, C4, C5, C6, C7, C8, C9, C10 | 10 (C1, C2, C3, C4, C5, C6, C7, C8, C9, C10 — all required) |",
+      "| C1, C2, C3, C4, C5, C6, C7, C8, C9, C10 | 10 (`C1`, `C2`, `C3`, `C4`, `C5`, `C6`, `C7`, `C8`, `C9`, `C10` — all required) |",
     );
     expect(twoFieldIndex).toBeGreaterThan(-1);
     expect(tenFieldIndex).toBeGreaterThan(-1);

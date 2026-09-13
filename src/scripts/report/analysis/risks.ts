@@ -26,6 +26,10 @@ function hasMotionRole(input: ReportInput): boolean {
   return input.blocks.types.some((type) => MOTION_ROLES.some((role) => type.role.includes(role)));
 }
 
+function sentenceCount(count: number): string {
+  return count === 1 ? "One" : String(count);
+}
+
 export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] {
   const platform = SOURCE_LABEL[input.verdict];
   const risks: Risk[] = [];
@@ -47,7 +51,8 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
       id: "assetHosting",
       title: "Every image lives on the platform's CDN.",
       body:
-        `All ${metrics.images} images are served from ${metrics.assetHosts.join(", ")}. Those URLs stop working `
+        `${metrics.images === 1 ? "The one image is" : `All ${metrics.images} images are`} served from `
+        + `${metrics.assetHosts.join(", ")}. Those URLs stop working `
         + `when the site is unpublished. *Plan for:* re-hosting assets into the new CMS as part of the content `
         + `migration, not after it — this is automated by our migration tooling, but it has to happen before the `
         + `old site is switched off.`,
@@ -57,7 +62,10 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
   if (metrics.images > 0 && metrics.imagesWithoutAlt / metrics.images > MISSING_ALT_SHARE) {
     risks.push({
       id: "altText",
-      title: `${metrics.imagesWithoutAlt} of ${metrics.images} images have no alt text.`,
+      title:
+        `${sentenceCount(metrics.imagesWithoutAlt)} of ${metrics.images} `
+        + `${metrics.images === 1 ? "image" : "images"} ${metrics.imagesWithoutAlt === 1 ? "has" : "have"} `
+        + "no alt text.",
       body:
         "That accessibility and SEO debt will be copied into the new site verbatim unless it is addressed. "
         + "*Plan for:* the migration is the cheapest moment to fix it, but writing alt text is manual content "
@@ -68,7 +76,10 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
   if (metrics.utilitySectionTypes > 0) {
     risks.push({
       id: "utilitySections",
-      title: `${metrics.utilitySectionTypes} of the ${metrics.sectionTypes} section types exist only for the platform's own utility pages.`,
+      title:
+        `${sentenceCount(metrics.utilitySectionTypes)} of the ${metrics.sectionTypes} `
+        + `${metrics.sectionTypes === 1 ? "section type" : "section types"} `
+        + `${metrics.utilitySectionTypes === 1 ? "exists" : "exist"} only for the platform's own utility pages.`,
       body:
         "Style guides, licence pages and changelogs are scaffolding that came with the template, not product "
         + "pages. *Plan for:* an early decision to drop them — it takes those section types out of scope "
@@ -79,7 +90,9 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
   if (metrics.dualSourceSectionTypes > 0) {
     risks.push({
       id: "dualSourceSections",
-      title: `${metrics.dualSourceSectionTypes} sections are used in two different ways.`,
+      title:
+        `${sentenceCount(metrics.dualSourceSectionTypes)} `
+        + `${metrics.dualSourceSectionTypes === 1 ? "section is" : "sections are"} used in two different ways.`,
       body:
         "They appear both as page-builder blocks and inside collection templates. *Plan for:* components "
         + "designed to take either author-picked content or CMS-referenced content, decided before they are "
@@ -111,7 +124,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
 
   risks.push({
     id: "redirects",
-    title: `${metrics.routes} URLs need a redirect map.`,
+    title: `${sentenceCount(metrics.routes)} ${metrics.routes === 1 ? "URL needs" : "URLs need"} a redirect map.`,
     body:
       "Route patterns are stable and map one-to-one, so this is bookkeeping rather than a problem — but it is "
       + "a launch blocker if it is skipped.",
