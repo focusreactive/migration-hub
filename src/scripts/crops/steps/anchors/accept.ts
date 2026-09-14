@@ -40,16 +40,19 @@ export async function runAnchorsAccept(projectPath: string, route: string): Prom
     response: parsed.data,
     requestedRoute: route,
     orders,
-    candidateCount: candidates.candidates.length,
+    candidates: candidates.candidates,
   });
   if (errors.length > 0) {
     reportAcceptErrors(errors);
     return;
   }
 
+  const unmappable = [...(parsed.data.unmappable ?? [])].sort((a, b) => a - b);
+
   await writeArtifact(projectPath, cropAnchorsShardArtifactFor(routeKey), {
     route: parsed.data.route,
     anchors: [...parsed.data.anchors].sort((a, b) => a.order - b.order),
+    unmappable,
   });
 
   const pages = await readArtifact(projectPath, pagesArtifact);
@@ -61,7 +64,9 @@ export async function runAnchorsAccept(projectPath: string, route: string): Prom
     }
   }
 
-  console.log(JSON.stringify({ ok: true, route, anchors: parsed.data.anchors.length, remaining }));
+  console.log(
+    JSON.stringify({ ok: true, route, anchors: parsed.data.anchors.length, unmappable: unmappable.length, remaining }),
+  );
 }
 
 function schemaErrors(issues: z.core.$ZodIssue[]): AcceptError[] {

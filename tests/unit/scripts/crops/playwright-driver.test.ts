@@ -30,10 +30,20 @@ describe("createCropDriver", () => {
   it("descends past the page wrapper and returns one candidate per band", { timeout: 60_000 }, async () => {
     const candidates = await driver.candidates(FIXTURE_URL);
 
-    expect(candidates.map((candidate) => candidate.tag)).toEqual(["header", "section", "section", "section", "footer"]);
-    expect(candidates.map((candidate) => candidate.index)).toEqual([0, 1, 2, 3, 4]);
-    expect(candidates.map((candidate) => candidate.height)).toEqual([60, 400, 300, 1600, 200]);
-    expect(candidates.map((candidate) => candidate.isFixed)).toEqual([true, false, false, false, false]);
+    // Six candidates: five content bands plus the pinned platform badge, which the collector
+    // reports like any other pinned element — deciding it is not a section is the judged anchors
+    // step's job, not this function's. It sorts in by y-position between `.s3` and the footer.
+    expect(candidates.map((candidate) => candidate.tag)).toEqual([
+      "header",
+      "section",
+      "section",
+      "section",
+      "a",
+      "footer",
+    ]);
+    expect(candidates.map((candidate) => candidate.index)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(candidates.map((candidate) => candidate.height)).toEqual([60, 400, 300, 1600, 28, 200]);
+    expect(candidates.map((candidate) => candidate.isFixed)).toEqual([true, false, false, false, true, false]);
     expect(candidates[1]?.classes).toEqual(["s1", "hero"]);
     expect(candidates[2]?.textSnippet).toBe("Logo strip");
 
@@ -50,6 +60,15 @@ describe("createCropDriver", () => {
         }),
       ),
     ).toEqual(candidates.map((candidate) => candidate.signature));
+  });
+
+  it("reports platform chrome as an ordinary pinned candidate", { timeout: 60_000 }, async () => {
+    // A hosting badge is on the page, so the collector reports it. Deciding that it is
+    // not a section is the judged anchors step's job, not this function's.
+    const candidates = await driver.candidates(FIXTURE_URL);
+    const badge = candidates.find((candidate) => candidate.classes.includes("platform-badge"));
+
+    expect(badge?.isFixed).toBe(true);
   });
 
   it("captures the whole element, not just the part inside the viewport", { timeout: 60_000 }, async () => {

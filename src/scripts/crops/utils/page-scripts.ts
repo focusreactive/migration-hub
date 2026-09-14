@@ -83,7 +83,14 @@ export function collectAndMark(args: CollectArgs & { markIndex?: number; attribu
 
     let container = document.body;
     for (let depth = 0; depth < args.maxDescentDepth; depth += 1) {
-      const visible = toArray(container.children).filter(isVisible);
+      // Pinned elements are gathered separately below, so they must not be counted
+      // when deciding whether this level has a single full-height child. Webflow puts
+      // its "Made in Webflow" badge next to the page wrapper and its sticky navbar
+      // inside it; counting either one stops the descent and collapses the whole page
+      // into a single candidate.
+      const visible = toArray(container.children)
+        .filter(isVisible)
+        .filter((element) => !isPinned(element));
       const only = visible.length === 1 ? visible[0] : undefined;
       if (only === undefined) break;
       if (only.getBoundingClientRect().height < container.getBoundingClientRect().height * args.soleChildHeightRatio) {

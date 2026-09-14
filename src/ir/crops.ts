@@ -32,6 +32,7 @@ export const cropAnchorSchema = z.strictObject({
 export const cropAnchorsShardDataSchema = z.strictObject({
   route: z.string().min(1),
   anchors: z.array(cropAnchorSchema),
+  unmappable: z.array(z.number().int().nonnegative()),
 });
 
 export const cropShotSchema = z.strictObject({
