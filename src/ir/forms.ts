@@ -6,6 +6,7 @@ export const formFieldSchema = z.strictObject({
   name: z.string(),
   type: z.string(),
   required: z.boolean(),
+  label: z.string().min(1).optional(),
 });
 
 export const formRecordSchema = z.strictObject({
@@ -15,6 +16,7 @@ export const formRecordSchema = z.strictObject({
   method: z.string(),
   fieldCount: z.number().int().nonnegative(),
   fields: z.array(formFieldSchema),
+  label: z.string().min(1).optional(),
 });
 
 export const formsDataSchema = z.strictObject({
