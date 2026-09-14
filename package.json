@@ -9,6 +9,7 @@
   "imports": {
     "#adapters/*": "./src/adapters/*",
     "#assets/*": "./src/scripts/assets/*",
+    "#crops/*": "./src/scripts/crops/*",
     "#detect/*": "./src/scripts/detect/*",
     "#discovery/*": "./src/scripts/discovery/*",
     "#forms/*": "./src/scripts/forms/*",
