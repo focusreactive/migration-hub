@@ -2,9 +2,12 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { complexitySection } from "../../../../../src/scripts/report/html/sections/complexity.ts";
 import { contentModelSection } from "../../../../../src/scripts/report/html/sections/content-model.ts";
+import { globalsSection } from "../../../../../src/scripts/report/html/sections/globals.ts";
 import { headerSection } from "../../../../../src/scripts/report/html/sections/header.ts";
 import { heroSection } from "../../../../../src/scripts/report/html/sections/hero.ts";
+import { pageCompositionSection } from "../../../../../src/scripts/report/html/sections/page-composition.ts";
 import { scopeSection } from "../../../../../src/scripts/report/html/sections/scope.ts";
+import { sectionLibrarySection } from "../../../../../src/scripts/report/html/sections/section-library.ts";
 import type { RenderContext } from "../../../../../src/scripts/report/html/render-context.ts";
 
 import { loadFixtureContext } from "./fixture.ts";
@@ -180,5 +183,137 @@ describe("contentModelSection", () => {
 
     expect(html).toContain("collection template page</span>");
     expect(html).toContain("document</span>");
+  });
+});
+
+describe("sectionLibrarySection", () => {
+  it("keeps every hardcoded label the content rules pin", () => {
+    const html = sectionLibrarySection(ctx);
+
+    expect(html).toContain("Instances per type, most-used first");
+    expect(html).toContain("Green bars are reused types. Grey bars are the long tail.");
+    expect(html).toContain("Show fewer");
+    expect(html).toContain("No section type matches this filter.");
+    expect(html).toContain('placeholder="Search sections"');
+  });
+
+  it("templates the show-all button from the type count", () => {
+    expect(sectionLibrarySection(ctx)).toContain(`Show all ${ctx.metrics.sectionTypes} section types`);
+  });
+
+  it("counts instances on the card chips, never pages", () => {
+    const html = sectionLibrarySection(ctx);
+
+    expect(html).toMatch(/\d+ instances?</);
+    expect(html).not.toMatch(/>\d+ pages</);
+  });
+
+  it("gives every filter chip its computed total", () => {
+    const html = sectionLibrarySection(ctx);
+
+    expect(html).toContain(`data-filter="all" data-total="${ctx.metrics.sectionTypes}"`);
+    expect(html).toContain(`data-filter="reused" data-total="${ctx.metrics.reusedSectionTypes}"`);
+    expect(html).toContain(`data-filter="cms" data-total="${ctx.metrics.collectionOnlySectionTypes}"`);
+  });
+
+  it("orders cards and bars by instance count, descending", () => {
+    const html = sectionLibrarySection(ctx);
+    const names = [...html.matchAll(/data-name="([^"]+)"/g)].map((match) => match[1] ?? "");
+    const counts = names.map((name) => ctx.input.blocks.types.find((type) => type.name === name)?.instanceCount ?? 0);
+
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
+  });
+
+  it("escapes a section name that contains markup characters", () => {
+    const html = sectionLibrarySection({
+      ...ctx,
+      input: {
+        ...ctx.input,
+        blocks: {
+          types: [
+            {
+              id: "x",
+              name: 'Hero "big" & bold',
+              role: "hero",
+              instanceCount: 1,
+              members: [{ route: "/", order: 0 }],
+              exemplar: { route: "/", order: 0 },
+              kinds: ["block"],
+            },
+          ],
+        },
+      },
+    });
+
+    expect(html).toContain('data-name="Hero &quot;big&quot; &amp; bold"');
+  });
+});
+
+describe("pageCompositionSection", () => {
+  it("renders one card per unique layout page", () => {
+    const html = pageCompositionSection(ctx);
+    const cards = html.split('<div class="card" style="padding: 22px 24px;">').length - 1;
+
+    expect(cards).toBe(ctx.metrics.uniqueLayoutPages);
+  });
+
+  it("reports each page's section count and links its path", () => {
+    const html = pageCompositionSection(ctx);
+    const home = ctx.pagesIndex[0];
+
+    expect(html).toContain(`${home?.sections.length ?? 0} sections`);
+    expect(html).toContain(">/home<");
+  });
+
+  it("marks globals with the G pill and numbers only the blocks", () => {
+    const html = pageCompositionSection(ctx);
+
+    expect(html).toContain(">G<");
+    expect(html).toContain(">1<");
+  });
+
+  it("alternates row direction for a page with more than seven sections", () => {
+    const long = ctx.pagesIndex.find((page) => page.sections.length > 7);
+    if (long === undefined) return;
+
+    const html = pageCompositionSection(ctx);
+
+    expect(html).toContain("flex-direction: row-reverse; align-items: flex-start;");
+  });
+
+  it("paints a connector only between two real tiles", () => {
+    const html = pageCompositionSection(ctx);
+
+    expect(html).toContain('style="flex: none; width: 22px; height: 1px; margin-top: 34px; background: #262626;"');
+    expect(html).toContain('style="flex: none; width: 22px; height: 1px; margin-top: 34px;"');
+  });
+
+  it("templates the disclosure button from the unique-layout-page count", () => {
+    expect(pageCompositionSection(ctx)).toContain(`Show all ${ctx.metrics.uniqueLayoutPages} layout pages`);
+  });
+});
+
+describe("globalsSection", () => {
+  it("renders one card per global with its instance count", () => {
+    const html = globalsSection(ctx);
+
+    for (const type of ctx.input.globals.types) {
+      expect(html).toContain(type.name);
+      expect(html).toContain(`>${type.instanceCount}</span>`);
+    }
+  });
+
+  it("templates the coverage line under the bar", () => {
+    expect(globalsSection(ctx)).toMatch(/page-builder pages? &middot; .*collection template pages?/);
+  });
+
+  it("measures coverage against unique layout pages, not pages", () => {
+    const html = globalsSection(ctx);
+
+    expect(html).not.toContain(`${ctx.metrics.pages} page-builder`);
+  });
+
+  it("disappears when the site has no globals", () => {
+    expect(globalsSection({ ...ctx, metrics: { ...ctx.metrics, globals: 0 } })).toBe("");
   });
 });
