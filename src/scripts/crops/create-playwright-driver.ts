@@ -4,6 +4,7 @@ import type { CropCandidate } from "#ir/crops.ts";
 import { installEvaluateShim } from "#lib/capture/page-evaluate.ts";
 import { RENDER_SETTLE_MS } from "#stitch/constants/capture.ts";
 import { runCapturePreamble, waitForNetworkIdle } from "#stitch/utils/create-playwright-driver.ts";
+import { scrollPageTo } from "#stitch/utils/page-scripts.ts";
 
 import {
   CROP_JPEG_QUALITY,
@@ -58,6 +59,12 @@ export function createCropDriver(): CropDriver {
   }
 
   async function captureOne(page: Page, request: CaptureRequest): Promise<CaptureOutcome> {
+    // A previous capture's locator.screenshot() scrolls its element into view and leaves the
+    // page there. The candidate sort is y-ordered, and a pinned element's y is its viewport
+    // position — it moves with the scroll — so collecting from a scrolled page would shift
+    // indices out from under every later request in this capture() call. Reset to the top
+    // before every collection so each request sees the identical page state.
+    await page.evaluate(scrollPageTo, 0);
     await page.evaluate(unmarkCandidates, MARK_ATTRIBUTE);
 
     const { markedSignature: signature } = await page.evaluate(collectAndMark, {

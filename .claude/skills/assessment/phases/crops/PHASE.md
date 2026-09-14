@@ -26,7 +26,7 @@ pnpm tsx src/scripts/crops/index.ts --project <projectPath> --candidates [--forc
 ```
 
 ```json
-{ "step": "crops:candidates", "status": "done" | "skipped", "routes": <n>, "scanned": <n> }
+{ "step": "crops:candidates", "status": "done" | "skipped", "routes": <n>, "scanned": <n>, "candidates": { "min": <n>, "median": <n>, "total": <n> } }
 ```
 
 Opens every route in the capture set (`stitch`'s set: every page-builder page
@@ -47,6 +47,12 @@ heights and no visibility, and on Framer it diverges from the rendered DOM.
 
 A route whose shard already exists is skipped even without `--force`, so a
 partially completed run resumes route by route.
+
+`candidates` in the status line is `{min, median, total}` over the per-route
+candidate counts scanned this run — a one-glance check for a descent that
+collapsed a route to a single wrapper element, which a bare `routes`/`scanned`
+count cannot distinguish from a normal scan. A `min` near 1-2 on a site with
+real sections means open that route's shard by hand before trusting Step 2.
 
 ## Step 2 · anchors schema, subject, accept (judged, fan-out over routes)
 
@@ -107,13 +113,19 @@ Give every subagent these rules verbatim:
 
 > Every section in `sections` is accounted for — anchored or listed as
 > unmappable — globals included. Candidates are sorted top to bottom and so
-> are sections, so `candidateIndex` must increase as `order` increases. Match
-> on position first: a candidate's `y` is its distance from the top of the
-> full-page screenshot and `height` is how tall it is, so a section you can
-> see starting 1200px down the screenshot is the candidate whose `y` is near
-> 1200. Use `tag`, `classes` and `textSnippet` only to break ties. A
-> `fixed`/`sticky` candidate is almost always a global — a header at `y: 0`, a
-> cookie banner or a floating button further down.
+> are sections, so among in-flow candidates `candidateIndex` must increase as
+> `order` increases. A `fixed`/`sticky` candidate is exempt from this: it sits
+> outside document flow, so its position in the list says nothing about
+> reading order, and it may map to any order regardless of the candidates
+> around it. Match on position first: a candidate's `y` is its distance from
+> the top of the full-page screenshot and `height` is how tall it is, so a
+> section you can see starting 1200px down the screenshot is the candidate
+> whose `y` is near 1200 — except for a `fixed`/`sticky` candidate (`isFixed:
+> true`), whose `y` is where it sits in the *viewport*, not the page (a
+> bottom-fixed element on a 2568px page can record `y: 860`), so locate it
+> visually instead of by that number. Use `tag`, `classes` and `textSnippet`
+> only to break ties. A `fixed`/`sticky` candidate is almost always a global —
+> a header at `y: 0`, a cookie banner or a floating button further down.
 >
 > A section that genuinely has no element of its own goes in `unmappable`, by
 > `order`. This is not an escape hatch for a hard match — it is for the real
@@ -142,10 +154,12 @@ nothing.
 `crops:anchors:subject`, `crops:anchors:judge` and `crops:anchors:accept` all
 flip to `done` together, on the run that empties `remaining`.
 
-If a route genuinely has a section whose element sits out of document order —
-so no monotonic mapping exists — say so rather than inventing one: a wrong
-anchor produces a wrong picture on a client-facing page, and a missing one only
-produces a labelled placeholder.
+If a route genuinely has an in-flow section whose element sits out of
+document order — so no monotonic mapping exists among the in-flow candidates —
+say so rather than inventing one: a wrong anchor produces a wrong picture on a
+client-facing page, and a missing one only produces a labelled placeholder.
+This does not apply to a `fixed`/`sticky` candidate, which is exempt from the
+ordering check and may be mapped regardless of its position in the list.
 
 ## Step 3 · capture (script, manifest step `crops:capture`)
 

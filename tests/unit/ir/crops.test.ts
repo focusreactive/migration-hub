@@ -50,6 +50,7 @@ describe("crop artifacts", () => {
       cropAnchorsShardArtifactFor("index").dataSchema.parse({
         route: "/",
         anchors: [{ order: 0, candidateIndex: -1 }],
+        unmappable: [],
       }),
     ).toThrow();
   });

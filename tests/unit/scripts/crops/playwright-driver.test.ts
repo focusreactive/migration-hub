@@ -86,6 +86,32 @@ describe("createCropDriver", () => {
     expect(jpegSize(outcome.jpeg)).toEqual({ width: 1440, height: 1600 });
   });
 
+  it(
+    "captures several targets in one call, in descending index order, without losing later ones to scroll drift",
+    { timeout: 60_000 },
+    async () => {
+      // Each earlier locator.screenshot() in this loop scrolls the page and leaves it there.
+      // The candidate list is re-collected per request, sorted by y, and a pinned candidate's
+      // y used to move with the scroll — so descending order (captures the elements furthest
+      // down the page first) used to shift every later index out from under the request that
+      // expected it. All requests must still resolve to the candidate they were built from.
+      const candidates = await driver.candidates(FIXTURE_URL);
+      const requests = [...candidates]
+        .sort((a, b) => b.index - a.index)
+        .map((candidate) => ({
+          typeId: `candidate-${candidate.index}`,
+          candidateIndex: candidate.index,
+          signature: candidate.signature,
+        }));
+
+      const outcomes = await driver.capture(FIXTURE_URL, requests);
+
+      for (const outcome of outcomes) {
+        expect(outcome.ok, `expected ${outcome.typeId} to succeed: ${JSON.stringify(outcome)}`).toBe(true);
+      }
+    },
+  );
+
   it("refuses a candidate whose signature no longer matches", { timeout: 60_000 }, async () => {
     const [outcome] = await driver.capture(FIXTURE_URL, [
       { typeId: "stale", candidateIndex: 1, signature: "section.gone|999|Something else" },

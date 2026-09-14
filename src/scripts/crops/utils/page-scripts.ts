@@ -134,15 +134,20 @@ export function collectAndMark(args: CollectArgs & { markIndex?: number; attribu
     const signatureClasses = classes.slice(0, args.maxSignatureClasses);
     const head = signatureClasses.length === 0 ? tag : `${tag}.${signatureClasses.join(".")}`;
     const position = window.getComputedStyle(element).position;
+    const pinned = position === "fixed" || position === "sticky";
 
     return {
       index,
-      y: Math.round(rect.top + window.scrollY),
+      // A pinned element does not move with the page, so its rect.top is already
+      // where it sits in the full-page screenshot. Adding scrollY would make its
+      // position — and therefore the candidate sort — depend on where the page
+      // happens to be scrolled.
+      y: Math.round(pinned ? rect.top : rect.top + window.scrollY),
       height: Math.round(rect.height),
       tag,
       classes,
       textSnippet,
-      isFixed: position === "fixed" || position === "sticky",
+      isFixed: pinned,
       signature: `${head}|${Math.round(rect.height)}|${textSnippet.slice(0, args.signatureTextLength)}`,
     };
   }

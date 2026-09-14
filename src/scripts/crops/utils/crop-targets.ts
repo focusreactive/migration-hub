@@ -19,7 +19,22 @@ export function cropTargets(blocks: DiscoveryBlocksData, globals: DiscoveryTypes
     isGlobal: false,
   }));
 
-  return [...fromGlobals, ...fromBlocks];
+  const targets = [...fromGlobals, ...fromBlocks];
+
+  // `typeId` is minted per-artifact in `discovery` (globals and blocks are typed
+  // independently), so a global and a block can collide on the same id. `cropShotRelativePath`
+  // turns a duplicate id into a duplicate shot filename — the second capture would silently
+  // overwrite the first and the index would show two successful shots pointing at one image.
+  // The root cause is upstream of this plan; refuse here so the collision cannot amplify.
+  const seenTypeIds = new Set<string>();
+  for (const target of targets) {
+    if (seenTypeIds.has(target.typeId)) {
+      throw new Error(`duplicate crop target typeId "${target.typeId}" — discovery minted the same id twice`);
+    }
+    seenTypeIds.add(target.typeId);
+  }
+
+  return targets;
 }
 
 export function groupTargetsByRoute(targets: CropTarget[]): Map<string, CropTarget[]> {
