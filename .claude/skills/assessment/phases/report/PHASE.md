@@ -6,8 +6,8 @@ narrative pass, then the render. This is the last phase — running it is how
 the skill knows the pipeline is complete.
 
 Entered once `inventory`, `assets` (`assets:media` and `assets:fonts`),
-`forms`, `stitch` and `discovery` are all `done`. Every state change runs the
-script — never write `.assessment/*` or `report.md` by hand.
+`forms`, `stitch`, `discovery` and `crops` are all `done`. Every state change
+runs the script — never write `.assessment/*` or `report.md` by hand.
 
 ```
 pnpm tsx src/scripts/report/index.ts --project <projectPath> --state

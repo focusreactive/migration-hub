@@ -7,7 +7,7 @@ import { writeFileAtomic } from "#lib/fs.ts";
 
 export const ASSESSMENT_DIR = ".assessment";
 
-const ARTIFACTS_DIR = join(ASSESSMENT_DIR, "artifacts");
+export const ARTIFACTS_DIR = join(ASSESSMENT_DIR, "artifacts");
 
 export interface ArtifactDef<D> {
   kind: string;
