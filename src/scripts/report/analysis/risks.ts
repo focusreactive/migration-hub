@@ -1,7 +1,7 @@
 import { SOURCE_LABEL } from "../constants/labels.ts";
 import { MISSING_ALT_SHARE } from "../constants/thresholds.ts";
 import type { ReportInput } from "../types.ts";
-import { countLabel } from "../utils/count.ts";
+import { countLabel, sentenceCountWord } from "../utils/count.ts";
 
 import type { ReportMetrics } from "./metrics.ts";
 
@@ -25,10 +25,6 @@ const MOTION_ROLES = ["accordion", "carousel", "marquee", "slider", "tabs"];
 
 function hasMotionRole(input: ReportInput): boolean {
   return input.blocks.types.some((type) => MOTION_ROLES.some((role) => type.role.includes(role)));
-}
-
-function sentenceCount(count: number): string {
-  return count === 1 ? "One" : String(count);
 }
 
 function platformHandledFormsClause(metrics: ReportMetrics): string {
@@ -81,7 +77,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
       title:
         metrics.images === 1
           ? "The one image has no alt text."
-          : `${sentenceCount(metrics.imagesWithoutAlt)} of ${metrics.images} images `
+          : `${sentenceCountWord(metrics.imagesWithoutAlt)} of ${metrics.images} images `
             + `${metrics.imagesWithoutAlt === 1 ? "has" : "have"} no alt text.`,
       body:
         "That accessibility and SEO debt will be copied into the new site verbatim unless it is addressed. "
@@ -96,7 +92,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
       title:
         metrics.sectionTypes === 1
           ? "The one section type exists only for the platform's own utility pages."
-          : `${sentenceCount(metrics.utilitySectionTypes)} of the ${metrics.sectionTypes} section types `
+          : `${sentenceCountWord(metrics.utilitySectionTypes)} of the ${metrics.sectionTypes} section types `
             + `${metrics.utilitySectionTypes === 1 ? "exists" : "exist"} only for the platform's own utility pages.`,
       body:
         "Style guides, licence pages and changelogs are scaffolding that came with the template, not product "
@@ -109,7 +105,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
     risks.push({
       id: "dualSourceSections",
       title:
-        `${sentenceCount(metrics.dualSourceSectionTypes)} `
+        `${sentenceCountWord(metrics.dualSourceSectionTypes)} `
         + `${metrics.dualSourceSectionTypes === 1 ? "section is" : "sections are"} used in two different ways.`,
       body:
         `${metrics.dualSourceSectionTypes === 1 ? "It appears" : "They appear"} both as page-builder blocks and `
@@ -142,7 +138,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
 
   risks.push({
     id: "redirects",
-    title: `${sentenceCount(metrics.routes)} ${metrics.routes === 1 ? "URL needs" : "URLs need"} a redirect map.`,
+    title: `${sentenceCountWord(metrics.routes)} ${metrics.routes === 1 ? "URL needs" : "URLs need"} a redirect map.`,
     body:
       "Route patterns are stable and map one-to-one, so this is bookkeeping rather than a problem — but it is "
       + "a launch blocker if it is skipped.",

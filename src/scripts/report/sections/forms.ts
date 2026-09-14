@@ -3,7 +3,7 @@ import type { FormField } from "#ir/forms.ts";
 import { distinctForms, type DistinctForm } from "../analysis/distinct-forms.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
-import { countLabel } from "../utils/count.ts";
+import { sentenceCountLabel } from "../utils/count.ts";
 import { table } from "../utils/table.ts";
 
 function namedFieldNames(fields: FormField[]): string[] {
@@ -41,8 +41,8 @@ export function formsSection(input: ReportInput, metrics: ReportMetrics): string
   return [
     "## Forms",
     "",
-    `${countLabel(metrics.forms, "distinct form collects", "distinct forms collect")} input on this site, listed `
-      + "below with the fields each one submits.",
+    `${sentenceCountLabel(metrics.forms, "distinct form collects", "distinct forms collect")} input on this site, `
+      + `listed below with the fields ${metrics.forms === 1 ? "it" : "each one"} submits.`,
     "",
     table(["Form", "Fields"], forms.map((form) => [formLabel(form), fieldsCell(form)])),
   ].join("\n");

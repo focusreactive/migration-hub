@@ -1,6 +1,6 @@
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
-import { countLabel } from "../utils/count.ts";
+import { sentenceCountLabel } from "../utils/count.ts";
 import { pageLabel } from "../utils/page-label.ts";
 import { table } from "../utils/table.ts";
 
@@ -18,7 +18,7 @@ export function pageBuilderPagesSection(input: ReportInput, metrics: ReportMetri
   return [
     "## Page-builder pages",
     "",
-    `${countLabel(metrics.staticPages, "page stands", "pages stand")} on `
+    `${sentenceCountLabel(metrics.staticPages, "page stands", "pages stand")} on `
       + `${metrics.staticPages === 1 ? "its" : "their"} own rather than being generated `
       + `from a collection. ${metrics.staticPages === 1 ? "It is" : "Each is"} assembled section by section, so `
       + "its sections are configured by hand as page-builder blocks — added, reordered and edited per page "

@@ -1,7 +1,7 @@
 import type { ComplexityAreaId, Rating } from "../analysis/complexity.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
-import { countLabel, countWord } from "../utils/count.ts";
+import { countLabel, countWord, sentenceCountLabel, sentenceCountWord } from "../utils/count.ts";
 import { FONT_SOURCE_LABEL } from "./font-source.ts";
 import { SOURCE_LABEL } from "./labels.ts";
 
@@ -74,10 +74,18 @@ function formsParagraph(metrics: ReportMetrics, input: ReportInput): string {
   }
 
   if (metrics.platformHandledForms === 0) {
+    if (metrics.forms === 1) {
+      return (
+        "One form collects input, and it posts to an endpoint of its own rather than to "
+        + `${platform}'s built-in handler. That endpoint carries over unchanged, so the new site has to `
+        + "reproduce the fields and keep posting to it."
+      );
+    }
+
     return (
-      `${countLabel(metrics.forms, "form collects", "forms collect")} input, and every one of them posts to an `
-      + `endpoint of its own rather than to ${platform}'s built-in handler. Those endpoints carry over unchanged, `
-      + "so the new site has to reproduce the fields and keep posting to them."
+      `${sentenceCountLabel(metrics.forms, "form collects", "forms collect")} input, and every one of them posts `
+      + `to an endpoint of its own rather than to ${platform}'s built-in handler. Those endpoints carry over `
+      + "unchanged, so the new site has to reproduce the fields and keep posting to them."
     );
   }
 
@@ -91,8 +99,9 @@ function formsParagraph(metrics: ReportMetrics, input: ReportInput): string {
         + "submission handler instead";
 
   return (
-    `${countLabel(metrics.forms, "form collects", "forms collect")} input, and ${postClause}. That means there is `
-    + "nothing to point the new site at, and the new site has to bring its own handler, spam protection and "
+    `${sentenceCountLabel(metrics.forms, "form collects", "forms collect")} input, and ${postClause}. `
+    + "That means there is nothing to point the new site at, and the new site has to bring its own handler, "
+    + "spam protection and "
     + "notification routing, plus an export of the submissions already collected."
   );
 }
@@ -116,8 +125,9 @@ function contentModelParagraph(metrics: ReportMetrics, input: ReportInput): stri
     : "";
 
   return (
-    `${countLabel(metrics.collections, "collection", "collections")}${shapeClause}. Collections like these map `
-    + "almost one-to-one onto document types in Sanity or collections in Payload, and the route patterns "
+    `${sentenceCountLabel(metrics.collections, "collection", "collections")}${shapeClause}. `
+    + "Collections like these map almost one-to-one onto document types in Sanity or collections in Payload, "
+    + "and the route patterns "
     + "themselves tell us what the slug fields and templates need to be."
   );
 }
@@ -128,7 +138,7 @@ function pageCompositionParagraph(metrics: ReportMetrics, _input: ReportInput, r
   }
 
   const surface =
-    `${countLabel(metrics.sectionTypes, "distinct section type", "distinct section types")} across `
+    `${sentenceCountLabel(metrics.sectionTypes, "distinct section type", "distinct section types")} across `
     + `${countLabel(metrics.sectionInstances, "instance", "instances")}`;
 
   const sentences: string[] = [];
@@ -153,7 +163,7 @@ function pageCompositionParagraph(metrics: ReportMetrics, _input: ReportInput, r
 
   if (metrics.dualSourceSectionTypes > 0) {
     sentences.push(
-      `${countWord(metrics.dualSourceSectionTypes)} `
+      `${sentenceCountWord(metrics.dualSourceSectionTypes)} `
       + `${metrics.dualSourceSectionTypes === 1 ? "type appears" : "types appear"} both as free-standing `
       + "page-builder blocks and inside collection templates, so "
       + `${metrics.dualSourceSectionTypes === 1 ? "that component has" : "those components have"} to accept `
@@ -174,7 +184,7 @@ function contentVolumeParagraph(metrics: ReportMetrics, _input: ReportInput, rat
 
   if (metrics.entries === 0) {
     return (
-      `${countLabel(metrics.collections, "collection is", "collections are")} in place, with no published `
+      `${sentenceCountLabel(metrics.collections, "collection is", "collections are")} in place, with no published `
       + "entries yet, so there is nothing to import beyond the templates themselves."
     );
   }
@@ -187,7 +197,7 @@ function contentVolumeParagraph(metrics: ReportMetrics, _input: ReportInput, rat
         + "sampled checks, and the content freeze has to be planned around that.";
 
   return (
-    `${countLabel(metrics.entries, "published entry", "published entries")} across `
+    `${sentenceCountLabel(metrics.entries, "published entry", "published entries")} across `
     + `${countLabel(metrics.collections, "collection", "collections")}. ${passClause}`
   );
 }

@@ -1,7 +1,7 @@
 import { coverageOf, coveragePhrase, isFullCoverage, type GlobalCoverage } from "../analysis/global-coverage.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
-import { countLabel } from "../utils/count.ts";
+import { sentenceCountLabel } from "../utils/count.ts";
 import { table } from "../utils/table.ts";
 import { wordNumber } from "../utils/word-number.ts";
 
@@ -39,7 +39,7 @@ function appearsOnCell(coverage: GlobalCoverage): string {
 
 function leadLine(input: ReportInput, metrics: ReportMetrics): string {
   const coverages = input.globals.types.map((type) => coverageOf(input, type.members));
-  const subject = countLabel(metrics.globals, "section is", "sections are");
+  const subject = sentenceCountLabel(metrics.globals, "section is", "sections are");
 
   if (coverages.every((coverage) => isFullCoverage(coverage))) {
     const collections = coverages[0]?.collectionsTotal ?? 0;

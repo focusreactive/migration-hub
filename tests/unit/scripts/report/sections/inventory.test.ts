@@ -27,7 +27,7 @@ describe("complexitySection", () => {
   it("states the route shape of collections only when every route pattern really has one dynamic segment", () => {
     const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
 
-    expect(md).toContain("one collection, with a single dynamic segment in its route.");
+    expect(md).toContain("One collection, with a single dynamic segment in its route.");
     expect(md).not.toContain("each with a single dynamic segment");
     expect(md).not.toContain("no cross-referencing");
     expect(md).not.toContain("all flat");
@@ -44,7 +44,7 @@ describe("complexitySection", () => {
     const nestedMetrics = computeMetrics(nested);
     const nestedMd = complexitySection(assessComplexity(nestedMetrics).areas, nested, nestedMetrics);
 
-    expect(nestedMd).toContain("one collection. Collections like these map");
+    expect(nestedMd).toContain("One collection. Collections like these map");
     expect(nestedMd).not.toContain("single dynamic segment");
   });
 
@@ -108,7 +108,9 @@ describe("complexitySection", () => {
     const md = complexitySection(assessComplexity(metrics).areas, INPUT, metrics);
 
     expect(md).toContain("one of those types appears exactly once");
-    expect(md).toContain("one type appears both as free-standing page-builder blocks");
+    expect(md).toContain("One type appears both as free-standing page-builder blocks");
+    expect(md).toContain("none of the leverage. One type appears both as free-standing page-builder blocks");
+    expect(md).not.toContain(". one type appears");
     expect(md).toContain("that component has to accept content from two different sources");
     expect(md).not.toContain("1 types");
   });
@@ -132,7 +134,7 @@ describe("complexitySection", () => {
     const one = { ...METRICS, forms: 1, platformHandledForms: 1 };
     const oneMd = complexitySection(assessComplexity(one).areas, INPUT, one);
 
-    expect(oneMd).toContain("one form collects input, and it does not post to an endpoint of its own");
+    expect(oneMd).toContain("One form collects input, and it does not post to an endpoint of its own");
     expect(oneMd).not.toContain("none of them post");
   });
 
@@ -140,8 +142,22 @@ describe("complexitySection", () => {
     const metrics = { ...METRICS, forms: 2, platformHandledForms: 0 };
     const md = complexitySection(assessComplexity(metrics).areas, INPUT, metrics);
 
-    expect(md).toContain("every one of them posts to an endpoint of its own");
+    expect(md).toContain("2 forms collect input, and every one of them posts to an endpoint of its own");
+    expect(md).toContain("Those endpoints carry over unchanged");
+    expect(md).toContain("keep posting to them");
     expect(md).not.toContain("0 of them");
+
+    const oneMetrics = { ...METRICS, forms: 1, platformHandledForms: 0 };
+    const oneMd = complexitySection(assessComplexity(oneMetrics).areas, INPUT, oneMetrics);
+
+    expect(oneMd).toContain(
+      "One form collects input, and it posts to an endpoint of its own rather than to Webflow's built-in "
+        + "handler. That endpoint carries over unchanged, so the new site has to reproduce the fields and keep "
+        + "posting to it.",
+    );
+    expect(oneMd).not.toContain("every one of them");
+    expect(oneMd).not.toContain("Those endpoints");
+    expect(oneMd).not.toContain("posting to them");
   });
 
   it("replaces the content-volume and content-model counters when the counters are zero", () => {
@@ -247,7 +263,7 @@ describe("inventory sections", () => {
   it("keeps the page-builder lead singular at one page", () => {
     const md = pageBuilderPagesSection(INPUT, { ...METRICS, staticPages: 1 });
 
-    expect(md).toContain("one page stands on its own");
+    expect(md).toContain("One page stands on its own");
     expect(md).toContain("It is assembled section by section");
     expect(md).not.toContain("stands on their own");
   });
@@ -255,7 +271,7 @@ describe("inventory sections", () => {
   it("keeps the content-model lead singular at one collection", () => {
     const md = contentModelSection(INPUT, { ...METRICS, collections: 1 });
 
-    expect(md).toContain("one collection makes up the CMS side of this site. It is rendered through");
+    expect(md).toContain("One collection makes up the CMS side of this site. It is rendered through");
     expect(md).not.toContain("Each is rendered");
   });
 
@@ -339,7 +355,7 @@ describe("inventory sections", () => {
     const md = globalsSection(input, computeMetrics(input));
 
     expect(md).toContain(
-      "one section is shared rather than placed per page. It wraps every page-builder page and the collection "
+      "One section is shared rather than placed per page. It wraps every page-builder page and the collection "
         + "template, so it is authored once and reused everywhere.",
     );
   });
@@ -415,6 +431,19 @@ describe("inventory sections", () => {
     expect(md).toContain("| Form | Fields |");
     expect(md).not.toContain("Endpoint");
     expect(md).not.toContain("handled by the platform");
+  });
+
+  it("keeps the forms lead singular at one form and plural above it", () => {
+    const md = formsSection(INPUT, { ...METRICS, forms: 1 });
+
+    expect(md).toContain("One distinct form collects input on this site, listed below with the fields it submits.");
+    expect(md).not.toContain("each one submits");
+
+    const manyMd = formsSection(INPUT, { ...METRICS, forms: 2 });
+
+    expect(manyMd).toContain(
+      "2 distinct forms collect input on this site, listed below with the fields each one submits.",
+    );
   });
 
   it("prints the media table and the font table", () => {
