@@ -1,7 +1,7 @@
 import type { ComplexityAreaId, Rating } from "../analysis/complexity.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
-import { countLabel } from "../utils/count.ts";
+import { countLabel, countWord } from "../utils/count.ts";
 import { FONT_SOURCE_LABEL } from "./font-source.ts";
 import { SOURCE_LABEL } from "./labels.ts";
 
@@ -16,7 +16,11 @@ function hasSingleDynamicSegment(routePattern: string): boolean {
   return routePattern.split("/").filter((segment) => segment.startsWith(":")).length === 1;
 }
 
-function designSystemParagraph(metrics: ReportMetrics, input: ReportInput): string {
+function typeSentence(metrics: ReportMetrics, input: ReportInput): string {
+  if (metrics.fonts === 0) {
+    return "No web font family is loaded at all — nothing licensed, nothing self-hosted, nothing to re-purchase.";
+  }
+
   const singleFamily = input.fonts.families.length === 1 ? input.fonts.families[0] : undefined;
   const fontsClause =
     singleFamily === undefined
@@ -29,32 +33,62 @@ function designSystemParagraph(metrics: ReportMetrics, input: ReportInput): stri
     metrics.licensedFonts === 0
       ? "nothing licensed, nothing self-hosted, nothing to re-purchase"
       : `${countLabel(metrics.licensedFonts, "family", "families")} licensed or self-hosted and in need of a `
-        + "licence check before they move";
+        + `licence check before ${metrics.licensedFonts === 1 ? "it moves" : "they move"}`;
+
+  return `${fontsClause} — ${licenseClause}, and \`next/font\` handles it with no layout shift.`;
+}
+
+function mediaSentence(metrics: ReportMetrics): string {
+  if (metrics.images === 0) {
+    return metrics.videos === 0
+      ? "There is no image or video library to carry over."
+      : `The media library is ${countLabel(metrics.videos, "video", "videos")} and no images at all.`;
+  }
 
   const videoClause =
     metrics.videos === 0
       ? "no video anywhere on the site"
       : `${countLabel(metrics.videos, "video", "videos")} alongside them`;
 
+  return `The media library is ${countLabel(metrics.images, "unique image", "unique images")}, with ${videoClause}.`;
+}
+
+function designSystemParagraph(metrics: ReportMetrics, input: ReportInput): string {
   const hostingClause =
     metrics.assetHosts.length === 0
       ? ""
       : ` The only real task here is re-hosting: the assets are served from ${joinHosts(metrics.assetHosts)}, `
         + "and those URLs stop working when the site is unpublished.";
 
-  return (
-    `${fontsClause} — ${licenseClause}, and \`next/font\` handles it with no layout shift. The media library is `
-    + `${countLabel(metrics.images, "unique image", "unique images")}, with ${videoClause}.${hostingClause}`
-  );
+  return `${typeSentence(metrics, input)} ${mediaSentence(metrics)}${hostingClause}`;
 }
 
 function formsParagraph(metrics: ReportMetrics, input: ReportInput): string {
   const platform = SOURCE_LABEL[input.verdict];
+
+  if (metrics.forms === 0) {
+    return (
+      "No form collects input anywhere on this site, so there is no submission endpoint to replace and no "
+      + "backlog of submissions to export."
+    );
+  }
+
+  if (metrics.platformHandledForms === 0) {
+    return (
+      `${countLabel(metrics.forms, "form collects", "forms collect")} input, and every one of them posts to an `
+      + `endpoint of its own rather than to ${platform}'s built-in handler. Those endpoints carry over unchanged, `
+      + "so the new site has to reproduce the fields and keep posting to them."
+    );
+  }
+
   const postClause =
     metrics.platformHandledForms === metrics.forms
-      ? `none of them post to an endpoint of their own — ${platform}'s built-in submission handler takes them`
+      ? metrics.forms === 1
+        ? `it does not post to an endpoint of its own — ${platform}'s built-in submission handler takes it`
+        : `none of them post to an endpoint of their own — ${platform}'s built-in submission handler takes them`
       : `${countLabel(metrics.platformHandledForms, "of them does", "of them do")} not post to an endpoint of `
-        + `their own, relying on ${platform}'s built-in submission handler instead`;
+        + `${metrics.platformHandledForms === 1 ? "its" : "their"} own, relying on ${platform}'s built-in `
+        + "submission handler instead";
 
   return (
     `${countLabel(metrics.forms, "form collects", "forms collect")} input, and ${postClause}. That means there is `
@@ -64,11 +98,22 @@ function formsParagraph(metrics: ReportMetrics, input: ReportInput): string {
 }
 
 function contentModelParagraph(metrics: ReportMetrics, input: ReportInput): string {
-  const singleSegment =
-    input.pages.collections.length > 0
-    && input.pages.collections.every((collection) => hasSingleDynamicSegment(collection.routePattern));
+  if (metrics.collections === 0) {
+    return (
+      "This site has no CMS collections at all, so there are no document types to carry over — the content "
+      + "model is only what the page-builder pages themselves need."
+    );
+  }
 
-  const shapeClause = singleSegment ? ", each with a single dynamic segment in its route" : "";
+  const singleSegment = input.pages.collections.every((collection) =>
+    hasSingleDynamicSegment(collection.routePattern),
+  );
+
+  const shapeClause = singleSegment
+    ? metrics.collections === 1
+      ? ", with a single dynamic segment in its route"
+      : ", each with a single dynamic segment in its route"
+    : "";
 
   return (
     `${countLabel(metrics.collections, "collection", "collections")}${shapeClause}. Collections like these map `
@@ -78,23 +123,62 @@ function contentModelParagraph(metrics: ReportMetrics, input: ReportInput): stri
 }
 
 function pageCompositionParagraph(metrics: ReportMetrics, _input: ReportInput, rating: Rating): string {
-  const paceClause =
-    rating === "Low"
-      ? ""
-      : " This is the area that sets the pace of the whole project.";
+  if (metrics.sectionTypes === 0) {
+    return "No page-builder section was found on this site, so there is no section library to rebuild.";
+  }
 
-  return (
-    `${metrics.sectionTypes} distinct section types across ${metrics.sectionInstances} instances is a wide `
-    + `surface, and it is wide rather than deep — ${metrics.singleUseSectionTypes} of those types appear exactly `
-    + "once. A section used once still needs a schema, a component and a round of visual QA, so a long tail "
-    + "costs nearly as much as a reused set of the same size while giving back none of the leverage. "
-    + `${metrics.dualSourceSectionTypes} types appear both as free-standing page-builder blocks and inside `
-    + "collection templates, so those components have to accept content from two different sources — worth "
-    + `deciding deliberately at the start rather than retrofitting later.${paceClause}`
-  );
+  const surface =
+    `${countLabel(metrics.sectionTypes, "distinct section type", "distinct section types")} across `
+    + `${countLabel(metrics.sectionInstances, "instance", "instances")}`;
+
+  const sentences: string[] = [];
+
+  if (metrics.singleUseSectionTypes === 0) {
+    sentences.push(`${surface}, and every one of those types is reused.`);
+  } else {
+    const verb = metrics.singleUseSectionTypes === 1 ? "appears" : "appear";
+    const count = countWord(metrics.singleUseSectionTypes);
+
+    sentences.push(
+      rating === "Low"
+        ? `${surface}, of which ${count} ${verb} exactly once.`
+        : `${surface} is a wide surface, and it is wide rather than deep — ${count} of those types ${verb} `
+          + "exactly once.",
+    );
+    sentences.push(
+      "A section used once still needs a schema, a component and a round of visual QA, so a long tail costs "
+      + "nearly as much as a reused set of the same size while giving back none of the leverage.",
+    );
+  }
+
+  if (metrics.dualSourceSectionTypes > 0) {
+    sentences.push(
+      `${countWord(metrics.dualSourceSectionTypes)} `
+      + `${metrics.dualSourceSectionTypes === 1 ? "type appears" : "types appear"} both as free-standing `
+      + "page-builder blocks and inside collection templates, so "
+      + `${metrics.dualSourceSectionTypes === 1 ? "that component has" : "those components have"} to accept `
+      + "content from two different sources — worth deciding deliberately at the start rather than "
+      + "retrofitting later.",
+    );
+  }
+
+  if (rating !== "Low") sentences.push("This is the area that sets the pace of the whole project.");
+
+  return sentences.join(" ");
 }
 
 function contentVolumeParagraph(metrics: ReportMetrics, _input: ReportInput, rating: Rating): string {
+  if (metrics.collections === 0) {
+    return "There are no collection entries to import at all — every page on this site is composed by hand.";
+  }
+
+  if (metrics.entries === 0) {
+    return (
+      `${countLabel(metrics.collections, "collection is", "collections are")} in place, with no published `
+      + "entries yet, so there is nothing to import beyond the templates themselves."
+    );
+  }
+
   const passClause =
     rating === "Low"
       ? "That fits into a single automated migration pass with room to review every record by hand afterwards, "

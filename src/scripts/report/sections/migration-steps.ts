@@ -93,9 +93,14 @@ function extraction(metrics: ReportMetrics): string {
 }
 
 function generation(metrics: ReportMetrics): string {
-  const parts = [`the ${countLabel(metrics.sectionTypes, "section type", "section types")}`];
+  const parts: string[] = [];
+  if (metrics.sectionTypes > 0) {
+    parts.push(`the ${countLabel(metrics.sectionTypes, "section type", "section types")}`);
+  }
   if (metrics.globals > 0) parts.push(`the ${countLabel(metrics.globals, "shared global", "shared globals")}`);
   if (metrics.forms > 0) parts.push(`the ${countLabel(metrics.forms, "form", "forms")}`);
+
+  if (parts.length === 0) return "There are no sections, globals or forms to generate components for.";
 
   const list = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(", ")} and ${parts.at(-1) ?? ""}`;
   return `A component is generated for each of ${list}.`;

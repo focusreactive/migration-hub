@@ -38,11 +38,32 @@ describe("scopeSection", () => {
 
     expect(md).toContain("| Pages | 5 | 3 hand-composed, 2 CMS entries |");
     expect(md).toContain("| Section types | 4 | 6 instances; 2 used only once |");
+    expect(md).toContain("| Pages | 5 | 3 hand-composed, 2 CMS entries |");
     expect(md).toContain("| Images | 2 | plus 1 duplicate already de-duplicated |");
   });
 
+  it("agrees the section-types reading with its counts and drops clauses whose counter is zero", () => {
+    const md = scopeSection(INPUT, { ...METRICS, sectionTypes: 1, sectionInstances: 1, singleUseSectionTypes: 1 });
+
+    expect(md).toContain("| Section types | 1 | 1 instance; 1 used only once |");
+    expect(md).not.toContain("1 instances");
+
+    const reused = scopeSection(INPUT, { ...METRICS, singleUseSectionTypes: 0 });
+    expect(reused).toContain("| Section types | 4 | 6 instances |");
+    expect(reused).not.toContain("0 used only once");
+
+    const empty = scopeSection(INPUT, { ...METRICS, sectionTypes: 0, sectionInstances: 0, singleUseSectionTypes: 0 });
+    expect(empty).toContain("| Section types | 0 | — |");
+  });
+
+  it("agrees the pages reading with the entry count", () => {
+    expect(scopeSection(INPUT, { ...METRICS, entries: 1 })).toContain("| Pages | 5 | 3 hand-composed, 1 CMS entry |");
+  });
+
   it("derives the shared-globals reading from the globals' own names and coverage", () => {
-    expect(scopeSection(INPUT, METRICS)).toContain("| Shared globals | 1 | Header, on 3 of 4 pages |");
+    expect(scopeSection(INPUT, METRICS)).toContain(
+      "| Shared globals | 1 | Header, on 2 of 3 page-builder pages and the collection template |",
+    );
   });
 
   it("names every global and says every page only when every page really carries them", () => {
@@ -76,7 +97,9 @@ describe("scopeSection", () => {
       },
     });
 
-    expect(spanned).toContain("| Shared globals | 2 | Nav and Footer, on 1–2 of 4 pages |");
+    expect(spanned).toContain(
+      "| Shared globals | 2 | Nav and Footer, on 1–2 of 3 page-builder pages and no collection template |",
+    );
     expect(scopeFor({ globals: { types: [] } })).toContain("| Shared globals | 0 | — |");
   });
 

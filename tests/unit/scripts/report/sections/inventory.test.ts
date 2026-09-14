@@ -27,7 +27,8 @@ describe("complexitySection", () => {
   it("states the route shape of collections only when every route pattern really has one dynamic segment", () => {
     const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
 
-    expect(md).toContain("one collection, each with a single dynamic segment in its route.");
+    expect(md).toContain("one collection, with a single dynamic segment in its route.");
+    expect(md).not.toContain("each with a single dynamic segment");
     expect(md).not.toContain("no cross-referencing");
     expect(md).not.toContain("all flat");
 
@@ -94,6 +95,70 @@ describe("complexitySection", () => {
     expect(heavyMd).toContain("the import runs in batches with sampled checks");
   });
 
+  it("drops the dual-source clause from the page-composition paragraph when no type serves both sources", () => {
+    const metrics = { ...METRICS, sectionTypes: 30, dualSourceSectionTypes: 0 };
+    const md = complexitySection(assessComplexity(metrics).areas, INPUT, metrics);
+
+    expect(md).not.toContain("0 types appear both");
+    expect(md).not.toContain("free-standing page-builder blocks");
+  });
+
+  it("keeps the page-composition clauses singular at a count of one", () => {
+    const metrics = { ...METRICS, sectionTypes: 30, sectionInstances: 40, singleUseSectionTypes: 1, dualSourceSectionTypes: 1 };
+    const md = complexitySection(assessComplexity(metrics).areas, INPUT, metrics);
+
+    expect(md).toContain("one of those types appears exactly once");
+    expect(md).toContain("one type appears both as free-standing page-builder blocks");
+    expect(md).toContain("that component has to accept content from two different sources");
+    expect(md).not.toContain("1 types");
+  });
+
+  it("drops the long-tail claim from the page-composition paragraph when no type is used only once", () => {
+    const metrics = { ...METRICS, sectionTypes: 30, singleUseSectionTypes: 0 };
+    const md = complexitySection(assessComplexity(metrics).areas, INPUT, metrics);
+
+    expect(md).toContain("and every one of those types is reused");
+    expect(md).not.toContain("0 of those types");
+    expect(md).not.toContain("a long tail costs nearly as much");
+  });
+
+  it("drops the forms counters when the site has no form and keeps them singular at one", () => {
+    const none = { ...METRICS, forms: 0, platformHandledForms: 0 };
+    const noneMd = complexitySection(assessComplexity(none).areas, INPUT, none);
+
+    expect(noneMd).toContain("No form collects input anywhere on this site");
+    expect(noneMd).not.toContain("0 forms");
+
+    const one = { ...METRICS, forms: 1, platformHandledForms: 1 };
+    const oneMd = complexitySection(assessComplexity(one).areas, INPUT, one);
+
+    expect(oneMd).toContain("one form collects input, and it does not post to an endpoint of its own");
+    expect(oneMd).not.toContain("none of them post");
+  });
+
+  it("says a form posts to its own endpoint rather than counting zero platform-handled forms", () => {
+    const metrics = { ...METRICS, forms: 2, platformHandledForms: 0 };
+    const md = complexitySection(assessComplexity(metrics).areas, INPUT, metrics);
+
+    expect(md).toContain("every one of them posts to an endpoint of its own");
+    expect(md).not.toContain("0 of them");
+  });
+
+  it("replaces the content-volume and content-model counters when the counters are zero", () => {
+    const noEntries = { ...METRICS, entries: 0 };
+    const noEntriesMd = complexitySection(assessComplexity(noEntries).areas, INPUT, noEntries);
+
+    expect(noEntriesMd).toContain("with no published entries yet");
+    expect(noEntriesMd).not.toContain("0 published entries");
+
+    const noCollections = { ...METRICS, collections: 0, entries: 0 };
+    const noCollectionsMd = complexitySection(assessComplexity(noCollections).areas, INPUT, noCollections);
+
+    expect(noCollectionsMd).toContain("no document types to carry over");
+    expect(noCollectionsMd).toContain("no collection entries to import");
+    expect(noCollectionsMd).not.toContain("0 collections");
+  });
+
   it("never repeats a rating inside its own paragraph", () => {
     const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
     const paragraphs = md.split("\n\n").filter((block) => block.startsWith("**"));
@@ -142,6 +207,56 @@ describe("inventory sections", () => {
     );
     expect(md).not.toContain("1 distinct section types");
     expect(md).not.toContain("1 times");
+  });
+
+  it("drops the section-library clauses whose counter is zero", () => {
+    const md = sectionLibrarySection(INPUT, {
+      ...METRICS,
+      reusedSectionTypes: 2,
+      singleUseSectionTypes: 3,
+      dualSourceSectionTypes: 0,
+      collectionOnlySectionTypes: 0,
+    });
+
+    expect(md).toContain("2 types appear more than once and 3 appear exactly once.");
+    expect(md).not.toContain("0 are used both");
+    expect(md).not.toContain("0 exist only");
+  });
+
+  it("moves the noun onto the first surviving section-library clause", () => {
+    const md = sectionLibrarySection(INPUT, {
+      ...METRICS,
+      reusedSectionTypes: 0,
+      singleUseSectionTypes: 4,
+      dualSourceSectionTypes: 0,
+      collectionOnlySectionTypes: 0,
+    });
+
+    expect(md).toContain("in total: 4 types appear exactly once.");
+    expect(md).not.toContain("0 types appear more than once");
+  });
+
+  it("says every page comes from a collection instead of counting zero page-builder pages", () => {
+    const md = pageBuilderPagesSection(INPUT, { ...METRICS, staticPages: 0 });
+
+    expect(md).toContain("Every page on this site is generated from a collection");
+    expect(md).not.toContain("0 pages stand");
+    expect(md).not.toContain("| Page | Slug |");
+  });
+
+  it("keeps the page-builder lead singular at one page", () => {
+    const md = pageBuilderPagesSection(INPUT, { ...METRICS, staticPages: 1 });
+
+    expect(md).toContain("one page stands on its own");
+    expect(md).toContain("It is assembled section by section");
+    expect(md).not.toContain("stands on their own");
+  });
+
+  it("keeps the content-model lead singular at one collection", () => {
+    const md = contentModelSection(INPUT, { ...METRICS, collections: 1 });
+
+    expect(md).toContain("one collection makes up the CMS side of this site. It is rendered through");
+    expect(md).not.toContain("Each is rendered");
   });
 
   it("dedupes a repeated route and groups collection templates under one pluralised suffix", () => {
@@ -197,7 +312,8 @@ describe("inventory sections", () => {
 
     expect(md).toContain("shared rather than placed per page");
     expect(md).not.toContain("They wrap every page-builder page");
-    expect(md).toContain("The table below says which pages carry each one.");
+    expect(md).toContain("reused everywhere instead of being rebuilt page by page.");
+    expect(md).not.toContain("The table below");
   });
 
   it("claims total coverage in the lead line only when every page really carries every global", () => {
@@ -223,8 +339,8 @@ describe("inventory sections", () => {
     const md = globalsSection(input, computeMetrics(input));
 
     expect(md).toContain(
-      "one section is shared rather than placed per page. They wrap every page-builder page and the collection "
-        + "template, so each is authored once and reused everywhere.",
+      "one section is shared rather than placed per page. It wraps every page-builder page and the collection "
+        + "template, so it is authored once and reused everywhere.",
     );
   });
 
@@ -232,7 +348,7 @@ describe("inventory sections", () => {
     const md = globalsSection(INPUT, METRICS);
 
     expect(md).toContain("| Global | Instances | Appears on |");
-    expect(md).toContain("| Header | 3 | 3 of 4 pages |");
+    expect(md).toContain("| Header | 3 | 2 of 3 page-builder pages and the collection template |");
     expect(md).not.toContain("| Header | 3 | every page-builder page");
 
     const fullyCoveredInput = reportInput({
@@ -289,7 +405,7 @@ describe("inventory sections", () => {
     const singleGlobalPartialMetrics = computeMetrics(singleGlobalPartialInput);
     const partialMd = globalsSection(singleGlobalPartialInput, singleGlobalPartialMetrics);
 
-    expect(partialMd).toContain("| Nav | 3 | 3 of 4 pages |");
+    expect(partialMd).toContain("| Nav | 3 | 3 of 4 page-builder pages |");
     expect(partialMd).not.toContain("| Nav | 3 | every page-builder page");
   });
 

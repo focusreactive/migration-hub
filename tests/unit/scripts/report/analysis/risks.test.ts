@@ -176,8 +176,56 @@ describe("assessRisks", () => {
       "One of the 2 section types exists only for the platform's own utility pages.",
     );
     expect(riskFor(input, "dualSourceSections")?.title).toBe("One section is used in two different ways.");
-    expect(riskFor(input, "altText")?.title).toBe("One of 1 image has no alt text.");
+    expect(riskFor(input, "altText")?.title).toBe("The one image has no alt text.");
     expect(riskFor(input, "assetHosting")?.body).toContain("The one image is served from cdn.example.com.");
+    expect(riskFor(input, "forms")?.body).toContain("The one form on this site posts to Webflow's built-in handler");
+  });
+
+  it("counts published entries as a word at one and drops the counter at zero", () => {
+    const input = reportInput();
+    const metrics = computeMetrics(input);
+
+    expect(assessRisks(input, { ...metrics, entries: 1 }).find((risk) => risk.id === "inferredFields")?.body)
+      .toContain("With one published entry, fields that exist");
+    expect(assessRisks(input, { ...metrics, entries: 0 }).find((risk) => risk.id === "inferredFields")?.body)
+      .toContain("With no published entry to read from, fields that exist");
+  });
+
+  it("names assets rather than zero images when the hosted assets are not images", () => {
+    const input = reportInput();
+    const metrics = computeMetrics(input);
+    const risk = assessRisks(input, { ...metrics, images: 0 }).find((candidate) => candidate.id === "assetHosting");
+
+    expect(risk?.title).toBe("Every asset lives on the platform's CDN.");
+    expect(risk?.body).toContain("Every asset on this site is served from");
+    expect(risk?.body).not.toContain("All 0 images");
+  });
+
+  it("agrees the forms risk verb with the platform-handled count", () => {
+    const input = reportInput();
+    const metrics = computeMetrics(input);
+    const body = assessRisks(input, { ...metrics, forms: 3, platformHandledForms: 1 })
+      .find((risk) => risk.id === "forms")?.body;
+
+    expect(body).toContain("One of the 3 forms on this site posts to Webflow's built-in handler");
+  });
+
+  it("keeps the dual-source pronoun singular at one section", () => {
+    const input = reportInput();
+    const metrics = computeMetrics(input);
+    const risk = assessRisks(input, { ...metrics, dualSourceSectionTypes: 1 })
+      .find((candidate) => candidate.id === "dualSourceSections");
+
+    expect(risk?.body).toContain("It appears both as page-builder blocks");
+  });
+
+  it("names the single section type instead of counting one of one", () => {
+    const input = reportInput();
+    const metrics = computeMetrics(input);
+    const risk = assessRisks(input, { ...metrics, sectionTypes: 1, utilitySectionTypes: 1 })
+      .find((candidate) => candidate.id === "utilitySections");
+
+    expect(risk?.title).toBe("The one section type exists only for the platform's own utility pages.");
   });
 
   it("keeps the risks in the declared order", () => {

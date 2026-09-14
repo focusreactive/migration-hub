@@ -1,6 +1,7 @@
 import { SOURCE_LABEL } from "../constants/labels.ts";
 import { MISSING_ALT_SHARE } from "../constants/thresholds.ts";
 import type { ReportInput } from "../types.ts";
+import { countLabel } from "../utils/count.ts";
 
 import type { ReportMetrics } from "./metrics.ts";
 
@@ -30,6 +31,22 @@ function sentenceCount(count: number): string {
   return count === 1 ? "One" : String(count);
 }
 
+function platformHandledFormsClause(metrics: ReportMetrics): string {
+  if (metrics.forms === 1) return "The one form on this site posts";
+  if (metrics.platformHandledForms === 1) return `One of the ${metrics.forms} forms on this site posts`;
+  return `${metrics.platformHandledForms} of the ${metrics.forms} forms on this site post`;
+}
+
+function hostedAssetsSubject(metrics: ReportMetrics): string {
+  if (metrics.images === 0) return "Every asset on this site is";
+  return metrics.images === 1 ? "The one image is" : `All ${metrics.images} images are`;
+}
+
+function publishedEntriesClause(metrics: ReportMetrics): string {
+  if (metrics.entries === 0) return "With no published entry to read from";
+  return `With ${countLabel(metrics.entries, "published entry", "published entries")}`;
+}
+
 export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] {
   const platform = SOURCE_LABEL[input.verdict];
   const risks: Risk[] = [];
@@ -39,19 +56,18 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
       id: "forms",
       title: "Form submissions have nowhere to go after cutover.",
       body:
-        `${metrics.platformHandledForms} of the ${metrics.forms} forms on this site post to ${platform}'s built-in `
-        + `handler — there is no external endpoint to point the new site at. *Plan for:* a form handler, spam `
-        + `protection, notification routing, and an export of existing submissions before the ${platform} `
-        + `subscription lapses.`,
+        `${platformHandledFormsClause(metrics)} to ${platform}'s built-in handler — there is no external `
+        + `endpoint to point the new site at. *Plan for:* a form handler, spam protection, notification `
+        + `routing, and an export of existing submissions before the ${platform} subscription lapses.`,
     });
   }
 
   if (metrics.assetHosts.length > 0) {
     risks.push({
       id: "assetHosting",
-      title: "Every image lives on the platform's CDN.",
+      title: metrics.images === 0 ? "Every asset lives on the platform's CDN." : "Every image lives on the platform's CDN.",
       body:
-        `${metrics.images === 1 ? "The one image is" : `All ${metrics.images} images are`} served from `
+        `${hostedAssetsSubject(metrics)} served from `
         + `${metrics.assetHosts.join(", ")}. Those URLs stop working `
         + `when the site is unpublished. *Plan for:* re-hosting assets into the new CMS as part of the content `
         + `migration, not after it — this is automated by our migration tooling, but it has to happen before the `
@@ -63,9 +79,10 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
     risks.push({
       id: "altText",
       title:
-        `${sentenceCount(metrics.imagesWithoutAlt)} of ${metrics.images} `
-        + `${metrics.images === 1 ? "image" : "images"} ${metrics.imagesWithoutAlt === 1 ? "has" : "have"} `
-        + "no alt text.",
+        metrics.images === 1
+          ? "The one image has no alt text."
+          : `${sentenceCount(metrics.imagesWithoutAlt)} of ${metrics.images} images `
+            + `${metrics.imagesWithoutAlt === 1 ? "has" : "have"} no alt text.`,
       body:
         "That accessibility and SEO debt will be copied into the new site verbatim unless it is addressed. "
         + "*Plan for:* the migration is the cheapest moment to fix it, but writing alt text is manual content "
@@ -77,9 +94,10 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
     risks.push({
       id: "utilitySections",
       title:
-        `${sentenceCount(metrics.utilitySectionTypes)} of the ${metrics.sectionTypes} `
-        + `${metrics.sectionTypes === 1 ? "section type" : "section types"} `
-        + `${metrics.utilitySectionTypes === 1 ? "exists" : "exist"} only for the platform's own utility pages.`,
+        metrics.sectionTypes === 1
+          ? "The one section type exists only for the platform's own utility pages."
+          : `${sentenceCount(metrics.utilitySectionTypes)} of the ${metrics.sectionTypes} section types `
+            + `${metrics.utilitySectionTypes === 1 ? "exists" : "exist"} only for the platform's own utility pages.`,
       body:
         "Style guides, licence pages and changelogs are scaffolding that came with the template, not product "
         + "pages. *Plan for:* an early decision to drop them — it takes those section types out of scope "
@@ -94,9 +112,9 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
         `${sentenceCount(metrics.dualSourceSectionTypes)} `
         + `${metrics.dualSourceSectionTypes === 1 ? "section is" : "sections are"} used in two different ways.`,
       body:
-        "They appear both as page-builder blocks and inside collection templates. *Plan for:* components "
-        + "designed to take either author-picked content or CMS-referenced content, decided before they are "
-        + "built rather than retrofitted.",
+        `${metrics.dualSourceSectionTypes === 1 ? "It appears" : "They appear"} both as page-builder blocks and `
+        + "inside collection templates. *Plan for:* components designed to take either author-picked content "
+        + "or CMS-referenced content, decided before they are built rather than retrofitted.",
     });
   }
 
@@ -116,7 +134,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
       id: "inferredFields",
       title: "The CMS field model is inferred from rendered pages.",
       body:
-        `With ${metrics.entries} published entries, fields that exist in ${platform} but are not rendered by any `
+        `${publishedEntriesClause(metrics)}, fields that exist in ${platform} but are not rendered by any `
         + "template are invisible to this analysis. *Plan for:* a short review of the source field list against "
         + "the proposed schema before content migration starts.",
     });

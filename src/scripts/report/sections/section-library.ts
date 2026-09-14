@@ -52,6 +52,41 @@ export function kindsLabel(kinds: DiscoveryContentKind[]): string {
   return kinds.map((kind) => KIND_LABEL[kind]).join(", ");
 }
 
+interface BreakdownClause {
+  count: number;
+  singular: string;
+  plural: string;
+}
+
+function breakdownClauses(metrics: ReportMetrics): BreakdownClause[] {
+  return [
+    { count: metrics.reusedSectionTypes, singular: "appears more than once", plural: "appear more than once" },
+    { count: metrics.singleUseSectionTypes, singular: "appears exactly once", plural: "appear exactly once" },
+    {
+      count: metrics.dualSourceSectionTypes,
+      singular: "is used both as page-builder blocks and inside collection templates",
+      plural: "are used both as page-builder blocks and inside collection templates",
+    },
+    {
+      count: metrics.collectionOnlySectionTypes,
+      singular: "exists only inside a collection template",
+      plural: "exist only inside a collection template",
+    },
+  ].filter((clause) => clause.count > 0);
+}
+
+function breakdown(metrics: ReportMetrics): string {
+  const rendered = breakdownClauses(metrics).map((clause, index) => {
+    const noun = index > 0 ? "" : clause.count === 1 ? " type" : " types";
+    return `${countWord(clause.count)}${noun} ${clause.count === 1 ? clause.singular : clause.plural}`;
+  });
+
+  if (rendered.length <= 1) return rendered.join("");
+  if (rendered.length === 2) return `${rendered[0]} and ${rendered[1]}`;
+
+  return `${rendered.slice(0, -1).join(", ")}, and ${rendered.at(-1) ?? ""}`;
+}
+
 export function sectionLibrarySection(input: ReportInput, metrics: ReportMetrics): string {
   if (metrics.sectionTypes === 0) return ["## Section library", "", "No sections found."].join("\n");
 
@@ -60,13 +95,7 @@ export function sectionLibrarySection(input: ReportInput, metrics: ReportMetrics
     "",
     `The pages are built from ${countLabel(metrics.sectionTypes, "distinct section type", "distinct section types")} `
       + `used ${metrics.sectionInstances === 1 ? "once" : `${metrics.sectionInstances} times`} in total: `
-      + `${countLabel(metrics.reusedSectionTypes, "type appears", "types appear")} more than once, `
-      + `${countWord(metrics.singleUseSectionTypes)} `
-      + `${metrics.singleUseSectionTypes === 1 ? "appears" : "appear"} exactly once, `
-      + `${countWord(metrics.dualSourceSectionTypes)} `
-      + `${metrics.dualSourceSectionTypes === 1 ? "is" : "are"} used both as page-builder blocks and inside `
-      + `collection templates, and ${countWord(metrics.collectionOnlySectionTypes)} `
-      + `${metrics.collectionOnlySectionTypes === 1 ? "exists" : "exist"} only inside a collection template.`,
+      + `${breakdown(metrics)}.`,
     "",
     table(
       ["Section", "Instances", "Where it appears", "Used as"],

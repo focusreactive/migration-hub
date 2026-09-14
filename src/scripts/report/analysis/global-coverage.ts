@@ -39,3 +39,20 @@ export function coveredPages(coverage: GlobalCoverage): number {
 export function totalPages(coverage: GlobalCoverage): number {
   return coverage.staticTotal + coverage.collectionsTotal;
 }
+
+export function coveragePhrase(covered: number, total: number, singular: string, plural: string): string {
+  if (covered === total) return total === 1 ? `the ${singular}` : `all ${total} ${plural}`;
+  if (covered === 0) return `no ${total === 1 ? singular : plural}`;
+  return `${covered} of ${total} ${plural}`;
+}
+
+export function coverageSpanPhrase(
+  lowest: number,
+  highest: number,
+  total: number,
+  singular: string,
+  plural: string,
+): string {
+  if (lowest === highest) return coveragePhrase(lowest, total, singular, plural);
+  return `${lowest}–${highest} of ${total} ${plural}`;
+}

@@ -13,8 +13,8 @@ export function contentModelSection(input: ReportInput, metrics: ReportMetrics):
     "## Content model",
     "",
     `${countLabel(metrics.collections, "collection makes", "collections make")} up the CMS side of this site. `
-      + "Each is rendered through a single template page that every entry in it reuses, so the entries below "
-      + "differ in content, not in layout.",
+      + `${metrics.collections === 1 ? "It is" : "Each is"} rendered through a single template page that every `
+      + "entry in it reuses, so the entries below differ in content, not in layout.",
     "",
     table(
       ["Collection", "Route pattern", "Entries"],
