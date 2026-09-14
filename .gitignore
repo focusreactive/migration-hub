@@ -4,3 +4,4 @@ node_modules/
 *.log
 .cache/
 .claude/scheduled_tasks.lock
+.worktrees/
