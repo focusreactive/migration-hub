@@ -38,18 +38,19 @@ describe("renderReport against the pearlstudio fixture artifacts", () => {
       forms,
       blocks,
       globals,
+      narrative: { site: "Pearl Studio is the site of a design studio.", design: "The design is quiet and typographic." },
     };
 
     const markdown = renderReport(input);
 
     expect(markdown).toContain("Framer");
-    expect(markdown).toContain("| Journal | /journal/:slug | 2 |");
+    expect(markdown).toContain("| Journal | `/journal/:slug` | 2 |");
     expect(markdown).toContain("| Hero | 3 |");
     expect(markdown).toContain("| Header | 3 |");
     expect(markdown).toMatch(/\| Forms \| 2 \|/);
 
-    expect(markdown).toContain("| Name, Email, company | 3 | handled by the platform | /, /about |");
-    expect(markdown).toContain("| Name, Email, Subject, Message, website | 5 | handled by the platform | /contact |");
+    expect(markdown).toContain("| Name, Email, company | 3 (`Name`, `Email`, `company`) |");
+    expect(markdown).toContain("## How the migration runs");
     expect(markdown).toContain("| Byline | 1 | Journal (collection template) | Collection section |");
   });
 });

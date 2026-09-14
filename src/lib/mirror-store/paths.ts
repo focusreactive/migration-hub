@@ -1,12 +1,12 @@
 import { join } from "node:path/posix";
 
-import { ESTIMATE_DIR } from "#ir/artifact.ts";
+import { ASSESSMENT_DIR } from "#ir/artifact.ts";
 import { sanitizeFileName } from "#lib/fs.ts";
 import { routeFromUrl } from "#lib/url.ts";
 
 import type { MirrorKind } from "./types.ts";
 
-export const MIRROR_DIR = join(ESTIMATE_DIR, "mirror");
+export const MIRROR_DIR = join(ASSESSMENT_DIR, "mirror");
 
 const FILE_KIND_DIRS: Record<Exclude<MirrorKind, "probe" | "page">, string> = {
   style: "styles",

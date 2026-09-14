@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { ESTIMATE_DIR } from "#ir/artifact.ts";
+import { ASSESSMENT_DIR } from "#ir/artifact.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
 import { MANIFEST_SCHEMA_VERSION, manifestSchema, type Manifest, type StepRecord } from "#lib/manifest/schema.ts";
 
@@ -18,7 +18,7 @@ export class ManifestVersionError extends Error {
 }
 
 function manifestPath(projectPath: string): string {
-  return join(projectPath, ESTIMATE_DIR, "manifest.json");
+  return join(projectPath, ASSESSMENT_DIR, "manifest.json");
 }
 
 async function writeManifest(projectPath: string, manifest: Manifest): Promise<void> {

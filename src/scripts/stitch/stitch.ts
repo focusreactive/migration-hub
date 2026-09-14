@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { ESTIMATE_DIR, readArtifact } from "#ir/artifact.ts";
+import { ASSESSMENT_DIR, readArtifact } from "#ir/artifact.ts";
 import { pagesArtifact } from "#ir/pages.ts";
-import { loadEstimateConfig } from "#lib/estimate-config/index.ts";
+import { loadAssessmentConfig } from "#lib/assessment-config/index.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
 import { readManifest, withStep } from "#lib/manifest/index.ts";
 import { routeDir } from "#lib/route-dir.ts";
@@ -14,12 +14,12 @@ import { createPlaywrightDriver } from "./create-playwright-driver.ts";
 import { captureRoutes } from "./utils/capture-routes.ts";
 
 export function stitchPngPath(projectPath: string, route: string): string {
-  return join(projectPath, ESTIMATE_DIR, "artifacts", "stitch", routeDir(route), "desktop.png");
+  return join(projectPath, ASSESSMENT_DIR, "artifacts", "stitch", routeDir(route), "desktop.png");
 }
 
 export async function runStitch(projectPath: string, force: boolean): Promise<void> {
   const runConfig = await loadRunConfig(projectPath);
-  const config = loadEstimateConfig();
+  const config = loadAssessmentConfig();
   const pages = await readArtifact(projectPath, pagesArtifact);
   const routes = captureRoutes(pages);
   const origin = new URL(runConfig.sourceUrl).origin;

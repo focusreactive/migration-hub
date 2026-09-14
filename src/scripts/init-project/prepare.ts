@@ -2,9 +2,9 @@ import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
-import { ESTIMATE_DIR } from "#ir/artifact.ts";
+import { ASSESSMENT_DIR } from "#ir/artifact.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
-import { loadEstimateConfig, toolRootDir } from "#lib/estimate-config/index.ts";
+import { loadAssessmentConfig, toolRootDir } from "#lib/assessment-config/index.ts";
 import { initManifest } from "#lib/manifest/index.ts";
 import { runConfigPath } from "#run-config/load.ts";
 
@@ -16,7 +16,7 @@ export function projectNameFromUrl(sourceUrl: string): string {
 }
 
 export async function prepareProject(sourceUrl: string): Promise<{ status: "created" | "existing"; projectPath: string }> {
-  const config = loadEstimateConfig();
+  const config = loadAssessmentConfig();
   const workspace = isAbsolute(config.workspace.path)
     ? config.workspace.path
     : resolve(toolRootDir(), config.workspace.path);
@@ -24,7 +24,7 @@ export async function prepareProject(sourceUrl: string): Promise<{ status: "crea
   const projectName = projectNameFromUrl(sourceUrl);
   const projectPath = join(workspace, projectName);
 
-  if (existsSync(join(projectPath, ESTIMATE_DIR, "manifest.json"))) {
+  if (existsSync(join(projectPath, ASSESSMENT_DIR, "manifest.json"))) {
     return { status: "existing", projectPath };
   }
 

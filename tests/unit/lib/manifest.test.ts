@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { initManifest, readManifest, withStep } from "../../../src/lib/manifest/index.ts";
 
 async function project(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "estimate-"));
+  const dir = await mkdtemp(join(tmpdir(), "assessment-"));
   await initManifest(dir, { toolVersion: "0.1.0", sourceUrl: "https://example.com/" });
   return dir;
 }

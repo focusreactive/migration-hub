@@ -5,6 +5,7 @@ import { fontFamiliesArtifact, mediaAssetsArtifact } from "#ir/assets.ts";
 import { detectArtifact } from "#ir/detect.ts";
 import { discoveryBlocksArtifact, discoveryGlobalsArtifact } from "#ir/discovery.ts";
 import { formsArtifact } from "#ir/forms.ts";
+import { narrativeArtifact, type NarrativeData } from "#ir/narrative.ts";
 import { pagesArtifact } from "#ir/pages.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
@@ -15,6 +16,19 @@ import { renderReport, type ReportInput } from "./render-report.ts";
 
 function reportPath(projectPath: string): string {
   return join(projectPath, "report.md");
+}
+
+async function readNarrative(projectPath: string): Promise<NarrativeData> {
+  try {
+    return await readArtifact(projectPath, narrativeArtifact);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+
+    throw new Error(
+      `The report needs ${narrativeArtifact.relativePath}, which has not been written yet. Run the narrative step first: --narrative-subject to get the subject, then --narrative-accept once the response is written.`,
+      { cause: error },
+    );
+  }
 }
 
 export async function runReport(projectPath: string, force: boolean): Promise<void> {
@@ -34,13 +48,14 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
         );
       }
 
-      const [pages, media, fonts, forms, blocks, globals] = await Promise.all([
+      const [pages, media, fonts, forms, blocks, globals, narrative] = await Promise.all([
         readArtifact(projectPath, pagesArtifact),
         readArtifact(projectPath, mediaAssetsArtifact),
         readArtifact(projectPath, fontFamiliesArtifact),
         readArtifact(projectPath, formsArtifact),
         readArtifact(projectPath, discoveryBlocksArtifact),
         readArtifact(projectPath, discoveryGlobalsArtifact),
+        readNarrative(projectPath),
       ]);
 
       const input: ReportInput = {
@@ -52,6 +67,7 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
         forms,
         blocks,
         globals,
+        narrative,
       };
 
       const path = reportPath(projectPath);

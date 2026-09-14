@@ -15,7 +15,7 @@ const probeArtifact: ArtifactDef<{ value: number }> = {
 
 describe("artifact", () => {
   it("writes the data at the top level without an envelope", async () => {
-    const project = await mkdtemp(join(tmpdir(), "estimate-"));
+    const project = await mkdtemp(join(tmpdir(), "assessment-"));
     await writeArtifact(project, probeArtifact, { value: 7 });
 
     const raw: unknown = JSON.parse(await readFile(artifactPath(project, probeArtifact), "utf8"));
@@ -24,14 +24,14 @@ describe("artifact", () => {
   });
 
   it("reads back the data directly", async () => {
-    const project = await mkdtemp(join(tmpdir(), "estimate-"));
+    const project = await mkdtemp(join(tmpdir(), "assessment-"));
     await writeArtifact(project, probeArtifact, { value: 7 });
 
     expect(await readArtifact(project, probeArtifact)).toEqual({ value: 7 });
   });
 
   it("rejects a payload with an unknown key", async () => {
-    const project = await mkdtemp(join(tmpdir(), "estimate-"));
+    const project = await mkdtemp(join(tmpdir(), "assessment-"));
 
     await expect(
       writeArtifact(project, probeArtifact, { value: 7, extra: 1 } as unknown as { value: number }),

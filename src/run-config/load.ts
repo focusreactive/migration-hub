@@ -1,12 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { ESTIMATE_DIR } from "#ir/artifact.ts";
+import { ASSESSMENT_DIR } from "#ir/artifact.ts";
 
 import { runConfigSchema, type RunConfig } from "./schema.ts";
 
 export function runConfigPath(projectPath: string): string {
-  return join(projectPath, ESTIMATE_DIR, "run-config.json");
+  return join(projectPath, ASSESSMENT_DIR, "run-config.json");
 }
 
 export async function loadRunConfig(projectPath: string): Promise<RunConfig> {

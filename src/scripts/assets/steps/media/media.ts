@@ -2,7 +2,7 @@ import { resolveAdapter } from "#adapters/shared/resolve-adapter.ts";
 import { artifactPath, readArtifact, writeArtifact } from "#ir/artifact.ts";
 import { mediaAssetsArtifact, type MediaAssetsData } from "#ir/assets.ts";
 import { pagesArtifact } from "#ir/pages.ts";
-import { loadEstimateConfig } from "#lib/estimate-config/index.ts";
+import { loadAssessmentConfig } from "#lib/assessment-config/index.ts";
 import { createFetchClient } from "#lib/fetch/create-fetch-client/index.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
 import { openMirrorStore, readOnlyClient } from "#lib/mirror-store/index.ts";
@@ -15,7 +15,7 @@ import { buildMediaAssets } from "./build-media-assets.ts";
 
 export async function runMedia(projectPath: string, force: boolean): Promise<void> {
   const runConfig = await loadRunConfig(projectPath);
-  const config = loadEstimateConfig();
+  const config = loadAssessmentConfig();
 
   const store = await openMirrorStore(projectPath, readOnlyClient());
   const client = createFetchClient({
