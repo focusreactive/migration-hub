@@ -78,14 +78,15 @@ Reads `detect.json`, `pages.json`, `assets/media.json`, `assets/fonts.json`,
 `forms.json`, `discovery/blocks.json`, `discovery/globals.json` and
 `report/narrative.json`, and renders them into `<projectPath>/report.md`.
 The report opens with the two narrative paragraphs from Step 1, then a
-Scope-at-a-glance table of the page, collection, section, global, media,
-font and form counts; a complexity assessment rating five areas (content
+Scope-at-a-glance table of the route, unique-layout-page, collection,
+section, global, media, font and form counts; a complexity assessment rating
+five areas (content
 model, page composition, design system & assets, forms & integrations,
 content volume) Low/Medium/High from those counts, each with a paragraph
 derived from the same numbers; the content-model, page-builder-page,
 section-library, globals, forms and media inventories — including, per
-block, whether it was found on a page-builder page, inside a CMS collection
-template, or both (`kinds`, see `phases/discovery/PHASE.md`); a
+block, whether it was found on a page-builder page, inside a collection
+template page, or both (`kinds`, see `phases/discovery/PHASE.md`); a
 risks-and-watch-outs list assembled from rules over those counts (form
 handling, asset hosting, alt text, utility-page sections, dual-source
 sections, interactions, inferred fields, redirects — each rule fires only
@@ -104,6 +105,25 @@ leaves the existing `report.md` untouched. Pass `--force` to regenerate it —
 on an unchanged project this produces byte-for-byte the same file, since every
 input artifact is unchanged; it is what to run after re-running an earlier
 phase with `--force` and wanting the report to reflect it.
+
+## Vocabulary
+
+Every count in `report.md` counts one of the things defined in
+`docs/glossary.md`, and that file is the arbiter when two numbers seem to
+disagree. The terms that bite most often:
+
+- a **route** is one published URL (`pages.json`, every entry);
+- a **page-builder page** is a route composed by hand (`kind: "static"`);
+- a **collection document** is one record in a collection (`kind: "item"`);
+- a **collection template page** is the single layout all of a collection's
+  documents render through, one per collection;
+- a **unique layout page** is a page-builder page or a collection template
+  page — every distinct layout on the site, exactly once. This is the capture
+  set `stitch` screenshots and `discovery` segments, so it is also the
+  denominator for every per-section and global-coverage claim.
+
+Never write "page", "entry" or "template" unqualified in report copy — each is
+ambiguous between two of the terms above.
 
 ## Verify
 

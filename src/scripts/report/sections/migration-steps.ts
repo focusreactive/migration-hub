@@ -16,16 +16,17 @@ function discovery(metrics: ReportMetrics): string {
     return `${subject} ${metrics.routes === 1 ? "a page-builder page" : "page-builder pages"}.`;
   }
 
-  const collectionsClause = countLabel(metrics.collections, "collection template", "collection templates");
+  const collectionsClause = countLabel(metrics.collections, "collection template page", "collection template pages");
 
-  if (metrics.staticPages === 0) {
+  if (metrics.pageBuilderPages === 0) {
     return `${subject} split into ${collectionsClause}.`;
   }
 
   return (
     `${subject} split into `
-    + `${countLabel(metrics.staticPages, "page-builder page", "page-builder pages")} and `
-    + `${collectionsClause}.`
+    + `${countLabel(metrics.pageBuilderPages, "page-builder page", "page-builder pages")} and `
+    + `${collectionsClause} — `
+    + `${countLabel(metrics.uniqueLayoutPages, "unique layout page", "unique layout pages")} in all.`
   );
 }
 
@@ -75,10 +76,10 @@ function extraction(metrics: ReportMetrics): string {
   }
 
   const collectionsClause =
-    `the ${countLabel(metrics.collections, "collection template", "collection templates")} and the page `
+    `the ${countLabel(metrics.collections, "collection template page", "collection template pages")} and the page `
     + "structures first";
 
-  if (metrics.entries === 0) {
+  if (metrics.collectionDocuments === 0) {
     return (
       `The content model is derived from ${collectionsClause}, then the content of `
       + `${routesPhrase(metrics.routes)} is extracted against it.`
@@ -87,7 +88,7 @@ function extraction(metrics: ReportMetrics): string {
 
   return (
     `The content model is derived from ${collectionsClause}, then the `
-    + `${countLabel(metrics.entries, "collection entry", "collection entries")} `
+    + `${countLabel(metrics.collectionDocuments, "collection document", "collection documents")} `
     + `and the content of ${routesPhrase(metrics.routes)} are extracted against it.`
   );
 }

@@ -4,6 +4,7 @@ import { FONT_SOURCE_LABEL } from "../constants/font-source.ts";
 import { SOURCE_LABEL } from "../constants/labels.ts";
 import type { ReportInput } from "../types.ts";
 import { collectionNameFromRoutePattern } from "../utils/collection-name.ts";
+import { countLabel } from "../utils/count.ts";
 import { table } from "../utils/table.ts";
 
 function collectionsReading(input: ReportInput): string {
@@ -49,8 +50,8 @@ function coverageReading(coverages: GlobalCoverage[]): string {
       spanPhrase(
         coverages.map((coverage) => coverage.collectionsCovered),
         collectionsTotal,
-        "collection template",
-        "collection templates",
+        "collection template page",
+        "collection template pages",
       ),
     );
   }
@@ -68,6 +69,26 @@ function globalsReading(input: ReportInput): string {
   if (coverages.every((coverage) => isFullCoverage(coverage))) return `${names}, on every page`;
 
   return `${names}, on ${coverageReading(coverages)}`;
+}
+
+function routesReading(metrics: ReportMetrics): string {
+  const pageBuilder = countLabel(metrics.pageBuilderPages, "page-builder page", "page-builder pages");
+  if (metrics.collectionDocuments === 0) return pageBuilder;
+
+  const documents = countLabel(metrics.collectionDocuments, "collection document", "collection documents");
+  if (metrics.pageBuilderPages === 0) return documents;
+
+  return `${pageBuilder} and ${documents}`;
+}
+
+function uniqueLayoutPagesReading(metrics: ReportMetrics): string {
+  if (metrics.collections === 0) return "every page-builder page; no collection to template";
+  if (metrics.pageBuilderPages === 0) return "one document per collection template page";
+
+  return (
+    `${countLabel(metrics.pageBuilderPages, "page-builder page", "page-builder pages")} plus one document per `
+    + "collection template page — every distinct layout, once"
+  );
 }
 
 function sectionTypesReading(metrics: ReportMetrics): string {
@@ -110,12 +131,8 @@ export function scopeSection(input: ReportInput, metrics: ReportMetrics): string
     table(
       ["What", "Count", "Reading"],
       [
-        [
-          "Pages",
-          String(metrics.routes),
-          `${metrics.staticPages} hand-composed, ${metrics.entries} CMS `
-          + `${metrics.entries === 1 ? "entry" : "entries"}`,
-        ],
+        ["Routes", String(metrics.routes), routesReading(metrics)],
+        ["Unique layout pages", String(metrics.uniqueLayoutPages), uniqueLayoutPagesReading(metrics)],
         ["Collections", String(metrics.collections), collectionsReading(input)],
         ["Section types", String(metrics.sectionTypes), sectionTypesReading(metrics)],
         ["Shared globals", String(metrics.globals), globalsReading(input)],

@@ -44,7 +44,7 @@ export function memberPagesList(pages: PagesData, members: { route: string }[]):
 
   if (uniqueCollectionNames.length === 0) return parts.join(", ");
 
-  const suffix = uniqueCollectionNames.length > 1 ? "collection templates" : "collection template";
+  const suffix = uniqueCollectionNames.length > 1 ? "collection template pages" : "collection template page";
   return `${parts.join(", ")} (${suffix})`;
 }
 
@@ -64,13 +64,13 @@ function breakdownClauses(metrics: ReportMetrics): BreakdownClause[] {
     { count: metrics.singleUseSectionTypes, singular: "appears exactly once", plural: "appear exactly once" },
     {
       count: metrics.dualSourceSectionTypes,
-      singular: "is used both as page-builder blocks and inside collection templates",
-      plural: "are used both as page-builder blocks and inside collection templates",
+      singular: "is used both as a page-builder block and inside a collection template page",
+      plural: "are used both as page-builder blocks and inside collection template pages",
     },
     {
       count: metrics.collectionOnlySectionTypes,
-      singular: "exists only inside a collection template",
-      plural: "exist only inside a collection template",
+      singular: "exists only inside a collection template page",
+      plural: "exist only inside a collection template page",
     },
   ].filter((clause) => clause.count > 0);
 }
@@ -93,7 +93,8 @@ export function sectionLibrarySection(input: ReportInput, metrics: ReportMetrics
   return [
     "## Section library",
     "",
-    `The pages are built from ${countLabel(metrics.sectionTypes, "distinct section type", "distinct section types")} `
+    `The ${countLabel(metrics.uniqueLayoutPages, "unique layout page is", "unique layout pages are")} built from `
+      + `${countLabel(metrics.sectionTypes, "distinct section type", "distinct section types")} `
       + `used ${metrics.sectionInstances === 1 ? "once" : `${metrics.sectionInstances} times`} in total: `
       + `${breakdown(metrics)}.`,
     "",

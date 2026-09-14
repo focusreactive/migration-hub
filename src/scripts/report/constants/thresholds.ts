@@ -9,7 +9,7 @@ export const COMPLEXITY_THRESHOLDS = {
   images: { low: 150, medium: 600 },
   fonts: { low: 3, medium: 5 },
   forms: { low: 1, medium: 5 },
-  entries: { low: 50, medium: 500 },
+  collectionDocuments: { low: 50, medium: 500 },
 } as const satisfies Record<string, Threshold>;
 
 export const MISSING_ALT_SHARE = 0.2;

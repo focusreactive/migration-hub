@@ -13,11 +13,11 @@ export function contentModelSection(input: ReportInput, metrics: ReportMetrics):
     "## Content model",
     "",
     `${sentenceCountLabel(metrics.collections, "collection makes", "collections make")} up the CMS side of this site. `
-      + `${metrics.collections === 1 ? "It is" : "Each is"} rendered through a single template page that every `
-      + "entry in it reuses, so the entries below differ in content, not in layout.",
+      + `${metrics.collections === 1 ? "It is" : "Each is"} rendered through a single collection template page `
+      + "that every document in it reuses, so the documents below differ in content, not in layout.",
     "",
     table(
-      ["Collection", "Route pattern", "Entries"],
+      ["Collection", "Route pattern", "Documents"],
       input.pages.collections.map((collection) => [
         collectionNameFromRoutePattern(collection.routePattern),
         `\`${collection.routePattern}\``,

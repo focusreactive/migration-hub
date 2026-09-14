@@ -145,7 +145,7 @@ describe("assessRisks", () => {
     const risk = riskFor(reportInput(), "dualSourceSections");
 
     expect(risk?.title).toBe("One section is used in two different ways.");
-    expect(risk?.body).toContain("page-builder blocks and inside collection templates");
+    expect(risk?.body).toContain("page-builder blocks and inside collection template pages");
   });
 
   it("reports interactions and names the platform when a block carries a motion role", () => {
@@ -181,14 +181,14 @@ describe("assessRisks", () => {
     expect(riskFor(input, "forms")?.body).toContain("The one form on this site posts to Webflow's built-in handler");
   });
 
-  it("counts published entries as a word at one and drops the counter at zero", () => {
+  it("counts published documents as a word at one and drops the counter at zero", () => {
     const input = reportInput();
     const metrics = computeMetrics(input);
 
-    expect(assessRisks(input, { ...metrics, entries: 1 }).find((risk) => risk.id === "inferredFields")?.body)
-      .toContain("With one published entry, fields that exist");
-    expect(assessRisks(input, { ...metrics, entries: 0 }).find((risk) => risk.id === "inferredFields")?.body)
-      .toContain("With no published entry to read from, fields that exist");
+    expect(assessRisks(input, { ...metrics, collectionDocuments: 1 }).find((risk) => risk.id === "inferredFields")?.body)
+      .toContain("With one published document, fields that exist");
+    expect(assessRisks(input, { ...metrics, collectionDocuments: 0 }).find((risk) => risk.id === "inferredFields")?.body)
+      .toContain("With no published document to read from, fields that exist");
   });
 
   it("names assets rather than zero images when the hosted assets are not images", () => {

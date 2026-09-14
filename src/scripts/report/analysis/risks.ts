@@ -38,9 +38,9 @@ function hostedAssetsSubject(metrics: ReportMetrics): string {
   return metrics.images === 1 ? "The one image is" : `All ${metrics.images} images are`;
 }
 
-function publishedEntriesClause(metrics: ReportMetrics): string {
-  if (metrics.entries === 0) return "With no published entry to read from";
-  return `With ${countLabel(metrics.entries, "published entry", "published entries")}`;
+function publishedDocumentsClause(metrics: ReportMetrics): string {
+  if (metrics.collectionDocuments === 0) return "With no published document to read from";
+  return `With ${countLabel(metrics.collectionDocuments, "published document", "published documents")}`;
 }
 
 export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] {
@@ -109,7 +109,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
         + `${metrics.dualSourceSectionTypes === 1 ? "section is" : "sections are"} used in two different ways.`,
       body:
         `${metrics.dualSourceSectionTypes === 1 ? "It appears" : "They appear"} both as page-builder blocks and `
-        + "inside collection templates. *Plan for:* components designed to take either author-picked content "
+        + "inside collection template pages. *Plan for:* components designed to take either author-picked content "
         + "or CMS-referenced content, decided before they are built rather than retrofitted.",
     });
   }
@@ -130,7 +130,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
       id: "inferredFields",
       title: "The CMS field model is inferred from rendered pages.",
       body:
-        `${publishedEntriesClause(metrics)}, fields that exist in ${platform} but are not rendered by any `
+        `${publishedDocumentsClause(metrics)}, fields that exist in ${platform} but are not rendered by any `
         + "template are invisible to this analysis. *Plan for:* a short review of the source field list against "
         + "the proposed schema before content migration starts.",
     });

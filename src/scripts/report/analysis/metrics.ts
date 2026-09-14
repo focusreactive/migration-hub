@@ -7,9 +7,10 @@ import { isUtilitySectionType } from "./utility-pages.ts";
 
 export interface ReportMetrics {
   routes: number;
-  staticPages: number;
+  pageBuilderPages: number;
   collections: number;
-  entries: number;
+  collectionDocuments: number;
+  uniqueLayoutPages: number;
   sectionTypes: number;
   sectionInstances: number;
   reusedSectionTypes: number;
@@ -52,11 +53,15 @@ export function computeMetrics(input: Omit<ReportInput, "narrative">): ReportMet
     if (host !== undefined) hosts.add(host);
   }
 
+  const pageBuilderPages = input.pages.pages.filter((page) => page.kind === "static").length;
+  const collections = input.pages.collections.length;
+
   return {
     routes: input.pages.pages.length,
-    staticPages: input.pages.pages.filter((page) => page.kind === "static").length,
-    collections: input.pages.collections.length,
-    entries: input.pages.collections.reduce((total, collection) => total + collection.itemCount, 0),
+    pageBuilderPages,
+    collections,
+    collectionDocuments: input.pages.collections.reduce((total, collection) => total + collection.itemCount, 0),
+    uniqueLayoutPages: pageBuilderPages + collections,
     sectionTypes: input.blocks.types.length,
     sectionInstances: input.blocks.types.reduce((total, type) => total + type.instanceCount, 0),
     reusedSectionTypes: input.blocks.types.filter((type) => type.instanceCount > 1).length,

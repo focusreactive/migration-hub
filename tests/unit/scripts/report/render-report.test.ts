@@ -58,8 +58,9 @@ describe("renderReport", () => {
     expect(renderReport(INPUT)).toContain("Framer");
   });
 
-  it("counts every page including collection items", () => {
-    expect(renderReport(INPUT)).toMatch(/\| Pages \| 4 \|/);
+  it("counts every route including collection documents, and the unique layouts behind them", () => {
+    expect(renderReport(INPUT)).toMatch(/\| Routes \| 4 \|/);
+    expect(renderReport(INPUT)).toMatch(/\| Unique layout pages \| 3 \|/);
   });
 
   it("excludes duplicate media from the image count", () => {
@@ -109,7 +110,7 @@ describe("renderReport", () => {
     const row = renderReport(INPUT)
       .split("\n")
       .find((line) => line.startsWith("| CTA panel |"));
-    expect(row).toBe("| CTA panel | 2 | `/about`, Journal (collection template) | Block, Collection section |");
+    expect(row).toBe("| CTA panel | 2 | `/about`, Journal (collection template page) | Block, Collection section |");
   });
 
   it("links both tools for the detected source", () => {

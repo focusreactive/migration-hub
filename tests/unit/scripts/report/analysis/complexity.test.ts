@@ -6,9 +6,10 @@ import { reportInput } from "../fixtures/report-input.ts";
 
 const NOVA_LIKE = {
   routes: 22,
-  staticPages: 9,
+  pageBuilderPages: 9,
   collections: 3,
-  entries: 13,
+  collectionDocuments: 13,
+  uniqueLayoutPages: 12,
   sectionTypes: 34,
   sectionInstances: 54,
   reusedSectionTypes: 11,

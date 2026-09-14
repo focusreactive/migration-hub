@@ -88,7 +88,7 @@ describe("complexitySection", () => {
     expect(md).toContain("room to review every record by hand afterwards");
 
     const heavy = reportInput();
-    const heavyMetrics = { ...computeMetrics(heavy), entries: 900 };
+    const heavyMetrics = { ...computeMetrics(heavy), collectionDocuments: 900 };
     const heavyMd = complexitySection(assessComplexity(heavyMetrics).areas, heavy, heavyMetrics);
 
     expect(heavyMd).not.toContain("room to review every record by hand afterwards");
@@ -161,17 +161,17 @@ describe("complexitySection", () => {
   });
 
   it("replaces the content-volume and content-model counters when the counters are zero", () => {
-    const noEntries = { ...METRICS, entries: 0 };
-    const noEntriesMd = complexitySection(assessComplexity(noEntries).areas, INPUT, noEntries);
+    const noDocuments = { ...METRICS, collectionDocuments: 0 };
+    const noDocumentsMd = complexitySection(assessComplexity(noDocuments).areas, INPUT, noDocuments);
 
-    expect(noEntriesMd).toContain("with no published entries yet");
-    expect(noEntriesMd).not.toContain("0 published entries");
+    expect(noDocumentsMd).toContain("with no published documents yet");
+    expect(noDocumentsMd).not.toContain("0 published documents");
 
-    const noCollections = { ...METRICS, collections: 0, entries: 0 };
+    const noCollections = { ...METRICS, collections: 0, collectionDocuments: 0 };
     const noCollectionsMd = complexitySection(assessComplexity(noCollections).areas, INPUT, noCollections);
 
     expect(noCollectionsMd).toContain("no document types to carry over");
-    expect(noCollectionsMd).toContain("no collection entries to import");
+    expect(noCollectionsMd).toContain("no collection documents to import");
     expect(noCollectionsMd).not.toContain("0 collections");
   });
 
@@ -189,7 +189,7 @@ describe("inventory sections", () => {
   it("opens the content model with a lead line and keeps names in the table", () => {
     const md = contentModelSection(INPUT, METRICS);
 
-    expect(md).toContain("single template page that every entry in it reuses");
+    expect(md).toContain("single collection template page that every document in it reuses");
     expect(md).not.toContain("Journal,");
     expect(md).toContain("| Journal | `/journal/:slug` | 2 |");
   });
@@ -217,9 +217,10 @@ describe("inventory sections", () => {
     });
 
     expect(md).toContain(
-      "The pages are built from one distinct section type used once in total: one type appears more than once, "
-        + "one appears exactly once, one is used both as page-builder blocks and inside collection templates, "
-        + "and one exists only inside a collection template.",
+      "The 4 unique layout pages are built from one distinct section type used once in total: "
+        + "one type appears more than once, "
+        + "one appears exactly once, one is used both as a page-builder block and inside a collection template page, "
+        + "and one exists only inside a collection template page.",
     );
     expect(md).not.toContain("1 distinct section types");
     expect(md).not.toContain("1 times");
@@ -253,7 +254,7 @@ describe("inventory sections", () => {
   });
 
   it("says every page comes from a collection instead of counting zero page-builder pages", () => {
-    const md = pageBuilderPagesSection(INPUT, { ...METRICS, staticPages: 0 });
+    const md = pageBuilderPagesSection(INPUT, { ...METRICS, pageBuilderPages: 0 });
 
     expect(md).toContain("Every page on this site is generated from a collection");
     expect(md).not.toContain("0 pages stand");
@@ -261,9 +262,9 @@ describe("inventory sections", () => {
   });
 
   it("keeps the page-builder lead singular at one page", () => {
-    const md = pageBuilderPagesSection(INPUT, { ...METRICS, staticPages: 1 });
+    const md = pageBuilderPagesSection(INPUT, { ...METRICS, pageBuilderPages: 1 });
 
-    expect(md).toContain("One page stands on its own");
+    expect(md).toContain("One page-builder page stands on its own");
     expect(md).toContain("It is assembled section by section");
     expect(md).not.toContain("stands on their own");
   });
@@ -275,7 +276,7 @@ describe("inventory sections", () => {
     expect(md).not.toContain("Each is rendered");
   });
 
-  it("dedupes a repeated route and groups collection templates under one pluralised suffix", () => {
+  it("dedupes a repeated route and groups collection template pages under one pluralised suffix", () => {
     const input = reportInput({
       pages: {
         pages: [...INPUT.pages.pages, { route: "/services/x", kind: "item", collectionKey: "k2" }],
@@ -316,7 +317,7 @@ describe("inventory sections", () => {
     const md = sectionLibrarySection(input, metrics);
 
     expect(md).toContain("| Spacing scale specimen | 4 | `/utility-pages/style-guide` | Block |");
-    expect(md).toContain("Journal, Services (collection templates)");
+    expect(md).toContain("Journal, Services (collection template pages)");
   });
 
   it("explains that globals are authored once", () => {
@@ -356,7 +357,7 @@ describe("inventory sections", () => {
 
     expect(md).toContain(
       "One section is shared rather than placed per page. It wraps every page-builder page and the collection "
-        + "template, so it is authored once and reused everywhere.",
+        + "template page, so it is authored once and reused everywhere.",
     );
   });
 
@@ -364,7 +365,7 @@ describe("inventory sections", () => {
     const md = globalsSection(INPUT, METRICS);
 
     expect(md).toContain("| Global | Instances | Appears on |");
-    expect(md).toContain("| Header | 3 | 2 of 3 page-builder pages and the collection template |");
+    expect(md).toContain("| Header | 3 | 2 of 3 page-builder pages and the collection template page |");
     expect(md).not.toContain("| Header | 3 | every page-builder page");
 
     const fullyCoveredInput = reportInput({
@@ -389,7 +390,7 @@ describe("inventory sections", () => {
     const fullyCoveredMetrics = computeMetrics(fullyCoveredInput);
     const fullMd = globalsSection(fullyCoveredInput, fullyCoveredMetrics);
 
-    expect(fullMd).toContain("| Header | 4 | every page-builder page and the collection template |");
+    expect(fullMd).toContain("| Header | 4 | every page-builder page and the collection template page |");
 
     const singleGlobalPartialInput = reportInput({
       pages: {

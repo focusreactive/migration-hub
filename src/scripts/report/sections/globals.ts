@@ -7,9 +7,9 @@ import { wordNumber } from "../utils/word-number.ts";
 
 function collectionsClause(total: number): string {
   if (total === 0) return "";
-  if (total === 1) return " and the collection template";
-  if (total === 2) return " and both collection templates";
-  return ` and all ${wordNumber(total)} collection templates`;
+  if (total === 1) return " and the collection template page";
+  if (total === 2) return " and both collection template pages";
+  return ` and all ${wordNumber(total)} collection template pages`;
 }
 
 function appearsOnCell(coverage: GlobalCoverage): string {
@@ -28,8 +28,8 @@ function appearsOnCell(coverage: GlobalCoverage): string {
       coveragePhrase(
         coverage.collectionsCovered,
         coverage.collectionsTotal,
-        "collection template",
-        "collection templates",
+        "collection template page",
+        "collection template pages",
       ),
     );
   }

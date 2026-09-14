@@ -16,7 +16,7 @@ describe("headerSection", () => {
 
     expect(md).toContain("# Migration assessment — example.webflow.io");
     expect(md).toContain("**Source platform:** Webflow");
-    expect(md).toContain("**Pages analysed:** 5");
+    expect(md).toContain("**Routes analysed:** 5 · **Unique layout pages:** 4");
     expect(md).toContain("**Overall complexity: Low**");
   });
 });
@@ -36,9 +36,9 @@ describe("scopeSection", () => {
   it("reads each count out in the third column", () => {
     const md = scopeSection(INPUT, METRICS);
 
-    expect(md).toContain("| Pages | 5 | 3 hand-composed, 2 CMS entries |");
+    expect(md).toContain("| Routes | 5 | 3 page-builder pages and 2 collection documents |");
     expect(md).toContain("| Section types | 4 | 6 instances; 2 used only once |");
-    expect(md).toContain("| Pages | 5 | 3 hand-composed, 2 CMS entries |");
+    expect(md).toContain("| Routes | 5 | 3 page-builder pages and 2 collection documents |");
     expect(md).toContain("| Images | 2 | plus 1 duplicate already de-duplicated |");
   });
 
@@ -56,13 +56,21 @@ describe("scopeSection", () => {
     expect(empty).toContain("| Section types | 0 | — |");
   });
 
-  it("agrees the pages reading with the entry count", () => {
-    expect(scopeSection(INPUT, { ...METRICS, entries: 1 })).toContain("| Pages | 5 | 3 hand-composed, 1 CMS entry |");
+  it("agrees the routes reading with the document count", () => {
+    expect(scopeSection(INPUT, { ...METRICS, collectionDocuments: 1 })).toContain(
+      "| Routes | 5 | 3 page-builder pages and one collection document |",
+    );
+  });
+
+  it("spells out what a unique layout page is", () => {
+    expect(scopeSection(INPUT, METRICS)).toContain(
+      "| Unique layout pages | 4 | 3 page-builder pages plus one document per collection template page — every distinct layout, once |",
+    );
   });
 
   it("derives the shared-globals reading from the globals' own names and coverage", () => {
     expect(scopeSection(INPUT, METRICS)).toContain(
-      "| Shared globals | 1 | Header, on 2 of 3 page-builder pages and the collection template |",
+      "| Shared globals | 1 | Header, on 2 of 3 page-builder pages and the collection template page |",
     );
   });
 
@@ -98,7 +106,7 @@ describe("scopeSection", () => {
     });
 
     expect(spanned).toContain(
-      "| Shared globals | 2 | Nav and Footer, on 1–2 of 3 page-builder pages and no collection template |",
+      "| Shared globals | 2 | Nav and Footer, on 1–2 of 3 page-builder pages and no collection template page |",
     );
     expect(scopeFor({ globals: { types: [] } })).toContain("| Shared globals | 0 | — |");
   });

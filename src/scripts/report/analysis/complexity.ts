@@ -58,7 +58,7 @@ export function assessComplexity(metrics: ReportMetrics): { areas: ComplexityAre
     {
       id: "contentVolume",
       label: "Content volume",
-      rating: rate(metrics.entries, COMPLEXITY_THRESHOLDS.entries),
+      rating: rate(metrics.collectionDocuments, COMPLEXITY_THRESHOLDS.collectionDocuments),
     },
   ];
 

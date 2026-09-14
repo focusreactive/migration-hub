@@ -12,7 +12,7 @@ describe("countLabel", () => {
   });
 
   it("uses digits and the plural noun for anything else", () => {
-    expect(countLabel(3, "collection template", "collection templates")).toBe("3 collection templates");
+    expect(countLabel(3, "collection template page", "collection template pages")).toBe("3 collection template pages");
   });
 
   it("uses digits and the plural noun for zero", () => {

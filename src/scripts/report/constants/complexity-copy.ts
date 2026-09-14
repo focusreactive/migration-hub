@@ -165,7 +165,7 @@ function pageCompositionParagraph(metrics: ReportMetrics, _input: ReportInput, r
     sentences.push(
       `${sentenceCountWord(metrics.dualSourceSectionTypes)} `
       + `${metrics.dualSourceSectionTypes === 1 ? "type appears" : "types appear"} both as free-standing `
-      + "page-builder blocks and inside collection templates, so "
+      + "page-builder blocks and inside collection template pages, so "
       + `${metrics.dualSourceSectionTypes === 1 ? "that component has" : "those components have"} to accept `
       + "content from two different sources — worth deciding deliberately at the start rather than "
       + "retrofitting later.",
@@ -179,13 +179,13 @@ function pageCompositionParagraph(metrics: ReportMetrics, _input: ReportInput, r
 
 function contentVolumeParagraph(metrics: ReportMetrics, _input: ReportInput, rating: Rating): string {
   if (metrics.collections === 0) {
-    return "There are no collection entries to import at all — every page on this site is composed by hand.";
+    return "There are no collection documents to import at all — every page on this site is composed by hand.";
   }
 
-  if (metrics.entries === 0) {
+  if (metrics.collectionDocuments === 0) {
     return (
       `${sentenceCountLabel(metrics.collections, "collection is", "collections are")} in place, with no published `
-      + "entries yet, so there is nothing to import beyond the templates themselves."
+      + "documents yet, so there is nothing to import beyond the collection template pages themselves."
     );
   }
 
@@ -197,7 +197,7 @@ function contentVolumeParagraph(metrics: ReportMetrics, _input: ReportInput, rat
         + "sampled checks, and the content freeze has to be planned around that.";
 
   return (
-    `${sentenceCountLabel(metrics.entries, "published entry", "published entries")} across `
+    `${sentenceCountLabel(metrics.collectionDocuments, "published document", "published documents")} across `
     + `${countLabel(metrics.collections, "collection", "collections")}. ${passClause}`
   );
 }

@@ -9,8 +9,8 @@ export interface GlobalCoverage {
 
 export function coverageOf(input: ReportInput, members: { route: string }[]): GlobalCoverage {
   const memberRoutes = new Set(members.map((member) => member.route));
-  const staticPages = input.pages.pages.filter((page) => page.kind === "static");
-  const staticCovered = staticPages.filter((page) => memberRoutes.has(page.route)).length;
+  const pageBuilderPages = input.pages.pages.filter((page) => page.kind === "static");
+  const staticCovered = pageBuilderPages.filter((page) => memberRoutes.has(page.route)).length;
 
   const collectionsCovered = input.pages.collections.filter((collection) =>
     input.pages.pages.some(
@@ -20,7 +20,7 @@ export function coverageOf(input: ReportInput, members: { route: string }[]): Gl
 
   return {
     staticCovered,
-    staticTotal: staticPages.length,
+    staticTotal: pageBuilderPages.length,
     collectionsCovered,
     collectionsTotal: input.pages.collections.length,
   };

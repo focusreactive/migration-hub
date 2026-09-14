@@ -5,7 +5,7 @@ import { pageLabel } from "../utils/page-label.ts";
 import { table } from "../utils/table.ts";
 
 export function pageBuilderPagesSection(input: ReportInput, metrics: ReportMetrics): string {
-  if (metrics.staticPages === 0) {
+  if (metrics.pageBuilderPages === 0) {
     return [
       "## Page-builder pages",
       "",
@@ -13,20 +13,20 @@ export function pageBuilderPagesSection(input: ReportInput, metrics: ReportMetri
     ].join("\n");
   }
 
-  const staticPages = input.pages.pages.filter((page) => page.kind === "static");
+  const pageBuilderPages = input.pages.pages.filter((page) => page.kind === "static");
 
   return [
     "## Page-builder pages",
     "",
-    `${sentenceCountLabel(metrics.staticPages, "page stands", "pages stand")} on `
-      + `${metrics.staticPages === 1 ? "its" : "their"} own rather than being generated `
-      + `from a collection. ${metrics.staticPages === 1 ? "It is" : "Each is"} assembled section by section, so `
+    `${sentenceCountLabel(metrics.pageBuilderPages, "page-builder page stands", "page-builder pages stand")} on `
+      + `${metrics.pageBuilderPages === 1 ? "its" : "their"} own rather than being generated `
+      + `from a collection. ${metrics.pageBuilderPages === 1 ? "It is" : "Each is"} assembled section by section, so `
       + "its sections are configured by hand as page-builder blocks — added, reordered and edited per page "
       + "rather than driven by a template.",
     "",
     table(
       ["Page", "Slug"],
-      staticPages.map((page) => {
+      pageBuilderPages.map((page) => {
         const label = pageLabel(page.route);
         return [label.name, `\`${label.slug}\``];
       }),
