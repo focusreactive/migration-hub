@@ -78,7 +78,7 @@ Reads `detect.json`, `pages.json`, `assets/media.json`, `assets/fonts.json`,
 `forms.json`, `discovery/blocks.json`, `discovery/globals.json` and
 `report/narrative.json`, and renders them into `<projectPath>/report.md`.
 The report opens with the two narrative paragraphs from Step 1, then a
-Scope-at-a-glance table of the route, unique-layout-page, collection,
+Scope-at-a-glance table of the page, unique-layout-page, collection,
 section, global, media, font and form counts; a complexity assessment rating
 five areas (content
 model, page composition, design system & assets, forms & integrations,
@@ -112,8 +112,8 @@ Every count in `report.md` counts one of the things defined in
 `docs/glossary.md`, and that file is the arbiter when two numbers seem to
 disagree. The terms that bite most often:
 
-- a **route** is one published URL (`pages.json`, every entry);
-- a **page-builder page** is a route composed by hand (`kind: "static"`);
+- a **page** is one published URL (`pages.json`, every entry);
+- a **page-builder page** is a page composed by hand (`kind: "static"`);
 - a **collection document** is one record in a collection (`kind: "item"`);
 - a **collection template page** is the single layout all of a collection's
   documents render through, one per collection;
@@ -122,8 +122,9 @@ disagree. The terms that bite most often:
   set `stitch` screenshots and `discovery` segments, so it is also the
   denominator for every per-section and global-coverage claim.
 
-Never write "page", "entry" or "template" unqualified in report copy — each is
-ambiguous between two of the terms above.
+A bare "page" always means a published URL; never write "entry" or "template"
+unqualified, and never let a bare "page" count stand in for a page-builder,
+collection-template or unique-layout count.
 
 ## Verify
 

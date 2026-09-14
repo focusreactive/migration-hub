@@ -58,8 +58,8 @@ describe("renderReport", () => {
     expect(renderReport(INPUT)).toContain("Framer");
   });
 
-  it("counts every route including collection documents, and the unique layouts behind them", () => {
-    expect(renderReport(INPUT)).toMatch(/\| Routes \| 4 \|/);
+  it("counts every page including collection documents, and the unique layouts behind them", () => {
+    expect(renderReport(INPUT)).toMatch(/\| Pages \| 4 \|/);
     expect(renderReport(INPUT)).toMatch(/\| Unique layout pages \| 3 \|/);
   });
 

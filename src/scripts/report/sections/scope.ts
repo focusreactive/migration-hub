@@ -71,7 +71,7 @@ function globalsReading(input: ReportInput): string {
   return `${names}, on ${coverageReading(coverages)}`;
 }
 
-function routesReading(metrics: ReportMetrics): string {
+function pagesReading(metrics: ReportMetrics): string {
   const pageBuilder = countLabel(metrics.pageBuilderPages, "page-builder page", "page-builder pages");
   if (metrics.collectionDocuments === 0) return pageBuilder;
 
@@ -131,7 +131,7 @@ export function scopeSection(input: ReportInput, metrics: ReportMetrics): string
     table(
       ["What", "Count", "Reading"],
       [
-        ["Routes", String(metrics.routes), routesReading(metrics)],
+        ["Pages", String(metrics.pages), pagesReading(metrics)],
         ["Unique layout pages", String(metrics.uniqueLayoutPages), uniqueLayoutPagesReading(metrics)],
         ["Collections", String(metrics.collections), collectionsReading(input)],
         ["Section types", String(metrics.sectionTypes), sectionTypesReading(metrics)],

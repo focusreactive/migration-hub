@@ -138,7 +138,7 @@ export function assessRisks(input: ReportInput, metrics: ReportMetrics): Risk[] 
 
   risks.push({
     id: "redirects",
-    title: `${sentenceCountWord(metrics.routes)} ${metrics.routes === 1 ? "URL needs" : "URLs need"} a redirect map.`,
+    title: `${sentenceCountWord(metrics.pages)} ${metrics.pages === 1 ? "URL needs" : "URLs need"} a redirect map.`,
     body:
       "Route patterns are stable and map one-to-one, so this is bookkeeping rather than a problem — but it is "
       + "a launch blocker if it is skipped.",

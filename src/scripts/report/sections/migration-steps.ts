@@ -1,19 +1,19 @@
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import { countLabel } from "../utils/count.ts";
 
-function routesSubject(routes: number): string {
-  return routes === 1 ? "The one published route is" : `All ${routes} published routes are`;
+function pagesSubject(pages: number): string {
+  return pages === 1 ? "The one published page is" : `All ${pages} published pages are`;
 }
 
-function routesPhrase(routes: number): string {
-  return routes === 1 ? "the one route" : `all ${routes} routes`;
+function pagesPhrase(pages: number): string {
+  return pages === 1 ? "the one page" : `all ${pages} pages`;
 }
 
 function discovery(metrics: ReportMetrics): string {
-  const subject = routesSubject(metrics.routes);
+  const subject = pagesSubject(metrics.pages);
 
   if (metrics.collections === 0) {
-    return `${subject} ${metrics.routes === 1 ? "a page-builder page" : "page-builder pages"}.`;
+    return `${subject} ${metrics.pages === 1 ? "a page-builder page" : "page-builder pages"}.`;
   }
 
   const collectionsClause = countLabel(metrics.collections, "collection template page", "collection template pages");
@@ -71,7 +71,7 @@ function extraction(metrics: ReportMetrics): string {
   if (metrics.collections === 0) {
     return (
       "The content model is derived from the page structures first, then the content of "
-      + `${routesPhrase(metrics.routes)} is extracted against it.`
+      + `${pagesPhrase(metrics.pages)} is extracted against it.`
     );
   }
 
@@ -82,14 +82,14 @@ function extraction(metrics: ReportMetrics): string {
   if (metrics.collectionDocuments === 0) {
     return (
       `The content model is derived from ${collectionsClause}, then the content of `
-      + `${routesPhrase(metrics.routes)} is extracted against it.`
+      + `${pagesPhrase(metrics.pages)} is extracted against it.`
     );
   }
 
   return (
     `The content model is derived from ${collectionsClause}, then the `
     + `${countLabel(metrics.collectionDocuments, "collection document", "collection documents")} `
-    + `and the content of ${routesPhrase(metrics.routes)} are extracted against it.`
+    + `and the content of ${pagesPhrase(metrics.pages)} are extracted against it.`
   );
 }
 

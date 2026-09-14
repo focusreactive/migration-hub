@@ -16,7 +16,7 @@ describe("headerSection", () => {
 
     expect(md).toContain("# Migration assessment — example.webflow.io");
     expect(md).toContain("**Source platform:** Webflow");
-    expect(md).toContain("**Routes analysed:** 5 · **Unique layout pages:** 4");
+    expect(md).toContain("**Pages analysed:** 5 · **Unique layout pages:** 4");
     expect(md).toContain("**Overall complexity: Low**");
   });
 });
@@ -36,9 +36,9 @@ describe("scopeSection", () => {
   it("reads each count out in the third column", () => {
     const md = scopeSection(INPUT, METRICS);
 
-    expect(md).toContain("| Routes | 5 | 3 page-builder pages and 2 collection documents |");
+    expect(md).toContain("| Pages | 5 | 3 page-builder pages and 2 collection documents |");
     expect(md).toContain("| Section types | 4 | 6 instances; 2 used only once |");
-    expect(md).toContain("| Routes | 5 | 3 page-builder pages and 2 collection documents |");
+    expect(md).toContain("| Pages | 5 | 3 page-builder pages and 2 collection documents |");
     expect(md).toContain("| Images | 2 | plus 1 duplicate already de-duplicated |");
   });
 
@@ -56,9 +56,9 @@ describe("scopeSection", () => {
     expect(empty).toContain("| Section types | 0 | — |");
   });
 
-  it("agrees the routes reading with the document count", () => {
+  it("agrees the pages reading with the document count", () => {
     expect(scopeSection(INPUT, { ...METRICS, collectionDocuments: 1 })).toContain(
-      "| Routes | 5 | 3 page-builder pages and one collection document |",
+      "| Pages | 5 | 3 page-builder pages and one collection document |",
     );
   });
 

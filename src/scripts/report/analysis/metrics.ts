@@ -6,7 +6,7 @@ import { distinctForms } from "./distinct-forms.ts";
 import { isUtilitySectionType } from "./utility-pages.ts";
 
 export interface ReportMetrics {
-  routes: number;
+  pages: number;
   pageBuilderPages: number;
   collections: number;
   collectionDocuments: number;
@@ -57,7 +57,7 @@ export function computeMetrics(input: Omit<ReportInput, "narrative">): ReportMet
   const collections = input.pages.collections.length;
 
   return {
-    routes: input.pages.pages.length,
+    pages: input.pages.pages.length,
     pageBuilderPages,
     collections,
     collectionDocuments: input.pages.collections.reduce((total, collection) => total + collection.itemCount, 0),

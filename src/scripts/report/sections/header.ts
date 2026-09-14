@@ -10,7 +10,7 @@ export function headerSection(input: ReportInput, metrics: ReportMetrics, overal
   return [
     `# Migration assessment — ${hostname}`,
     "",
-    `**Source platform:** ${platform} · **Routes analysed:** ${metrics.routes} `
+    `**Source platform:** ${platform} · **Pages analysed:** ${metrics.pages} `
     + `· **Unique layout pages:** ${metrics.uniqueLayoutPages} · **Overall complexity: ${overall}**`,
   ].join("\n");
 }

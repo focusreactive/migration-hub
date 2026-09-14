@@ -26,7 +26,7 @@ describe("migrationStepsSection", () => {
 
     expect(md).toContain("## How the migration runs");
     expect(md).toContain(
-      "**Page discovery.** All 5 published routes are split into 3 page-builder pages and one collection "
+      "**Page discovery.** All 5 published pages are split into 3 page-builder pages and one collection "
         + "template page — 4 unique layout pages in all.",
     );
     expect(md).toContain("**Section generation.** A component is generated for each of the 4 section types, the one shared global and the one form.");
@@ -44,28 +44,28 @@ describe("migrationStepsSection", () => {
   it("uses the short variants on a site with no collections", () => {
     const md = migrationStepsSection({ ...METRICS, collections: 0, collectionDocuments: 0 });
 
-    expect(md).toContain("All 5 published routes are page-builder pages.");
+    expect(md).toContain("All 5 published pages are page-builder pages.");
     expect(md).toContain("The content model is derived from the page structures first");
     expect(md).not.toContain("0 collection template pages");
   });
 
-  it("keeps the route sentences singular on a single-route site", () => {
-    const md = migrationStepsSection({ ...METRICS, routes: 1, pageBuilderPages: 1, collections: 0, collectionDocuments: 0 });
+  it("keeps the page sentences singular on a single-route site", () => {
+    const md = migrationStepsSection({ ...METRICS, pages: 1, pageBuilderPages: 1, collections: 0, collectionDocuments: 0 });
 
-    expect(md).toContain("**Page discovery.** The one published route is a page-builder page.");
+    expect(md).toContain("**Page discovery.** The one published page is a page-builder page.");
     expect(md).toContain(
-      "The content model is derived from the page structures first, then the content of the one route is "
+      "The content model is derived from the page structures first, then the content of the one page is "
         + "extracted against it.",
     );
     expect(md).not.toContain("All 1 published routes");
     expect(md).not.toContain("all 1 routes");
   });
 
-  it("keeps the route sentences singular when the single route comes from a collection", () => {
-    const md = migrationStepsSection({ ...METRICS, routes: 1, pageBuilderPages: 0, collections: 1, collectionDocuments: 1 });
+  it("keeps the page sentences singular when the single route comes from a collection", () => {
+    const md = migrationStepsSection({ ...METRICS, pages: 1, pageBuilderPages: 0, collections: 1, collectionDocuments: 1 });
 
-    expect(md).toContain("**Page discovery.** The one published route is split into one collection template page.");
-    expect(md).toContain("the one collection document and the content of the one route are extracted against it.");
+    expect(md).toContain("**Page discovery.** The one published page is split into one collection template page.");
+    expect(md).toContain("the one collection document and the content of the one page are extracted against it.");
     expect(md).not.toContain("All 1 published routes");
   });
 
@@ -77,7 +77,7 @@ describe("migrationStepsSection", () => {
   it("drops the page-builder-pages clause when a collections-only site has no static pages", () => {
     const md = migrationStepsSection({ ...METRICS, pageBuilderPages: 0 });
 
-    expect(md).toContain("All 5 published routes are split into one collection template page.");
+    expect(md).toContain("All 5 published pages are split into one collection template page.");
     expect(md).not.toContain("0 page-builder");
     expect(md).not.toMatch(/ ,/);
     expect(md).not.toMatch(/ {2}/);
@@ -89,7 +89,7 @@ describe("migrationStepsSection", () => {
 
     expect(md).toContain(
       "The content model is derived from the one collection template page and the page structures first, "
-        + "then the content of all 5 routes is extracted against it.",
+        + "then the content of all 5 pages is extracted against it.",
     );
     expect(md).not.toContain("0 collection documents");
     expect(md).not.toMatch(/ ,/);

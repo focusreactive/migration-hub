@@ -4,10 +4,10 @@ import { computeMetrics } from "../../../../../src/scripts/report/analysis/metri
 import { reportInput } from "../fixtures/report-input.ts";
 
 describe("computeMetrics", () => {
-  it("counts routes, page-builder pages, collections, documents and unique layout pages", () => {
+  it("counts pages, page-builder pages, collections, documents and unique layout pages", () => {
     const metrics = computeMetrics(reportInput());
 
-    expect(metrics.routes).toBe(5);
+    expect(metrics.pages).toBe(5);
     expect(metrics.pageBuilderPages).toBe(3);
     expect(metrics.collections).toBe(1);
     expect(metrics.collectionDocuments).toBe(2);

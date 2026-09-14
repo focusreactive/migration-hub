@@ -5,7 +5,7 @@ import { assessComplexity } from "../../../../../src/scripts/report/analysis/com
 import { reportInput } from "../fixtures/report-input.ts";
 
 const NOVA_LIKE = {
-  routes: 22,
+  pages: 22,
   pageBuilderPages: 9,
   collections: 3,
   collectionDocuments: 13,
