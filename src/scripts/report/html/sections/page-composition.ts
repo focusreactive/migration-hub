@@ -93,26 +93,10 @@ function rowHtml(ctx: RenderContext, row: StripRow<Tile>): string {
   return `<div style="display: flex; flex-direction: ${direction}; align-items: flex-start;">${parts.join("")}</div>`;
 }
 
-function bridgeRowHtml(row: StripRow<Tile>): string {
-  const columns = row.cells.length;
-  const parts: string[] = [];
-
-  for (let index = 0; index < columns; index += 1) {
-    const content =
-      row.bridgeColumn === index ? '<span style="width: 1px; height: 100%; background: #262626;"></span>' : "";
-    parts.push(`<div style="flex: 1 1 0; min-width: 0; display: flex; justify-content: center;">${content}</div>`);
-    if (index < columns - 1) parts.push('<div style="flex: none; width: 22px;"></div>');
-  }
-
-  return `<div style="display: flex; align-items: stretch; height: 20px;">${parts.join("")}</div>`;
-}
-
 function cardHtml(ctx: RenderContext, page: IndexedPage): string {
   const tiles = tilesForPage(page);
   const rows = chunkStripRows(tiles, PER_ROW);
-  const rowsHtml = rows
-    .map((row) => rowHtml(ctx, row) + (row.bridgeColumn === null ? "" : bridgeRowHtml(row)))
-    .join("");
+  const rowsHtml = rows.map((row) => rowHtml(ctx, row)).join("");
 
   const header =
     '<div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px;">'
@@ -123,7 +107,7 @@ function cardHtml(ctx: RenderContext, page: IndexedPage): string {
 
   return (
     `<div class="card" style="padding: 22px 24px;">${header}`
-    + `<div style="display: flex; flex-direction: column;">${rowsHtml}</div></div>`
+    + `<div style="display: flex; flex-direction: column; gap: 20px;">${rowsHtml}</div></div>`
   );
 }
 

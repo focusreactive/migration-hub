@@ -1,7 +1,6 @@
 export interface StripRow<T> {
   cells: (T | null)[];
   reversed: boolean;
-  bridgeColumn: number | null;
 }
 
 export function chunkStripRows<T>(items: T[], perRow: number): StripRow<T>[] {
@@ -15,17 +14,7 @@ export function chunkStripRows<T>(items: T[], perRow: number): StripRow<T>[] {
     const cells: (T | null)[] = [...slice];
     while (cells.length < perRow) cells.push(null);
 
-    const reversed = index % 2 === 1;
-    const isLast = index === rowCount - 1;
-
-    rows.push({
-      cells,
-      reversed,
-      bridgeColumn:
-        isLast ? null
-        : reversed ? 0
-        : perRow - 1,
-    });
+    rows.push({ cells, reversed: index % 2 === 1 });
   }
 
   return rows;

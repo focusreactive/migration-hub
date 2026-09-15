@@ -165,7 +165,6 @@ img.shot, .shot { max-width: 100%; }
   /* page-composition snake strip → vertical flow */
   [style*="flex-direction: row"][style*="align-items: flex-start"] { flex-direction: column !important; gap: 0; }
   [style*="flex-direction: row-reverse"][style*="align-items: flex-start"] { flex-direction: column-reverse !important; gap: 0; }
-  [style*="align-items: stretch"][style*="height: 20px"] { display: none !important; }
   [style*="flex: 1 1 0"]:empty { display: none !important; }
   [style*="flex: none; width: 22px"][style*="background: #262626"] { width: 1px !important; height: 18px !important; align-self: center; margin-top: 0 !important; }
   [style*="flex: none; width: 22px"]:not([style*="background"]) { display: none !important; }

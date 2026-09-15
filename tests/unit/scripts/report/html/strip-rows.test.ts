@@ -26,17 +26,10 @@ describe("chunkStripRows", () => {
     expect(rows.map((row) => row.reversed)).toEqual([false, true, false]);
   });
 
-  it("puts the bridge on the right of a left-to-right row and the left of a reversed one", () => {
-    const rows = chunkStripRows(new Array(20).fill("x"), 7);
-
-    expect(rows.map((row) => row.bridgeColumn)).toEqual([6, 0, null]);
-  });
-
-  it("draws no bridge when everything fits on one row", () => {
+  it("keeps a short list on a single forward row", () => {
     const rows = chunkStripRows(["a", "b"], 7);
 
     expect(rows).toHaveLength(1);
-    expect(rows[0]?.bridgeColumn).toBeNull();
     expect(rows[0]?.reversed).toBe(false);
   });
 
