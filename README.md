@@ -1,0 +1,97 @@
+# migration-hub
+
+The starting point for moving a Webflow or Framer site to a headless CMS. Point it at
+a published URL and it measures the migration for you — how many pages, how many
+section types, how much media, which forms, where the risk sits — then sends you on to
+the open-source tool that carries that site across to Sanity or Payload.
+
+## Migration tools
+
+|             | Sanity                                                                                      | Payload                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **Webflow** | [webflow-to-sanity-migration](https://github.com/focusreactive/webflow-to-sanity-migration) | [webflow-to-payload-migration](https://github.com/focusreactive/webflow-to-payload-migration) |
+| **Framer**  | [framer-to-sanity-migration](https://github.com/focusreactive/framer-to-sanity-migration)   | [framer-to-payload-migration](https://github.com/focusreactive/framer-to-payload-migration)   |
+
+Each repository runs one path end to end and hands you a working project. This
+repository is the index, and it carries the assessment that runs before any of them.
+
+## Assess your migration
+
+```bash
+pnpm install
+pnpm exec playwright install chromium
+```
+
+Launch Claude Code in this repository and call the skill with a published URL:
+
+```
+/assessment https://your-site/
+```
+
+The run lands in `../assessments/<project-name>` and writes the report there in two
+formats:
+
+- **`report.md`** — plain markdown.
+- **`report.html`** — the same findings as a designed, self-contained page: every
+  count laid out visually, every section type and global illustrated with its own
+  screenshot.
+
+### What the report contains
+
+Both formats carry the same sections and the same numbers; only the presentation differs.
+
+| Section                | What it answers                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| Scope at a glance      | every headline count — pages, unique layout pages, collections, section types, globals |
+| Complexity assessment  | a rating per area — content model, page composition, design system, forms, volume      |
+| Content model          | each collection, its `routePattern` and how many documents it holds                    |
+| Page-builder pages     | every page composed by hand, and the sections it is built from                          |
+| Section library        | every section type, how often it recurs, and where it is used                            |
+| Global sections        | the header, footer and anything else shared site-wide, with its coverage                 |
+| Forms                  | every form, its fields and where its submissions go                                      |
+| Media & typography     | unique images, videos and font families, after de-duplication                             |
+| Risks & watch-outs     | what will bite during the rebuild, called out before you quote it                        |
+| How the migration runs | the steps the rebuild takes, in order                                                    |
+
+## How it works
+
+Ten phases, each one resumable; a run picks up at the first phase that has not finished.
+
+| phase          | what it does                                                                               |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| `init-project` | resolves the project directory for a source URL and creates it                             |
+| `probe`        | fetches the home page, `robots.txt`, the sitemap and a 404 page                            |
+| `detect`       | scores the home page against the Webflow and Framer signal registries and gates the run     |
+| `inventory`    | crawls the site into its page list and its CMS collections                                  |
+| `assets`       | inventories every image, video and font family — without downloading one                    |
+| `forms`        | scans every mirrored page for forms and their fields                                        |
+| `stitch`       | renders every unique layout page as a full-page desktop screenshot                          |
+| `discovery`    | segments each of those pages into sections, then folds them into section types and globals |
+| `crops`        | crops one screenshot per section type and per global                                        |
+| `report`       | renders everything into `report.md` and the designed `report.html`                          |
+
+## Guides
+
+| Guide | Question it answers |
+| --- | --- |
+| [Assess a migration without CMS access](guides/assess-a-migration-without-cms-access.md) | How do I size a migration when all I have is a public URL? |
+| [What is a section type and how to count them](guides/what-is-a-section-type-and-how-to-count-them.md) | How do I count sections when the source has no model of them? |
+| [Deduplicate assets without downloading them](guides/deduplicate-assets-without-downloading-them.md) | How do I collapse duplicate images without fetching the files? |
+
+## 🚀 Need Help with Headless CMS Migration?
+
+This repository is maintained by [FocusReactive](https://focusreactive.com) — a specialized Next.js and Headless CMS migration agency.
+
+We help enterprise businesses migrate from legacy monoliths (WordPress, Drupal, Sitecore) and visual builders (Webflow, Framer) to modern stacks like Sanity, Payload CMS, Storyblok, and MedusaJS.
+
+### Why FocusReactive?
+
+- **Expertise:** Verified Sanity, Payload, and Storyblok partners.
+- **Speed:** We use our proprietary [CMS Kit](https://github.com/focusreactive/cms-kit) to speed up migrations by 40%.
+- **SEO & Performance:** Zero downtime migrations with 100/100 Lighthouse scores.
+
+👉 **[Get a Free Migration Consultation](https://focusreactive.com/services/headless-cms-expert-agency/)** or contact us at contact@focusreactive.com.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
