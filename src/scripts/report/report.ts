@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { readArtifact } from "#ir/artifact.ts";
 import { fontFamiliesArtifact, mediaAssetsArtifact } from "#ir/assets.ts";
-import { cropIndexArtifact, cropShotPath, type CropIndexData } from "#ir/crops.ts";
+import { cropHeroPath, cropIndexArtifact, cropShotPath, type CropIndexData } from "#ir/crops.ts";
 import { detectArtifact } from "#ir/detect.ts";
 import {
   discoveryBlocksArtifact,
@@ -73,6 +73,17 @@ async function readJpegs(projectPath: string, crops: CropIndexData): Promise<Map
   return jpegs;
 }
 
+async function readHeroJpeg(projectPath: string, crops: CropIndexData): Promise<Buffer | undefined> {
+  if (crops.hero === undefined) return undefined;
+
+  try {
+    return await readFile(cropHeroPath(projectPath));
+  } catch (error) {
+    if (!isMissing(error)) throw error;
+    return undefined;
+  }
+}
+
 async function readNarrative(projectPath: string): Promise<NarrativeData> {
   try {
     return await readArtifact(projectPath, narrativeArtifact);
@@ -138,6 +149,7 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
           shards: await readShards(projectPath, pages),
           crops,
           jpegs: await readJpegs(projectPath, crops),
+          heroJpeg: await readHeroJpeg(projectPath, crops),
           generatedAt: new Date(),
         }),
       );

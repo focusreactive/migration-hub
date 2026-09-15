@@ -18,7 +18,8 @@ import { toolsSection } from "../../../../../src/scripts/report/html/sections/to
 import { PAGE_SCRIPT } from "../../../../../src/scripts/report/html/constants/script.ts";
 import type { RenderContext } from "../../../../../src/scripts/report/html/render-context.ts";
 
-import { loadFixtureContext } from "./fixture.ts";
+import { createRenderContext } from "../../../../../src/scripts/report/html/render-context.ts";
+import { loadFixtureContext, loadFixtureInput } from "./fixture.ts";
 
 let ctx: RenderContext;
 
@@ -78,6 +79,16 @@ describe("heroSection", () => {
 
   it("omits the hero image when no crop was captured", () => {
     expect(heroSection(ctx)).not.toContain("data-shot");
+  });
+
+  it("embeds the captured first screen directly, with no shot id and no modal hook", async () => {
+    const base = await loadFixtureInput();
+    const withHero = createRenderContext({ ...base, heroJpeg: Buffer.from([0xff, 0xd8, 0xff, 0xd9]) });
+
+    const html = heroSection(withHero);
+
+    expect(html).toContain('src="data:image/jpeg;base64,');
+    expect(html).not.toContain("data-shot");
   });
 });
 
@@ -571,6 +582,11 @@ describe("PAGE_SCRIPT", () => {
 
   it("resolves the hero click from the hero image's own data-shot attribute, not a design-mock shot id", () => {
     expect(PAGE_SCRIPT).not.toContain("sec-hero.jpg");
+  });
+
+  it("leaves the hero image inert — it is the page's own opening image, not a section card", () => {
+    expect(PAGE_SCRIPT).not.toContain("img.shot");
+    expect(PAGE_SCRIPT).not.toContain("zoom-in");
   });
 
   it("does not re-label the page-composition disclosure with a hardcoded page count", () => {

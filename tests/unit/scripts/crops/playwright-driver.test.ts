@@ -112,6 +112,18 @@ describe("createCropDriver", () => {
     },
   );
 
+  it("captures the first screen as exactly one viewport, not the whole page", { timeout: 60_000 }, async () => {
+    const shot = await driver.viewport(FIXTURE_URL);
+
+    expect(shot).toBeDefined();
+    expect(shot?.width).toBe(1440);
+    expect(shot?.height).toBe(900);
+
+    // The fixture page is far taller than one viewport, so a full-page screenshot would come
+    // back taller than 900px. This is the guard that the hero shot stays the window, not the page.
+    expect(jpegSize(shot!.jpeg)).toEqual({ width: 1440, height: 900 });
+  });
+
   it("refuses a candidate whose signature no longer matches", { timeout: 60_000 }, async () => {
     const [outcome] = await driver.capture(FIXTURE_URL, [
       { typeId: "stale", candidateIndex: 1, signature: "section.gone|999|Something else" },

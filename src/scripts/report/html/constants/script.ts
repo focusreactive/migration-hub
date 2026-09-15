@@ -1,33 +1,3 @@
-// Transcribed from docs/design/report.design.html:748-1002 (the page script: the
-// section-detail modal's data wiring, the section-library filters, the page
-// composition disclosure toggle and the scroll-progress bar).
-//
-// Five changes from the design source, and no others (see task-23-brief.md for the
-// full rationale):
-//
-// 1. The two hardcoded global entries that were appended to DATA (design lines
-//    758-761) are replaced by a `var GLOBALS = __GLOBALS__;` placeholder that
-//    renderHtmlReport fills with a JSON array built from `input.globals.types`.
-// 2. The `ALIAS` fuzzy short-caption map (design line 762) is replaced by a
-//    `var TYPES = __TYPES__;` placeholder keyed by typeId. `dataForShot` (the
-//    function that resolves a bare thumbnail elsewhere on the page to its type) now
-//    looks up `TYPES[shot]` directly instead of normalizing a derived name through
-//    `ALIAS`/`DATA`. `resolve()` itself (used by the section-grid card click handler
-//    and the hero click handler, both of which already carry a full name) keeps its
-//    DATA-based lookup verbatim, minus the now-deleted ALIAS line.
-// 3. `SITE` and `TPL` (design lines 764-769) become `__SITE__`/`__TPL__`
-//    placeholders, filled from `input.sourceUrl` and from the collection/exemplar
-//    data behind `linker.collectionAnchor`.
-// 4. `paint()`'s `img.src = '../assets/' + d.shot` becomes `img.src = SHOTS[d.shot]`,
-//    with the "no screenshot" branch also firing when `SHOTS[d.shot]` is missing.
-//    `dataForShot`'s `img.getAttribute('src').split('/').pop()` becomes
-//    `img.getAttribute('data-shot')`.
-// 5. A pass added at the top of the IIFE fills `src` on every `img[data-shot]` from
-//    `SHOTS` on load.
-//
-// `SHOTS` itself is not declared here: it is emitted by a separate embedded
-// `<script>` (src/scripts/report/html/utils/shots.ts's `scriptMap()`) that runs
-// before this one, as a page-global `var SHOTS = {...}`.
 export const PAGE_SCRIPT = `
 (function(){
   [].slice.call(document.querySelectorAll('img[data-shot]')).forEach(function(img){ var src = SHOTS[img.getAttribute('data-shot')]; if (src) img.src = src; });
@@ -191,21 +161,6 @@ export const PAGE_SCRIPT = `
       open(group.map(dataForShot), group.indexOf(sb));
     });
   });
-
-  var hero = document.querySelector('img.shot');
-  if (hero) {
-    hero.style.cursor = 'zoom-in';
-    hero.setAttribute('tabindex', '0');
-    hero.setAttribute('role', 'button');
-    activate(hero, function(){
-      var shot = hero.getAttribute('data-shot');
-      var known = TYPES[shot];
-      var out = { name: 'Home page hero', shot: shot, kind: '', count: '', pages: '', summary: '' };
-      var k;
-      if (known) for (k in known) { if (known[k]) out[k] = known[k]; }
-      open([out], 0);
-    });
-  }
 
   // Page composition disclosure
   var pageToggle = $('pageToggle'), pageRest = $('pageRest');

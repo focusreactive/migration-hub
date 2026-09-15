@@ -168,12 +168,22 @@ pnpm tsx src/scripts/crops/index.ts --project <projectPath> --capture [--force]
 ```
 
 ```json
-{ "step": "crops:capture", "status": "done" | "skipped", "targets": <n>, "shots": <n>, "missing": <n> }
+{ "step": "crops:capture", "status": "done" | "skipped", "targets": <n>, "shots": <n>, "missing": <n>, "hero": true | false }
 ```
 
 **One shot per type, not per instance.** Every type in `discovery/blocks.json`
 and `discovery/globals.json` already names an `exemplar: {route, order}`, so a
 site with 34 block types and 2 globals takes 36 shots, not one per instance.
+
+**Plus one plain screenshot: the home page's first screen.** The report's hero
+band shows the site as a visitor first sees it, which is not a section and needs
+no anchor — so the step also opens `/` and takes one viewport screenshot
+(1440x900, `fullPage: false`), after the same preamble that pre-scrolls for lazy
+images and returns to the top. It lands at
+`.assessment/artifacts/crops/hero.jpg` and is recorded under `hero` in the index,
+beside `shots` rather than in it. Nothing is judged and no `signature` is
+checked: there is no element to pick. `targets` in the status line does not count
+it; `hero` reports whether it was taken.
 
 For each route, the step reopens the page, re-derives the candidate list, and
 checks that the candidate at the anchored index still has the `signature` Step 1
@@ -188,7 +198,8 @@ are cut only at the element's own boundary. JPEG `quality: 80`, width 1440,
 ```json
 {
   "shots": [{ "typeId": "…", "route": "…", "order": 0, "relativePath": "crops/shots/….jpg", "width": 1440, "height": 780 }],
-  "missing": [{ "typeId": "…", "route": "…", "order": 3, "reason": "SIGNATURE_DRIFT" }]
+  "missing": [{ "typeId": "…", "route": "…", "order": 3, "reason": "SIGNATURE_DRIFT" }],
+  "hero": { "relativePath": "crops/hero.jpg", "width": 1440, "height": 900 }
 }
 ```
 
@@ -221,6 +232,7 @@ Under `<projectPath>/.assessment/artifacts/crops/`:
 | `candidates/<routeKey>.json` | Step 1's DOM candidates for one route |
 | `anchors/<routeKey>.json` | Step 2's `order → candidateIndex` mapping for one route |
 | `shots/<typeId>.jpg` | one cropped section screenshot |
+| `hero.jpg` | the home page's first screen, one viewport |
 | `index.json` | which types got a shot, and why the rest did not |
 
 ## Vocabulary

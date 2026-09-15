@@ -17,7 +17,7 @@ import {
   SNIPPET_LENGTH,
   SOLE_CHILD_HEIGHT_RATIO,
 } from "./constants/capture.ts";
-import type { CaptureOutcome, CaptureRequest, CropDriver } from "./types.ts";
+import type { CaptureOutcome, CaptureRequest, CropDriver, ViewportShot } from "./types.ts";
 import { collectAndMark, unmarkCandidates, type CollectArgs } from "./utils/page-scripts.ts";
 
 const MARK_ATTRIBUTE = "data-mig-crop";
@@ -113,6 +113,22 @@ export function createCropDriver(): CropDriver {
         const outcomes: CaptureOutcome[] = [];
         for (const request of requests) outcomes.push(await captureOne(page, request));
         return outcomes;
+      });
+    },
+
+    async viewport(url: string): Promise<ViewportShot | undefined> {
+      return withPage(url, async (page) => {
+        try {
+          const jpeg = await page.screenshot({
+            type: "jpeg",
+            quality: CROP_JPEG_QUALITY,
+            fullPage: false,
+            animations: "disabled",
+          });
+          return { jpeg, width: CROP_VIEWPORT.width, height: CROP_VIEWPORT.height };
+        } catch {
+          return undefined;
+        }
       });
     },
 

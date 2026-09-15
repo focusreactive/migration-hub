@@ -4,10 +4,13 @@ import { artifactPath, readArtifact, writeArtifact } from "#ir/artifact.ts";
 import {
   cropAnchorsShardArtifactFor,
   cropCandidatesShardArtifactFor,
+  cropHeroPath,
+  cropHeroRelativePath,
   cropIndexArtifact,
   cropShotPath,
   cropShotRelativePath,
   type CropAnchor,
+  type CropHero,
   type CropMiss,
   type CropShot,
 } from "#ir/crops.ts";
@@ -85,8 +88,15 @@ export async function runCropCapture(projectPath: string, force: boolean): Promi
           }
         }
 
-        await writeArtifact(projectPath, cropIndexArtifact, { shots, missing });
-        return { shots: shots.length, missing: missing.length };
+        const heroShot = await driver.viewport(new URL("/", origin).toString());
+        let hero: CropHero | undefined;
+        if (heroShot !== undefined) {
+          await writeFileAtomic(cropHeroPath(projectPath), heroShot.jpeg);
+          hero = { relativePath: cropHeroRelativePath(), width: heroShot.width, height: heroShot.height };
+        }
+
+        await writeArtifact(projectPath, cropIndexArtifact, { shots, missing, ...(hero === undefined ? {} : { hero }) });
+        return { shots: shots.length, missing: missing.length, hero: hero !== undefined };
       },
       { force },
     );
@@ -98,6 +108,7 @@ export async function runCropCapture(projectPath: string, force: boolean): Promi
         targets: [...grouped.values()].reduce((total, targets) => total + targets.length, 0),
         shots: result?.shots ?? 0,
         missing: result?.missing ?? 0,
+        hero: result?.hero ?? false,
       }),
     );
   } finally {

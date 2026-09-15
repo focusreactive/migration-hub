@@ -1,4 +1,3 @@
-// Transcribed from docs/design/report.design.html:28-50 (the hero band).
 import { SOURCE_LABEL } from "#report/constants/labels.ts";
 
 import type { Rating } from "../../analysis/complexity.ts";
@@ -13,26 +12,12 @@ const COMPLEXITY_CHIP_STYLE: Record<Rating, string> = {
   High: "border-color: #3d1616; background: #1a0808; color: #ef4444;",
 };
 
-const HOME_ROUTE = "/";
-
-// The type whose exemplar sits on the home route, at the lowest order among the
-// non-global (block) types, is the section the design's hero shot comes from.
-function heroShotTypeId(ctx: RenderContext): string | undefined {
-  let best: { id: string; order: number } | undefined;
-
-  for (const type of ctx.input.blocks.types) {
-    if (type.exemplar.route !== HOME_ROUTE) continue;
-    if (best === undefined || type.exemplar.order < best.order) best = { id: type.id, order: type.exemplar.order };
-  }
-
-  return best?.id;
-}
-
 function heroImage(ctx: RenderContext): string {
-  const typeId = heroShotTypeId(ctx);
-  if (typeId === undefined || !ctx.shots.has(typeId)) return "";
+  const jpeg = ctx.input.heroJpeg;
+  if (jpeg === undefined) return "";
 
-  return `<img data-shot="${escapeAttr(typeId)}" class="shot" alt="${escapeAttr("Home page hero")}" />`;
+  const alt = escapeAttr("The site's home page, as it first appears");
+  return `<img class="shot" alt="${alt}" src="data:image/jpeg;base64,${jpeg.toString("base64")}" />`;
 }
 
 export function heroSection(ctx: RenderContext): string {

@@ -82,11 +82,9 @@ p.lead { font-size: 18px; line-height: 1.62; color: var(--fr-soft); max-width: 6
 /* Interactive report: clickable sections, detail modal, library filters */
 .seccard { cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease; }
 .seccard:hover { border-color: var(--fr-border); transform: translateY(-2px); }
-.seccard:focus-visible, .tapshot:focus-visible, img.shot:focus-visible { outline: 2px solid var(--fr-accent); outline-offset: 2px; }
+.seccard:focus-visible, .tapshot:focus-visible { outline: 2px solid var(--fr-accent); outline-offset: 2px; }
 .tapshot { cursor: zoom-in; transition: box-shadow 0.15s ease; }
 .tapshot:hover { box-shadow: 0 0 0 1px var(--fr-accent); }
-img.shot { transition: border-color 0.15s ease; }
-img.shot:hover { border-color: var(--fr-accent); }
 .chip-btn { cursor: pointer; font-family: inherit; }
 .chip-btn:hover { border-color: var(--fr-dim); color: #fff; }
 .chip-btn.chip-on:hover { background: var(--fr-accent-light); border-color: var(--fr-accent-light); color: #000; }
