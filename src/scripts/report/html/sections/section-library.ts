@@ -82,7 +82,7 @@ function collectionMemberLabel(pages: PagesData, route: string): string | undefi
   return `${name} template page`;
 }
 
-function memberPagesForCard(pages: PagesData, members: { route: string }[]): string {
+export function memberPagesForCard(pages: PagesData, members: { route: string }[]): string {
   const seen = new Set<string>();
   const parts: string[] = [];
 

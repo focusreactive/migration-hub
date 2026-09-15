@@ -6,6 +6,7 @@ import { discoveryBlocksDataSchema, discoveryTypesDataSchema } from "../../../..
 import { formsDataSchema } from "../../../../../src/ir/forms.ts";
 import { pagesDataSchema } from "../../../../../src/ir/pages.ts";
 import { createRenderContext, type RenderContext } from "../../../../../src/scripts/report/html/render-context.ts";
+import type { HtmlReportInput } from "../../../../../src/scripts/report/html/types.ts";
 
 const FIXTURE_DIR = join(process.cwd(), "tests", "fixtures", "artifacts", "pearlstudio");
 
@@ -13,8 +14,8 @@ async function readJson(relativePath: string): Promise<unknown> {
   return JSON.parse(await readFile(join(FIXTURE_DIR, relativePath), "utf8")) as unknown;
 }
 
-export async function loadFixtureContext(): Promise<RenderContext> {
-  const input = {
+export async function loadFixtureInput(): Promise<HtmlReportInput> {
+  return {
     sourceUrl: "https://pearlstudio.framer.website/",
     verdict: "framer" as const,
     pages: pagesDataSchema.parse(await readJson("pages.json")),
@@ -32,6 +33,8 @@ export async function loadFixtureContext(): Promise<RenderContext> {
     jpegs: new Map<string, Buffer>(),
     generatedAt: new Date(Date.UTC(2026, 8, 14)),
   };
+}
 
-  return createRenderContext(input);
+export async function loadFixtureContext(): Promise<RenderContext> {
+  return createRenderContext(await loadFixtureInput());
 }
