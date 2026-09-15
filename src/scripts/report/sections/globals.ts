@@ -37,7 +37,7 @@ function appearsOnCell(coverage: GlobalCoverage): string {
   return parts.join(" and ");
 }
 
-function leadLine(input: ReportInput, metrics: ReportMetrics): string {
+export function leadLine(input: ReportInput, metrics: ReportMetrics): string {
   const coverages = input.globals.types.map((type) => coverageOf(input, type.members));
   const subject = sentenceCountLabel(metrics.globals, "section is", "sections are");
 

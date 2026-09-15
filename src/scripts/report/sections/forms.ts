@@ -33,6 +33,13 @@ function fieldsCell(form: DistinctForm): string {
   return `${form.fieldCount} (${names}${allRequired ? " — all required" : ""})`;
 }
 
+export function formsLead(metrics: ReportMetrics): string {
+  return (
+    `${sentenceCountLabel(metrics.forms, "distinct form collects", "distinct forms collect")} input on this site, `
+    + `listed below with the fields ${metrics.forms === 1 ? "it" : "each one"} submits.`
+  );
+}
+
 export function formsSection(input: ReportInput, metrics: ReportMetrics): string {
   if (metrics.forms === 0) return ["## Forms", "", "No forms found."].join("\n");
 
@@ -41,9 +48,11 @@ export function formsSection(input: ReportInput, metrics: ReportMetrics): string
   return [
     "## Forms",
     "",
-    `${sentenceCountLabel(metrics.forms, "distinct form collects", "distinct forms collect")} input on this site, `
-      + `listed below with the fields ${metrics.forms === 1 ? "it" : "each one"} submits.`,
+    formsLead(metrics),
     "",
-    table(["Form", "Fields"], forms.map((form) => [formLabel(form), fieldsCell(form)])),
+    table(
+      ["Form", "Fields"],
+      forms.map((form) => [formLabel(form), fieldsCell(form)]),
+    ),
   ].join("\n");
 }

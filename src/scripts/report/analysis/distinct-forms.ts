@@ -9,7 +9,7 @@ export interface DistinctForm {
   routes: string[];
 }
 
-function formSignature(form: FormRecord): string {
+export function formSignature(form: FormRecord): string {
   return JSON.stringify([form.name, form.action, form.method, form.fields]);
 }
 

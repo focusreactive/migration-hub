@@ -107,8 +107,8 @@ function generation(metrics: ReportMetrics): string {
   return `A component is generated for each of ${list}.`;
 }
 
-export function migrationStepsSection(metrics: ReportMetrics): string {
-  const steps = [
+export function migrationSteps(metrics: ReportMetrics): [string, string][] {
+  return [
     ["Page discovery", discovery(metrics)],
     ["Asset extraction", assets(metrics)],
     ["Schema and content extraction", extraction(metrics)],
@@ -118,6 +118,10 @@ export function migrationStepsSection(metrics: ReportMetrics): string {
       "The target project is generated from those schemas and components, and seeded with the extracted content and assets.",
     ],
   ];
+}
+
+export function migrationStepsSection(metrics: ReportMetrics): string {
+  const steps = migrationSteps(metrics);
 
   return [
     "## How the migration runs",

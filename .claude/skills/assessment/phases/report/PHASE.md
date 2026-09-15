@@ -1,9 +1,11 @@
 # Report phase
 
-Rendering everything the earlier phases inventoried into one human-readable
-`report.md` at the project root. One script, five manifest steps: a judged
-narrative pass, then the render. This is the last phase — running it is how
-the skill knows the pipeline is complete.
+Rendering everything the earlier phases inventoried into two outputs at the
+project root — `report.md` for the team and a self-contained `report.html`
+for the client. Both come out of the same phase, from the same artifacts;
+the HTML is not a post-processing of the markdown. One script, five manifest
+steps: a judged narrative pass, then the render. This is the last phase —
+running it is how the skill knows the pipeline is complete.
 
 Entered once `inventory`, `assets` (`assets:media` and `assets:fonts`),
 `forms`, `stitch`, `discovery` and `crops` are all `done`. Every state change
@@ -67,7 +69,7 @@ pnpm tsx src/scripts/report/index.ts --project <projectPath> [--force]
 ```
 
 ```json
-{ "step": "report", "status": "done" | "skipped", "reportPath": "…/report.md" }
+{ "step": "report", "status": "done" | "skipped", "reportPath": "…/report.md", "htmlReportPath": "…/report.html" }
 ```
 
 **Run Step 1 first.** `report/narrative.json` is a hard input, not an
@@ -77,6 +79,10 @@ narrative step and writes no `report.md`.
 Reads `detect.json`, `pages.json`, `assets/media.json`, `assets/fonts.json`,
 `forms.json`, `discovery/blocks.json`, `discovery/globals.json` and
 `report/narrative.json`, and renders them into `<projectPath>/report.md`.
+It also reads `discovery/sections/<routeKey>.json` and `crops/index.json` +
+`crops/shots/*.jpg` — both optional: a project whose `crops` phase never ran
+renders every screenshot in `report.html` as a labelled placeholder instead
+of failing.
 The report opens with the two narrative paragraphs from Step 1, then a
 Scope-at-a-glance table of the page, unique-layout-page, collection,
 section, global, media, font and form counts; a complexity assessment rating
@@ -101,10 +107,12 @@ followed, since the pipeline never reaches `inventory` on any other verdict.
 
 **Repeating is safe.** On a project where the step is already `done` the
 script prints `{"step":"report","status":"skipped","reportPath":"…"}` and
-leaves the existing `report.md` untouched. Pass `--force` to regenerate it —
-on an unchanged project this produces byte-for-byte the same file, since every
-input artifact is unchanged; it is what to run after re-running an earlier
-phase with `--force` and wanting the report to reflect it.
+leaves the existing `report.md` and `report.html` untouched. Pass `--force` to
+regenerate them — on an unchanged project `report.md` comes out byte-for-byte
+identical, since every input artifact is unchanged. `report.html` differs in
+exactly one place, the generation date it carries in its header and footer.
+It is what to run after re-running an earlier phase with `--force` and
+wanting the report to reflect it.
 
 ## Vocabulary
 
@@ -134,6 +142,8 @@ pnpm tsx src/scripts/report/index.ts --project <projectPath> --state
 
 All five rows `done`. `report:narrative:judge` is marked by
 `--narrative-accept`, never on its own — there is no separate `judge`
-command. `<projectPath>/report.md` exists and opens as plain markdown — hand
-its path back to the user as the deliverable. This is the last phase in the
-table in `SKILL.md`; once it reports `done`, the assessment is finished.
+command. `<projectPath>/report.md` exists and opens as plain markdown, and
+`<projectPath>/report.html` exists and opens in a browser by double-clicking
+— hand both paths back to the user as the deliverable. This is the last
+phase in the table in `SKILL.md`; once it reports `done`, the assessment is
+finished.

@@ -74,8 +74,9 @@ the manifest step already `done` and re-runs nothing — it is not a manifest
 status. A step you see reported `"skipped"` still reads `"done"` in
 `manifest.json`; there is no third on-disk state to check for.
 
-`assets` is two manifest steps (`assets:media`, `assets:fonts`); `discovery`
-is nine (`discovery:sections:{schema,subject,judge,accept}`,
+`assets` is two manifest steps (`assets:media`, `assets:fonts`);
+`forms` is five (`forms`, `forms:names:{schema,subject,judge,accept}`);
+`discovery` is nine (`discovery:sections:{schema,subject,judge,accept}`,
 `discovery:dedup:{schema,subject,judge,accept}`, `discovery:finalize`);
 `crops` is six (`crops:candidates`, `crops:anchors:{schema,subject,judge,accept}`,
 `crops:capture`). Every other phase is exactly one step, named after the phase.

@@ -75,9 +75,12 @@ function breakdownClauses(metrics: ReportMetrics): BreakdownClause[] {
   ].filter((clause) => clause.count > 0);
 }
 
-function breakdown(metrics: ReportMetrics): string {
+export function breakdown(metrics: ReportMetrics): string {
   const rendered = breakdownClauses(metrics).map((clause, index) => {
-    const noun = index > 0 ? "" : clause.count === 1 ? " type" : " types";
+    const noun =
+      index > 0 ? ""
+      : clause.count === 1 ? " type"
+      : " types";
     return `${countWord(clause.count)}${noun} ${clause.count === 1 ? clause.singular : clause.plural}`;
   });
 
