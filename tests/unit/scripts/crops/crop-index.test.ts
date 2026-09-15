@@ -27,8 +27,8 @@ describe("planCaptures", () => {
 
     expect(missing).toEqual([]);
     expect(requests).toEqual([
-      { typeId: "site-header", candidateIndex: 0, signature: "header|60|" },
-      { typeId: "hero", candidateIndex: 1, signature: "s|400|" },
+      { typeId: "site-header", candidateIndex: 0, signature: "header|60|", isFixed: true },
+      { typeId: "hero", candidateIndex: 1, signature: "s|400|", isFixed: false },
     ]);
   });
 

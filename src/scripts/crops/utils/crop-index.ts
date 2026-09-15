@@ -40,7 +40,12 @@ export function planCaptures(args: PlanArgs): { requests: CaptureRequest[]; miss
       continue;
     }
 
-    requests.push({ typeId: target.typeId, candidateIndex, signature: candidate.signature });
+    requests.push({
+      typeId: target.typeId,
+      candidateIndex,
+      signature: candidate.signature,
+      isFixed: candidate.isFixed,
+    });
   }
 
   return { requests, missing };

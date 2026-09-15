@@ -193,6 +193,32 @@ are cut only at the element's own boundary. JPEG `quality: 80`, width 1440,
 `deviceScaleFactor: 1`. Shots land at
 `.assessment/artifacts/crops/shots/<typeId>.jpg`.
 
+**The rest of the page is hidden while the shot is taken.** A screenshot of an
+element is a screenshot of that rectangle of the composited page, so anything
+painted over the section's box came out in the crop with it — the sticky header
+pinned across its first 60px, a cookie bar, a platform badge, a chat bubble.
+Before capturing an in-flow target the step injects one stylesheet that hides
+`body *`, then puts visibility back on the marked element with its descendants
+and on its ancestor chain up to `<body>`. Ancestors stay visible so a
+transparent section keeps the wrapper background it visually sits on; their
+other children do not, because `body *` matches those directly. Every rule
+carries an inert `:not(#…)` that buys it an id's worth of specificity —
+`!important` alone loses to a more specific `!important`, and Webflow's badge
+ships exactly that (`.w-webflow-badge { visibility: visible !important }`), so
+without the bump it rides into every crop. It hides with `visibility`, never
+`display`, so nothing reflows: the element keeps the geometry its `signature`
+was taken from and no scroll-triggered reveal re-runs.
+The stylesheet is torn down before the next target's candidate list is
+re-derived — that list is picked by visibility, so leaving it in place would
+empty it.
+
+**A pinned target is shot in context instead.** Chrome that floats over the page
+— a transparent navbar over the hero, a cookie bar, a floating button — usually
+has no background of its own, so isolating it would replace what shows through
+with a blank page. Any target whose candidate is `isFixed` is captured exactly
+as a visitor sees it. The branch is on `isFixed`, not on global-versus-block: an
+in-flow global such as a footer is isolated like any section.
+
 `.assessment/artifacts/crops/index.json` records both sides:
 
 ```json

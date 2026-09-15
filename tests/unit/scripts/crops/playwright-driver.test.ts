@@ -1,5 +1,6 @@
 import { pathToFileURL } from "node:url";
 import { join } from "node:path";
+import { chromium, type Browser } from "playwright";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { createCropDriver } from "../../../../src/scripts/crops/create-playwright-driver.ts";
@@ -7,8 +8,69 @@ import { candidateSignature } from "../../../../src/scripts/crops/utils/candidat
 
 const FIXTURE_URL = pathToFileURL(join(process.cwd(), "tests", "fixtures", "crops", "page.html")).toString();
 
+const SERVICES_GREY = [204, 204, 204] as const;
+const FOOTER_BLACK = [34, 34, 34] as const;
+
+const PAST_THE_TEXT_X = 600;
+
 const driver = createCropDriver();
-afterAll(async () => driver.close());
+
+let readerBrowser: Browser | undefined;
+
+afterAll(async () => {
+  await driver.close();
+  await readerBrowser?.close();
+});
+
+async function fractionNear(
+  jpeg: Buffer,
+  colour: readonly [number, number, number],
+  fromX = 0,
+): Promise<number> {
+  readerBrowser ??= await chromium.launch();
+  const page = await readerBrowser.newPage();
+  try {
+    return await page.evaluate(
+      async ({ dataUrl, colour, fromX }) => {
+        const TOLERANCE = 16;
+        const STEP = 2;
+        const bitmap = await createImageBitmap(await (await fetch(dataUrl)).blob());
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+        const context = canvas.getContext("2d");
+        if (context === null) throw new Error("no 2d context");
+        context.drawImage(bitmap, 0, 0);
+        const { data } = context.getImageData(0, 0, bitmap.width, bitmap.height);
+
+        let sampled = 0;
+        let near = 0;
+        for (let y = 0; y < bitmap.height; y += STEP) {
+          for (let x = fromX; x < bitmap.width; x += STEP) {
+            const offset = (y * bitmap.width + x) * 4;
+            sampled += 1;
+            const off = colour.some((channel, index) => Math.abs((data[offset + index] ?? 0) - channel) > TOLERANCE);
+            if (!off) near += 1;
+          }
+        }
+        return sampled === 0 ? 0 : near / sampled;
+      },
+      { dataUrl: `data:image/jpeg;base64,${jpeg.toString("base64")}`, colour: [...colour], fromX },
+    );
+  } finally {
+    await page.close();
+  }
+}
+
+async function captureOne(candidateIndex: number, typeId: string): Promise<{ jpeg: Buffer; width: number; height: number }> {
+  const candidates = await driver.candidates(FIXTURE_URL);
+  const candidate = candidates[candidateIndex];
+  if (candidate === undefined) throw new Error(`fixture has no candidate ${candidateIndex}`);
+
+  const [outcome] = await driver.capture(FIXTURE_URL, [
+    { typeId, candidateIndex: candidate.index, signature: candidate.signature, isFixed: candidate.isFixed },
+  ]);
+  if (outcome === undefined || !outcome.ok) throw new Error(`capture failed: ${JSON.stringify(outcome)}`);
+  return { jpeg: outcome.jpeg, width: outcome.width, height: outcome.height };
+}
 
 function jpegSize(buffer: Buffer): { width: number; height: number } {
   let offset = 2;
@@ -77,7 +139,7 @@ describe("createCropDriver", () => {
     if (tall === undefined) throw new Error("fixture must have a fourth candidate");
 
     const [outcome] = await driver.capture(FIXTURE_URL, [
-      { typeId: "services-accordion", candidateIndex: tall.index, signature: tall.signature },
+      { typeId: "services-accordion", candidateIndex: tall.index, signature: tall.signature, isFixed: tall.isFixed },
     ]);
 
     if (outcome === undefined || !outcome.ok) throw new Error(`capture failed: ${JSON.stringify(outcome)}`);
@@ -102,6 +164,7 @@ describe("createCropDriver", () => {
           typeId: `candidate-${candidate.index}`,
           candidateIndex: candidate.index,
           signature: candidate.signature,
+          isFixed: candidate.isFixed,
         }));
 
       const outcomes = await driver.capture(FIXTURE_URL, requests);
@@ -126,15 +189,33 @@ describe("createCropDriver", () => {
 
   it("refuses a candidate whose signature no longer matches", { timeout: 60_000 }, async () => {
     const [outcome] = await driver.capture(FIXTURE_URL, [
-      { typeId: "stale", candidateIndex: 1, signature: "section.gone|999|Something else" },
+      { typeId: "stale", candidateIndex: 1, signature: "section.gone|999|Something else", isFixed: false },
     ]);
 
     expect(outcome).toEqual({ ok: false, typeId: "stale", reason: "SIGNATURE_DRIFT" });
   });
 
+  it("keeps overlapping chrome out of an in-flow section's crop", { timeout: 60_000 }, async () => {
+    const { jpeg } = await captureOne(3, "services-accordion");
+
+    expect(await fractionNear(jpeg, SERVICES_GREY, PAST_THE_TEXT_X)).toBe(1);
+  });
+
+  it("keeps floating chrome out of a global's crop when the global is in flow", { timeout: 60_000 }, async () => {
+    const { jpeg } = await captureOne(5, "site-footer");
+
+    expect(await fractionNear(jpeg, FOOTER_BLACK, PAST_THE_TEXT_X)).toBe(1);
+  });
+
+  it("captures a pinned target in context rather than isolating it", { timeout: 60_000 }, async () => {
+    const { jpeg } = await captureOne(4, "platform-badge");
+
+    expect(await fractionNear(jpeg, SERVICES_GREY)).toBeGreaterThan(0.3);
+  });
+
   it("reports an out-of-range candidate index", { timeout: 60_000 }, async () => {
     const [outcome] = await driver.capture(FIXTURE_URL, [
-      { typeId: "missing", candidateIndex: 99, signature: "whatever" },
+      { typeId: "missing", candidateIndex: 99, signature: "whatever", isFixed: false },
     ]);
 
     expect(outcome).toEqual({ ok: false, typeId: "missing", reason: "CANDIDATE_OUT_OF_RANGE" });

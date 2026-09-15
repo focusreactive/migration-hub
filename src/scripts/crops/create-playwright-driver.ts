@@ -7,7 +7,11 @@ import { runCapturePreamble, waitForNetworkIdle } from "#stitch/utils/create-pla
 import { scrollPageTo } from "#stitch/utils/page-scripts.ts";
 
 import {
+  CROP_ANCESTOR_ATTRIBUTE,
+  CROP_ISOLATION_CSS,
+  CROP_ISOLATION_STYLE_ID,
   CROP_JPEG_QUALITY,
+  CROP_MARK_ATTRIBUTE,
   CROP_VIEWPORT,
   MAX_CANDIDATES,
   MAX_DESCENT_DEPTH,
@@ -18,9 +22,23 @@ import {
   SOLE_CHILD_HEIGHT_RATIO,
 } from "./constants/capture.ts";
 import type { CaptureOutcome, CaptureRequest, CropDriver, ViewportShot } from "./types.ts";
-import { collectAndMark, unmarkCandidates, type CollectArgs } from "./utils/page-scripts.ts";
+import {
+  collectAndMark,
+  isolateMarked,
+  releaseIsolation,
+  unmarkCandidates,
+  type CollectArgs,
+  type IsolateArgs,
+} from "./utils/page-scripts.ts";
 
-const MARK_ATTRIBUTE = "data-mig-crop";
+const ISOLATE_ARGS: IsolateArgs = {
+  markAttribute: CROP_MARK_ATTRIBUTE,
+  ancestorAttribute: CROP_ANCESTOR_ATTRIBUTE,
+  styleId: CROP_ISOLATION_STYLE_ID,
+  css: CROP_ISOLATION_CSS,
+};
+
+const RELEASE_ARGS = { ancestorAttribute: CROP_ANCESTOR_ATTRIBUTE, styleId: CROP_ISOLATION_STYLE_ID };
 
 const COLLECT_ARGS: CollectArgs = {
   maxDescentDepth: MAX_DESCENT_DEPTH,
@@ -59,26 +77,24 @@ export function createCropDriver(): CropDriver {
   }
 
   async function captureOne(page: Page, request: CaptureRequest): Promise<CaptureOutcome> {
-    // A previous capture's locator.screenshot() scrolls its element into view and leaves the
-    // page there. The candidate sort is y-ordered, and a pinned element's y is its viewport
-    // position — it moves with the scroll — so collecting from a scrolled page would shift
-    // indices out from under every later request in this capture() call. Reset to the top
-    // before every collection so each request sees the identical page state.
     await page.evaluate(scrollPageTo, 0);
-    await page.evaluate(unmarkCandidates, MARK_ATTRIBUTE);
+    await page.evaluate(unmarkCandidates, CROP_MARK_ATTRIBUTE);
+    await page.evaluate(releaseIsolation, RELEASE_ARGS);
 
     const { markedSignature: signature } = await page.evaluate(collectAndMark, {
       ...COLLECT_ARGS,
       markIndex: request.candidateIndex,
-      attribute: MARK_ATTRIBUTE,
+      attribute: CROP_MARK_ATTRIBUTE,
     });
 
     if (signature === null) return { ok: false, typeId: request.typeId, reason: "CANDIDATE_OUT_OF_RANGE" };
     if (signature !== request.signature) return { ok: false, typeId: request.typeId, reason: "SIGNATURE_DRIFT" };
 
-    const locator = page.locator(`[${MARK_ATTRIBUTE}]`);
+    const locator = page.locator(`[${CROP_MARK_ATTRIBUTE}]`);
 
     try {
+      if (!request.isFixed) await page.evaluate(isolateMarked, ISOLATE_ARGS);
+
       const box = await locator.boundingBox();
       if (box === null) return { ok: false, typeId: request.typeId, reason: "CAPTURE_FAILED" };
 

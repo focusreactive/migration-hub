@@ -12,6 +12,7 @@ export interface CaptureRequest {
   typeId: string;
   candidateIndex: number;
   signature: string;
+  isFixed: boolean;
 }
 
 export type CaptureOutcome =
