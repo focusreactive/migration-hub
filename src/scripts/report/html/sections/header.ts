@@ -15,10 +15,10 @@ export function headerSection(ctx: RenderContext): string {
     <div style="display: flex; align-items: center; gap: 18px;">
       ${FR_WORDMARK_SVG}
       <span style="width: 1px; height: 20px; background: #2c2c2c;"></span>
-      <span style="font-size: 13px; color: #7b7b7b; letter-spacing: 0.01em;">Migration assessment</span>
+      <span style="font-size: 13px; color: #9c9c9c; letter-spacing: 0.01em;">Migration assessment</span>
     </div>
     <div style="display: flex; align-items: center; gap: 20px;">
-      <span style="font-size: 13px; color: #545454;">Generated ${generatedAt}</span>
+      <span style="font-size: 13px; color: #9c9c9c;">Generated ${generatedAt}</span>
       <a href="${escapeAttr(CONSULTATION_URL)}" class="btn" style="height: 38px; font-size: 13.5px; padding: 0 18px;">Book a consultation</a>
     </div>
   </div>
