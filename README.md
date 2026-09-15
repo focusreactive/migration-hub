@@ -1,4 +1,4 @@
-# migration-hub
+# Migration Hub
 
 The starting point for moving a Webflow or Framer site to a headless CMS. Point it at
 a published URL and it measures the migration for you — how many pages, how many
