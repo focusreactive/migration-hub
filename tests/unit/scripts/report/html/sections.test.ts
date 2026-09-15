@@ -2,12 +2,18 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { complexitySection } from "../../../../../src/scripts/report/html/sections/complexity.ts";
 import { contentModelSection } from "../../../../../src/scripts/report/html/sections/content-model.ts";
+import { formsSection } from "../../../../../src/scripts/report/html/sections/forms.ts";
 import { globalsSection } from "../../../../../src/scripts/report/html/sections/globals.ts";
+import { closeSection } from "../../../../../src/scripts/report/html/sections/close.ts";
 import { headerSection } from "../../../../../src/scripts/report/html/sections/header.ts";
 import { heroSection } from "../../../../../src/scripts/report/html/sections/hero.ts";
+import { mediaSection } from "../../../../../src/scripts/report/html/sections/media.ts";
+import { migrationStepsSection } from "../../../../../src/scripts/report/html/sections/migration-steps.ts";
 import { pageCompositionSection } from "../../../../../src/scripts/report/html/sections/page-composition.ts";
+import { risksSection } from "../../../../../src/scripts/report/html/sections/risks.ts";
 import { scopeSection } from "../../../../../src/scripts/report/html/sections/scope.ts";
 import { sectionLibrarySection } from "../../../../../src/scripts/report/html/sections/section-library.ts";
+import { toolsSection } from "../../../../../src/scripts/report/html/sections/tools.ts";
 import type { RenderContext } from "../../../../../src/scripts/report/html/render-context.ts";
 
 import { loadFixtureContext } from "./fixture.ts";
@@ -315,5 +321,192 @@ describe("globalsSection", () => {
 
   it("disappears when the site has no globals", () => {
     expect(globalsSection({ ...ctx, metrics: { ...ctx.metrics, globals: 0 } })).toBe("");
+  });
+});
+
+describe("formsSection", () => {
+  it("shows human labels when the names step has run", () => {
+    const labelled = {
+      ...ctx,
+      input: {
+        ...ctx.input,
+        forms: {
+          forms: [
+            {
+              route: "/contact",
+              name: "wf-form-Contact-Form",
+              label: "Contact enquiry",
+              action: null,
+              method: "post",
+              fieldCount: 1,
+              fields: [{ name: "email-2", type: "email", required: true, label: "Email address" }],
+            },
+          ],
+        },
+      },
+    };
+
+    const html = formsSection(labelled);
+
+    expect(html).toContain("Contact enquiry");
+    expect(html).toContain("Email address");
+    expect(html).not.toContain("wf-form-Contact-Form");
+    expect(html).not.toContain("email-2");
+  });
+
+  it("falls back to the raw name when no label was judged", () => {
+    expect(formsSection(ctx)).toContain(ctx.input.forms.forms[0]?.name ?? "");
+  });
+
+  it("uses a two-column table, with no Source name column", () => {
+    const html = formsSection(ctx);
+
+    expect(html).toContain("<span>Field</span>");
+    expect(html).toContain(">Type</span>");
+    expect(html).not.toContain("Source name");
+    expect(html).toContain("grid-template-columns: minmax(0, 1fr) 84px;");
+  });
+
+  it("agrees the field-count chip with the count", () => {
+    const html = formsSection(ctx);
+
+    expect(html).toMatch(/>(1 field|\d+ fields)</);
+  });
+
+  it("disappears when the site has no forms", () => {
+    expect(formsSection({ ...ctx, metrics: { ...ctx.metrics, forms: 0 } })).toBe("");
+  });
+
+  it("renders exactly one card per distinct form, matching the deduplicated count", () => {
+    const html = formsSection(ctx);
+    const cardCount = html.split('<div class="card" style="padding: 26px 28px;">').length - 1;
+
+    expect(cardCount).toBe(ctx.metrics.forms);
+  });
+});
+
+describe("mediaSection", () => {
+  it("keeps the hardcoded block titles and entity names", () => {
+    const html = mediaSection(ctx);
+
+    expect(html).toContain("Media &amp; typography");
+    expect(html).toContain("Alt text coverage");
+    expect(html).toContain("Typefaces");
+    expect(html).toContain("unique images");
+    expect(html).toContain("duplicates collapsed");
+    expect(html).toContain("videos");
+  });
+
+  it("lists fonts by family and source, never by weight", () => {
+    const html = mediaSection(ctx);
+    const family = ctx.input.fonts.families[0];
+
+    if (family !== undefined) {
+      expect(html).toContain(family.family);
+      for (const weight of family.weights) expect(html).not.toContain(`>${weight}<`);
+    }
+  });
+
+  it("reports the alt-text shortfall against the image count", () => {
+    expect(mediaSection(ctx)).toContain(`of ${ctx.metrics.images} images have no alt text`);
+  });
+
+  it("does not claim nothing is licensed when a family is licensed", () => {
+    const licensed = {
+      ...ctx,
+      metrics: { ...ctx.metrics, fonts: 1, licensedFonts: 1 },
+      input: {
+        ...ctx.input,
+        fonts: {
+          families: [
+            {
+              family: "Founders Grotesk",
+              weights: ["400"],
+              styles: ["normal" as const],
+              classification: "custom" as const,
+              sources: ["font-face" as const],
+            },
+          ],
+        },
+      },
+    };
+
+    expect(mediaSection(licensed)).not.toContain("Nothing licensed");
+  });
+});
+
+describe("risksSection", () => {
+  it("keeps the hardcoded heading and lead", () => {
+    const html = risksSection(ctx);
+
+    expect(html).toContain("Risks &amp; watch-outs");
+    expect(html).toContain("none of them is a hunch");
+  });
+
+  it("renders one card per fired risk, in order", () => {
+    const html = risksSection(ctx);
+
+    for (const risk of ctx.risks) expect(html).toContain(risk.title.replace(/&/g, "&amp;"));
+  });
+
+  it("pulls Plan for: out as emphasis rather than leaving the asterisks in", () => {
+    const html = risksSection(ctx);
+
+    expect(html).toContain("<em>Plan for:</em>");
+    expect(html).not.toContain("*Plan for:*");
+  });
+
+  it("renders nothing when no risk fired", () => {
+    expect(risksSection({ ...ctx, risks: [] })).toBe("");
+  });
+});
+
+describe("migrationStepsSection", () => {
+  it("keeps the five hardcoded step names", () => {
+    const html = migrationStepsSection(ctx);
+
+    for (const name of ["Page discovery", "Asset extraction", "Schema", "Section generation", "Project"]) {
+      expect(html).toContain(name);
+    }
+  });
+
+  it("ends the timeline rule at the centre of the last step", () => {
+    expect(migrationStepsSection(ctx)).toContain("right: calc(20% - 34px)");
+  });
+
+  it("templates each description from the metrics", () => {
+    expect(migrationStepsSection(ctx)).toContain(String(ctx.metrics.pages));
+  });
+});
+
+describe("toolsSection", () => {
+  it("links the repositories for the detected platform", () => {
+    const html = toolsSection(ctx);
+
+    expect(html).toContain("framer-to-sanity-migration");
+    expect(html).toContain("framer-to-payload-migration");
+    expect(html).toContain("Target &middot; Sanity");
+  });
+
+  it("keeps the hardcoded heading and lead", () => {
+    expect(toolsSection(ctx)).toContain("Migrate this site yourself");
+    expect(toolsSection(ctx)).toContain("our open pipeline");
+  });
+});
+
+describe("closeSection", () => {
+  it("keeps the agency copy and the two calls to action", () => {
+    const html = closeSection(ctx);
+
+    expect(html).toContain("Get a free migration consultation");
+    expect(html).toContain("contact@focusreactive.com");
+    expect(html).toContain("Verified partners");
+  });
+
+  it("dates and names the report in the footer", () => {
+    const html = closeSection(ctx);
+
+    expect(html).toContain("Generated by the FocusReactive migration assessment pipeline &middot; 14 Sep 2026");
+    expect(html).toContain("pearlstudio.framer.website");
   });
 });
