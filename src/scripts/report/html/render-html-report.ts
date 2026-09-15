@@ -3,7 +3,7 @@
 // rel="stylesheet">` to the foundations replaced by one inline `<style>` and the
 // Google Fonts `<link>`.
 import { kindsLabel } from "#report/sections/section-library.ts";
-import { collectionNameFromRoutePattern } from "#report/utils/collection-name.ts";
+import { collectionNameFromRoutePattern, collectionTemplateLabel } from "#report/utils/collection-name.ts";
 
 import { GOOGLE_FONTS_HREF } from "./constants/fonts.ts";
 import { PAGE_CSS, RESPONSIVE_CSS, SHOT_CSS, TOKENS_CSS } from "./constants/css.ts";
@@ -35,6 +35,18 @@ function norm(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+// JSON.stringify alone does not escape `<`, `/`, or the U+2028/U+2029 line separators,
+// any of which can break out of (or corrupt) a `<script>` body. The values embedded
+// here (section names, AI-generated summaries) originate from a third-party site, so
+// they must be neutralized the same way every other model-written string reaching the
+// page is escaped for its context — this is that escaping for the script context.
+function embedJson(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
 interface TemplateLink {
   label: string;
   href: string;
@@ -62,7 +74,7 @@ function templateLinks(ctx: RenderContext): Record<string, TemplateLink> {
     const exemplarRoute = exemplarRouteByKey.get(collection.key);
     if (exemplarRoute === undefined) continue;
 
-    const label = `${collectionNameFromRoutePattern(collection.routePattern)} template page`;
+    const label = collectionTemplateLabel(collectionNameFromRoutePattern(collection.routePattern));
     links[norm(label)] = {
       label: collection.routePattern,
       href: new URL(exemplarRoute, origin).toString(),
@@ -169,10 +181,10 @@ export function renderHtmlReport(input: HtmlReportInput): string {
     closeSection(ctx),
   ].filter((band) => band !== "");
 
-  const script = PAGE_SCRIPT.replace("__SITE__", () => JSON.stringify(new URL(input.sourceUrl).origin))
-    .replace("__TPL__", () => JSON.stringify(templateLinks(ctx)))
-    .replace("__GLOBALS__", () => JSON.stringify(globalsData(ctx)))
-    .replace("__TYPES__", () => JSON.stringify(typesData(ctx)));
+  const script = PAGE_SCRIPT.replace("__SITE__", () => embedJson(new URL(input.sourceUrl).origin))
+    .replace("__TPL__", () => embedJson(templateLinks(ctx)))
+    .replace("__GLOBALS__", () => embedJson(globalsData(ctx)))
+    .replace("__TYPES__", () => embedJson(typesData(ctx)));
 
   return [
     "<!doctype html>",

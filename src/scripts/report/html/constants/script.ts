@@ -198,18 +198,24 @@ export const PAGE_SCRIPT = `
     hero.setAttribute('tabindex', '0');
     hero.setAttribute('role', 'button');
     activate(hero, function(){
-      open([resolve('Home hero with full-width photo', { name: 'Home page hero', shot: 'sec-hero.jpg', kind: '', count: '', pages: '/', summary: '' })], 0);
+      var shot = hero.getAttribute('data-shot');
+      var known = TYPES[shot];
+      var out = { name: 'Home page hero', shot: shot, kind: '', count: '', pages: '', summary: '' };
+      var k;
+      if (known) for (k in known) { if (known[k]) out[k] = known[k]; }
+      open([out], 0);
     });
   }
 
   // Page composition disclosure
   var pageToggle = $('pageToggle'), pageRest = $('pageRest');
   if (pageToggle && pageRest) {
+    var pageToggleCollapsedLabel = pageToggle.textContent;
     pageToggle.addEventListener('click', function(){
       var open = pageRest.style.display === 'none';
       pageRest.style.display = open ? 'flex' : 'none';
       pageToggle.setAttribute('aria-expanded', String(open));
-      pageToggle.textContent = open ? 'Show fewer' : 'Show all 12 layout pages';
+      pageToggle.textContent = open ? 'Show fewer' : pageToggleCollapsedLabel;
     });
   }
 

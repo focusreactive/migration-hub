@@ -1,6 +1,6 @@
 import type { DiscoveryBlocksData, DiscoveryTypesData, SectionsShardData } from "#ir/discovery.ts";
 import type { PagesData } from "#ir/pages.ts";
-import { collectionNameFromRoutePattern } from "#report/utils/collection-name.ts";
+import { collectionNameFromRoutePattern, collectionTemplateLabel } from "#report/utils/collection-name.ts";
 import { pageLabel } from "#report/utils/page-label.ts";
 import { captureRoutes } from "#stitch/utils/capture-routes.ts";
 
@@ -30,7 +30,7 @@ function pageTitle(pages: PagesData, route: string): { title: string; isCollecti
 
   const collection = pages.collections.find((candidate) => candidate.key === page.collectionKey);
   const name = collection === undefined ? route : collectionNameFromRoutePattern(collection.routePattern);
-  return { title: `${name} template page`, isCollectionTemplate: true };
+  return { title: collectionTemplateLabel(name), isCollectionTemplate: true };
 }
 
 export function buildSectionIndex(args: IndexArgs): IndexedPage[] {

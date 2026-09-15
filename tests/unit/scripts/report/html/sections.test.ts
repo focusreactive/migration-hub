@@ -538,7 +538,7 @@ describe("modalSection", () => {
 });
 
 describe("PAGE_SCRIPT", () => {
-  it("carries the three substitution placeholders and no others", () => {
+  it("carries the four substitution placeholders and no others", () => {
     expect(PAGE_SCRIPT).toContain("__GLOBALS__");
     expect(PAGE_SCRIPT).toContain("__SITE__");
     expect(PAGE_SCRIPT).toContain("__TPL__");
@@ -567,5 +567,13 @@ describe("PAGE_SCRIPT", () => {
 
   it("closes as many braces as it opens", () => {
     expect(PAGE_SCRIPT.split("{").length).toBe(PAGE_SCRIPT.split("}").length);
+  });
+
+  it("resolves the hero click from the hero image's own data-shot attribute, not a design-mock shot id", () => {
+    expect(PAGE_SCRIPT).not.toContain("sec-hero.jpg");
+  });
+
+  it("does not re-label the page-composition disclosure with a hardcoded page count", () => {
+    expect(PAGE_SCRIPT).not.toContain("Show all 12 layout pages");
   });
 });

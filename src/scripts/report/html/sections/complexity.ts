@@ -35,9 +35,8 @@ function card(ctx: RenderContext, areaIndex: number): string {
   if (area === undefined) return "";
 
   const color = RATING_COLOR[area.rating];
-  const paragraph = clampSentences(
-    inlineMarkdown(COMPLEXITY_PARAGRAPHS[area.id](ctx.metrics, ctx.input, area.rating)),
-    3,
+  const paragraph = inlineMarkdown(
+    clampSentences(COMPLEXITY_PARAGRAPHS[area.id](ctx.metrics, ctx.input, area.rating), 3),
   );
 
   return `

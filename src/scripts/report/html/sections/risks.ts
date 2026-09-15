@@ -16,11 +16,11 @@ function escapeTitle(value: string): string {
 function body(risk: RenderContext["risks"][number]): string {
   const parts = risk.body.split(PLAN_FOR_MARKER);
 
-  if (parts.length !== 2) return clampSentences(inlineMarkdown(risk.body), 2);
+  if (parts.length !== 2) return inlineMarkdown(clampSentences(risk.body, 2));
 
   const [before = "", after = ""] = parts;
-  const beforeHtml = clampSentences(inlineMarkdown(before), 2).trimEnd();
-  const afterHtml = clampSentences(inlineMarkdown(after), 1);
+  const beforeHtml = inlineMarkdown(clampSentences(before, 2)).trimEnd();
+  const afterHtml = inlineMarkdown(clampSentences(after, 1));
 
   return `${beforeHtml} <em>Plan for:</em>${afterHtml}`;
 }

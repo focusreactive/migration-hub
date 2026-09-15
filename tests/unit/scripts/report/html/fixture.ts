@@ -38,3 +38,40 @@ export async function loadFixtureInput(): Promise<HtmlReportInput> {
 export async function loadFixtureContext(): Promise<RenderContext> {
   return createRenderContext(await loadFixtureInput());
 }
+
+// A minimal but valid JPEG (SOI immediately followed by EOI) — nothing in these tests
+// decodes pixel content, only checks the bytes are embedded as a base64 data URI.
+const TINY_JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
+
+// The one real typeId this fixture wires a crop, shard summary, and jpeg for. "hero"
+// is a block type in discovery/blocks.json with exemplar { route: "/", order: 0 } —
+// a route the base fixture's pages.json also carries — so the crop, the shard section,
+// and the type all agree on the same route/order.
+export const CROPPED_TYPE_ID = "hero";
+export const CROPPED_TYPE_SUMMARY = "A quiet, full-bleed hero photograph introduces the studio.";
+
+// loadFixtureInput() always builds an empty shards/crops/jpegs input (other tests, e.g.
+// the "degrades every screenshot to a placeholder" regression, depend on that empty
+// path staying empty) so the one whole-document integration test never exercises a
+// real screenshot, a real SHOTS entry, or a real summary. This variant overrides those
+// three fields with realistic non-empty values, reusing everything else from the base
+// fixture.
+export async function loadFixtureInputWithCrops(): Promise<HtmlReportInput> {
+  const base = await loadFixtureInput();
+
+  return {
+    ...base,
+    shards: [
+      {
+        route: "/",
+        globals: [],
+        blocks: [{ order: 0, role: "hero", summary: CROPPED_TYPE_SUMMARY }],
+      },
+    ],
+    crops: {
+      shots: [{ typeId: CROPPED_TYPE_ID, route: "/", order: 0, relativePath: "crops/hero.jpg", width: 4, height: 3 }],
+      missing: [],
+    },
+    jpegs: new Map<string, Buffer>([[CROPPED_TYPE_ID, TINY_JPEG]]),
+  };
+}

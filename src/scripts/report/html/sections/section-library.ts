@@ -3,7 +3,7 @@ import type { DiscoveryContentKind } from "#ir/discovery.ts";
 import type { PagesData } from "#ir/pages.ts";
 import { KIND_LABEL } from "#report/constants/labels.ts";
 import { breakdown, kindsLabel } from "#report/sections/section-library.ts";
-import { collectionNameFromRoutePattern } from "#report/utils/collection-name.ts";
+import { collectionNameFromRoutePattern, collectionTemplateLabel } from "#report/utils/collection-name.ts";
 import { countLabel, countWord } from "#report/utils/count.ts";
 
 import type { RenderContext } from "../render-context.ts";
@@ -79,7 +79,7 @@ function collectionMemberLabel(pages: PagesData, route: string): string | undefi
 
   const collection = pages.collections.find((candidate) => candidate.key === page.collectionKey);
   const name = collection === undefined ? route : collectionNameFromRoutePattern(collection.routePattern);
-  return `${name} template page`;
+  return collectionTemplateLabel(name);
 }
 
 export function memberPagesForCard(pages: PagesData, members: { route: string }[]): string {
