@@ -99,9 +99,9 @@ dialog.secmodal { width: min(880px, 92vw); max-height: 88vh; padding: 0; overflo
 dialog.secmodal::backdrop { background: rgba(0, 0, 0, 0.82); }
 dialog.secmodal[open] { animation: secmodal-in 0.16s ease both; }
 @keyframes secmodal-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.m-shot { aspect-ratio: auto; min-height: 200px; padding: 0; border-bottom: 1px solid var(--fr-line);
-  align-items: center; justify-content: center; }
-.m-shot > img { width: 100%; max-width: 100%; height: auto; max-height: 56vh; object-fit: contain; margin: 0 auto; }
+.m-shot { height: 46vh; min-height: 220px; padding: 0;
+  border-bottom: 1px solid var(--fr-line); align-items: center; justify-content: center; }
+.m-shot > img { width: auto; max-width: 100%; height: auto; max-height: 100%; object-fit: contain; margin: 0 auto; }
 .m-body { padding: 26px 30px 30px; }
 .m-close { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%;
   border: 1px solid var(--fr-border); background: rgba(0, 0, 0, 0.72); color: var(--fr-soft);
@@ -193,7 +193,7 @@ img.shot, .shot { max-width: 100%; }
   /* section-detail modal */
   dialog.secmodal { width: calc(100vw - 16px); max-height: 92vh; border-radius: 14px; }
   .m-body { padding: 20px 18px 24px; }
-  .m-shot > img { max-height: 42vh; }
+  .m-shot { height: 38vh; min-height: 180px; }
   .m-body > [style*="justify-content: space-between"] { flex-wrap: wrap; gap: 12px !important; }
   #mMeta { flex-wrap: wrap; row-gap: 6px; }
 }
