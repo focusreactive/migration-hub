@@ -512,7 +512,7 @@ describe("closeSection", () => {
     const html = closeSection(ctx);
 
     expect(html).toContain("Get a free migration consultation");
-    expect(html).toContain("contact@focusreactive.com");
+    expect(html).toContain("build@focusreactive.com");
     expect(html).toContain("Verified partners");
   });
 

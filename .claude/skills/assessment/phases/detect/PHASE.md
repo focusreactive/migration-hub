@@ -39,7 +39,7 @@ show the top signals from `scores.<platform>.signals` ordered strong → medium
 → weak, so the user can see what was and was not found. Say plainly that the
 site's platform was not recognized (`unknown`) or not recognized with enough
 confidence (`ambiguous`), point them at
-`https://focusreactive.com/services/headless-cms-expert-agency/` for a
+`https://focusreactive.com/services/headless-cms-expert-agency/#contacts` for a
 consultation, and stop — do not continue to `inventory`.
 
 The project stays on disk with `detect` marked `done`, so re-running

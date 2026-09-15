@@ -15,5 +15,5 @@ export const TOOLS_BY_SOURCE: Record<"webflow" | "framer", ToolLink[]> = {
   ],
 };
 
-export const CONSULTATION_URL = "https://focusreactive.com/services/headless-cms-expert-agency/";
-export const CONTACT_EMAIL = "contact@focusreactive.com";
+export const CONSULTATION_URL = "https://focusreactive.com/services/headless-cms-expert-agency/#contacts";
+export const CONTACT_EMAIL = "build@focusreactive.com";
