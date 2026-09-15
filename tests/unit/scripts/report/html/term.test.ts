@@ -20,7 +20,7 @@ describe("term", () => {
   });
 
   it("escapes the glossary definition placed in the data-def attribute", () => {
-    expect(term("global")).toContain('data-def="A section shared site-wide rather than placed per page &amp;mdash;');
+    expect(term("global")).toContain('data-def="A section shared site-wide rather than placed per page — header');
   });
 });
 

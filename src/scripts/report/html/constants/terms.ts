@@ -20,14 +20,14 @@ export const GLOSSARY_TERMS: Record<GlossaryTerm, string> = {
   collectionTemplatePage: "The single layout every document of a collection is rendered through. One per collection.",
   uniqueLayoutPage:
     "Every page-builder page, plus one document per collection template page. Each distinct layout on the "
-    + "site, exactly once &mdash; and the honest measure of how much there is to build.",
+    + "site, exactly once — and the honest measure of how much there is to build.",
   section: "One horizontal band of a page, as a reader perceives it.",
   sectionType:
     "One distinct section design, after folding every instance of it across the site into one. "
     + "Never includes globals.",
   sectionInstance: "One occurrence of a section type on one unique layout page.",
   global:
-    "A section shared site-wide rather than placed per page &mdash; header, footer, cookie banner, "
+    "A section shared site-wide rather than placed per page — header, footer, cookie banner, "
     + "announcement bar, floating button. Never counted among section types.",
 };
 
