@@ -4,48 +4,14 @@ import type { PagesData } from "#ir/pages.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import { KIND_LABEL } from "../constants/labels.ts";
 import type { ReportInput } from "../types.ts";
-import { collectionNameFromRoutePattern } from "../utils/collection-name.ts";
 import { countLabel, countWord } from "../utils/count.ts";
+import { memberPageLabels } from "../utils/member-pages.ts";
 import { table } from "../utils/table.ts";
 
-function collectionNameForItemRoute(pages: PagesData, route: string): string | undefined {
-  const page = pages.pages.find((candidate) => candidate.route === route);
-  if (page?.kind !== "item") return undefined;
-
-  const collection = pages.collections.find((candidate) => candidate.key === page.collectionKey);
-  return collection === undefined ? route : collectionNameFromRoutePattern(collection.routePattern);
-}
-
-function dedupeInOrder(values: string[]): string[] {
-  const seen = new Set<string>();
-  const result: string[] = [];
-
-  for (const value of values) {
-    if (seen.has(value)) continue;
-    seen.add(value);
-    result.push(value);
-  }
-
-  return result;
-}
-
 export function memberPagesList(pages: PagesData, members: { route: string }[]): string {
-  const staticRoutes: string[] = [];
-  const collectionNames: string[] = [];
-
-  for (const member of members) {
-    const collectionName = collectionNameForItemRoute(pages, member.route);
-    if (collectionName === undefined) staticRoutes.push(member.route);
-    else collectionNames.push(collectionName);
-  }
-
-  const uniqueCollectionNames = dedupeInOrder(collectionNames);
-  const parts = [...dedupeInOrder(staticRoutes).map((route) => `\`${route}\``), ...uniqueCollectionNames];
-
-  if (uniqueCollectionNames.length === 0) return parts.join(", ");
-
-  const suffix = uniqueCollectionNames.length > 1 ? "collection template pages" : "collection template page";
-  return `${parts.join(", ")} (${suffix})`;
+  return memberPageLabels(pages, members)
+    .map((member) => (member.isRoute ? `\`${member.label}\`` : member.label))
+    .join(", ");
 }
 
 export function kindsLabel(kinds: DiscoveryContentKind[]): string {

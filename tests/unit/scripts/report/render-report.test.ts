@@ -103,14 +103,14 @@ describe("renderReport", () => {
     const row = renderReport(INPUT)
       .split("\n")
       .find((line) => line.startsWith("| Hero |"));
-    expect(row).toBe("| Hero | 2 | `/`, `/about` | Block |");
+    expect(row).toBe("| Hero | 2 | `/home`, `/about` | Block |");
   });
 
   it("labels a block merged from a page-builder page and a collection exemplar as both", () => {
     const row = renderReport(INPUT)
       .split("\n")
       .find((line) => line.startsWith("| CTA panel |"));
-    expect(row).toBe("| CTA panel | 2 | `/about`, Journal (collection template page) | Block, Collection section |");
+    expect(row).toBe("| CTA panel | 2 | `/about`, Journal template page | Block, Collection section |");
   });
 
   it("links both tools for the detected source", () => {
@@ -140,8 +140,8 @@ describe("renderReport forms deduplication", () => {
     const md = renderReport(input);
     expect(md).toMatch(/\| Forms \| 1 \|/);
 
-    const formsRow = md.split("\n").find((line) => line.startsWith("| `Newsletter` |"));
-    expect(formsRow).toBe("| `Newsletter` | 1 (`Email`, required) |");
+    const formsRow = md.split("\n").find((line) => line.startsWith("| Newsletter |"));
+    expect(formsRow).toBe("| Newsletter | 1 (Email, required) |");
   });
 
   it("counts two genuinely distinct forms on the same route as two forms", () => {
@@ -157,13 +157,13 @@ describe("renderReport forms deduplication", () => {
 
     const md = renderReport(input);
     expect(md).toMatch(/\| Forms \| 2 \|/);
-    expect(md).toContain("| `Newsletter` |");
-    expect(md).toContain("| `Contact` |");
+    expect(md).toContain("| Newsletter |");
+    expect(md).toContain("| Contact |");
   });
 });
 
-describe("renderReport anonymous form labels", () => {
-  it("labels an unnamed form from all its named fields, including optional ones", () => {
+describe("renderReport unnamed forms", () => {
+  it("names an unnamed form the way the HTML report does, and lists its named fields", () => {
     const input: ReportInput = {
       ...INPUT,
       forms: {
@@ -184,7 +184,7 @@ describe("renderReport anonymous form labels", () => {
       },
     };
 
-    expect(renderReport(input)).toContain("| Name, Email, website | 3 (`Name`, `Email`, `website`) |");
+    expect(renderReport(input)).toContain("| Form | 3 (Name, Email, website) |");
   });
 
   it("falls back to all named fields when none are required", () => {
@@ -207,7 +207,7 @@ describe("renderReport anonymous form labels", () => {
       },
     };
 
-    expect(renderReport(input)).toContain("| A, B | 2 (`A`, `B`) |");
+    expect(renderReport(input)).toContain("| Form | 2 (A, B) |");
   });
 
   it("filters out unnamed fields instead of rendering empty commas", () => {
@@ -231,11 +231,11 @@ describe("renderReport anonymous form labels", () => {
     };
 
     const md = renderReport(input);
-    expect(md).toContain("| Name | 2 (`Name` — all required) |");
+    expect(md).toContain("| Form | 2 (Name — all required) |");
     expect(md).not.toContain(", ,");
   });
 
-  it("falls back to an em dash when no field carries a name", () => {
+  it("prints the bare field count when no field carries a name", () => {
     const input: ReportInput = {
       ...INPUT,
       forms: {
@@ -252,7 +252,7 @@ describe("renderReport anonymous form labels", () => {
       },
     };
 
-    expect(renderReport(input)).toContain("| — | 1 |");
+    expect(renderReport(input)).toContain("| Form | 1 |");
   });
 
   it("lists every named field, however many there are", () => {
@@ -276,9 +276,7 @@ describe("renderReport anonymous form labels", () => {
       },
     };
 
-    expect(renderReport(input)).toContain(
-      "| F1, F2, F3, F4, F5, F6, F7 | 7 (`F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F7` — all required) |",
-    );
+    expect(renderReport(input)).toContain("| Form | 7 (F1, F2, F3, F4, F5, F6, F7 — all required) |");
   });
 });
 
@@ -311,9 +309,9 @@ describe("renderReport form ordering", () => {
     };
 
     const md = renderReport(input);
-    const twoFieldIndex = md.indexOf("| A, B | 2 (`A`, `B` — all required) |");
+    const twoFieldIndex = md.indexOf("| Form | 2 (A, B — all required) |");
     const tenFieldIndex = md.indexOf(
-      "| C1, C2, C3, C4, C5, C6, C7, C8, C9, C10 | 10 (`C1`, `C2`, `C3`, `C4`, `C5`, `C6`, `C7`, `C8`, `C9`, `C10` — all required) |",
+      "| Form | 10 (C1, C2, C3, C4, C5, C6, C7, C8, C9, C10 — all required) |",
     );
     expect(twoFieldIndex).toBeGreaterThan(-1);
     expect(tenFieldIndex).toBeGreaterThan(-1);
@@ -330,6 +328,6 @@ describe("renderReport table cell escaping", () => {
       },
     };
 
-    expect(renderReport(input)).toContain("| `A \\| B` | 0 |");
+    expect(renderReport(input)).toContain("| A \\| B | 0 |");
   });
 });

@@ -1,9 +1,7 @@
-// Transcribed from docs/design/report.design.html:79-154 (the complexity assessment band).
-import { COMPLEXITY_PARAGRAPHS } from "#report/constants/complexity-copy.ts";
+import { complexityParagraph } from "#report/constants/complexity-copy.ts";
 
 import type { Rating } from "../../analysis/complexity.ts";
 import type { RenderContext } from "../render-context.ts";
-import { clampSentences } from "../utils/clamp.ts";
 import { escapeHtml } from "../utils/escape.ts";
 import { inlineMarkdown } from "../utils/inline-markdown.ts";
 
@@ -35,9 +33,7 @@ function card(ctx: RenderContext, areaIndex: number): string {
   if (area === undefined) return "";
 
   const color = RATING_COLOR[area.rating];
-  const paragraph = inlineMarkdown(
-    clampSentences(COMPLEXITY_PARAGRAPHS[area.id](ctx.metrics, ctx.input, area.rating), 3),
-  );
+  const paragraph = inlineMarkdown(complexityParagraph(area.id, ctx.metrics, ctx.input, area.rating));
 
   return `
         <div class="card" style="display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 40px; padding: 26px 30px; align-items: start;">

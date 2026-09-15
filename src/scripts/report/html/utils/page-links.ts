@@ -1,4 +1,5 @@
 import type { PagesData } from "#ir/pages.ts";
+import { displayRoute } from "#report/utils/page-label.ts";
 
 import { escapeAttr, escapeHtml } from "./escape.ts";
 
@@ -41,7 +42,7 @@ export function createLinker(input: LinkerInput): Linker {
     }
   }
 
-  const displayPath = (route: string): string => (route === "/" ? "/home" : route);
+  const displayPath = displayRoute;
   const href = (route: string): string => new URL(route, origin).toString();
 
   const anchor = (route: string): string =>
@@ -50,17 +51,11 @@ export function createLinker(input: LinkerInput): Linker {
   const collectionAnchor = (collectionKey: string): string => {
     const collection = collectionByKey.get(collectionKey);
     if (collection === undefined) {
-      // A page claims a collectionKey no collection declares: the artifact is corrupt.
-      // Rendering an empty string here would leave an invisible gap in the report.
       throw new Error(`pages.json has no collection with key "${collectionKey}"`);
     }
 
     const exemplar = exemplarByKey.get(collectionKey);
     if (exemplar === undefined) {
-      // A collection with no published documents has nothing to link to. Render the
-      // pattern as plain text rather than a link to the site root: an anchor styled
-      // like every other one, promising a collection path and landing on the
-      // homepage, reads as a broken link and costs the report its credibility.
       return (
         `<span class="mono pathlink" title="${escapeAttr(`No documents published · ${collection.routePattern}`)}">`
         + `${escapeHtml(collection.routePattern)}</span>`

@@ -1,9 +1,7 @@
-// Transcribed from docs/design/report.design.html:636-670 (the "How the migration
-// runs" band).
 import { migrationSteps } from "#report/sections/migration-steps.ts";
+import { clampSentences } from "#report/utils/clamp.ts";
 
 import type { RenderContext } from "../render-context.ts";
-import { clampSentences } from "../utils/clamp.ts";
 import { escapeHtml } from "../utils/escape.ts";
 
 const STEP_NAMES = [

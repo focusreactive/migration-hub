@@ -1,6 +1,5 @@
-// Transcribed from docs/design/report.design.html:505-528 (the page composition band).
+import { clampChars } from "#report/utils/clamp.ts";
 import type { RenderContext } from "../render-context.ts";
-import { clampChars } from "../utils/clamp.ts";
 import { escapeAttr, escapeHtml } from "../utils/escape.ts";
 import type { IndexedPage, IndexedSection } from "../utils/section-index.ts";
 import { chunkStripRows, type StripRow } from "../utils/strip-rows.ts";

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { assessComplexity } from "../../../../../src/scripts/report/analysis/complexity.ts";
 import { computeMetrics } from "../../../../../src/scripts/report/analysis/metrics.ts";
+import { COMPLEXITY_PARAGRAPHS } from "../../../../../src/scripts/report/constants/complexity-copy.ts";
 import { complexitySection } from "../../../../../src/scripts/report/sections/complexity.ts";
 import { contentModelSection } from "../../../../../src/scripts/report/sections/content-model.ts";
 import { formsSection } from "../../../../../src/scripts/report/sections/forms.ts";
@@ -69,17 +70,20 @@ describe("complexitySection", () => {
     expect(md).not.toContain("re-hosting");
   });
 
+  // Asserted on the copy rather than the rendered section: both reports clamp a
+  // complexity paragraph to three sentences, and the pacing claim is the fourth.
   it("only claims a project-pacing role for page composition above the lowest rating", () => {
-    const md = complexitySection(assessComplexity(METRICS).areas, INPUT, METRICS);
-
     expect(assessComplexity(METRICS).areas.find((area) => area.id === "pageComposition")?.rating).toBe("Low");
-    expect(md).not.toContain("sets the pace of the whole project");
+    expect(COMPLEXITY_PARAGRAPHS.pageComposition(METRICS, INPUT, "Low")).not.toContain(
+      "sets the pace of the whole project",
+    );
 
     const wide = reportInput();
     const wideMetrics = { ...computeMetrics(wide), sectionTypes: 30 };
-    const wideMd = complexitySection(assessComplexity(wideMetrics).areas, wide, wideMetrics);
 
-    expect(wideMd).toContain("sets the pace of the whole project");
+    expect(COMPLEXITY_PARAGRAPHS.pageComposition(wideMetrics, wide, "Medium")).toContain(
+      "sets the pace of the whole project",
+    );
   });
 
   it("only promises a record-by-record review when content volume is at the lowest rating", () => {
@@ -317,7 +321,7 @@ describe("inventory sections", () => {
     const md = sectionLibrarySection(input, metrics);
 
     expect(md).toContain("| Spacing scale specimen | 4 | `/utility-pages/style-guide` | Block |");
-    expect(md).toContain("Journal, Services (collection template pages)");
+    expect(md).toContain("Journal template page, Services template page");
   });
 
   it("explains that globals are authored once", () => {
@@ -365,8 +369,8 @@ describe("inventory sections", () => {
     const md = globalsSection(INPUT, METRICS);
 
     expect(md).toContain("| Global | Instances | Appears on |");
-    expect(md).toContain("| Header | 3 | 2 of 3 page-builder pages and the collection template page |");
-    expect(md).not.toContain("| Header | 3 | every page-builder page");
+    expect(md).toContain("| Header | 3 | 2 page-builder pages · one collection template page |");
+    expect(md).not.toContain("| Header | 3 | 3 page-builder pages");
 
     const fullyCoveredInput = reportInput({
       globals: {
@@ -390,7 +394,7 @@ describe("inventory sections", () => {
     const fullyCoveredMetrics = computeMetrics(fullyCoveredInput);
     const fullMd = globalsSection(fullyCoveredInput, fullyCoveredMetrics);
 
-    expect(fullMd).toContain("| Header | 4 | every page-builder page and the collection template page |");
+    expect(fullMd).toContain("| Header | 4 | 3 page-builder pages · one collection template page |");
 
     const singleGlobalPartialInput = reportInput({
       pages: {
@@ -422,8 +426,8 @@ describe("inventory sections", () => {
     const singleGlobalPartialMetrics = computeMetrics(singleGlobalPartialInput);
     const partialMd = globalsSection(singleGlobalPartialInput, singleGlobalPartialMetrics);
 
-    expect(partialMd).toContain("| Nav | 3 | 3 of 4 page-builder pages |");
-    expect(partialMd).not.toContain("| Nav | 3 | every page-builder page");
+    expect(partialMd).toContain("| Nav | 3 | 3 page-builder pages · 0 collection template pages |");
+    expect(partialMd).not.toContain("| Nav | 3 | 4 page-builder pages");
   });
 
   it("lists forms with their fields and no endpoint column", () => {

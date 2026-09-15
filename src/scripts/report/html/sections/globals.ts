@@ -1,10 +1,8 @@
-// Transcribed from docs/design/report.design.html:530-565 (the global sections band).
-import { coverageOf, type GlobalCoverage } from "#report/analysis/global-coverage.ts";
+import { coverageLine, coverageOf, type GlobalCoverage } from "#report/analysis/global-coverage.ts";
 import { leadLine } from "#report/sections/globals.ts";
-import { countLabel } from "#report/utils/count.ts";
+import { clampSentences } from "#report/utils/clamp.ts";
 
 import type { RenderContext } from "../render-context.ts";
-import { clampSentences } from "../utils/clamp.ts";
 import { escapeHtml } from "../utils/escape.ts";
 import { summaryForType } from "../utils/section-index.ts";
 
@@ -17,15 +15,6 @@ interface GlobalType {
 
 function capitalize(value: string): string {
   return value.length === 0 ? value : `${(value[0] ?? "").toUpperCase()}${value.slice(1)}`;
-}
-
-function coverageLine(coverage: GlobalCoverage): string {
-  const staticLabel = escapeHtml(countLabel(coverage.staticCovered, "page-builder page", "page-builder pages"));
-  const collectionsLabel = escapeHtml(
-    countLabel(coverage.collectionsCovered, "collection template page", "collection template pages"),
-  );
-
-  return capitalize(`${staticLabel} &middot; ${collectionsLabel}`);
 }
 
 function bar(coverage: GlobalCoverage): string {
@@ -76,7 +65,7 @@ function card(ctx: RenderContext, type: GlobalType): string {
           </div>
           ${summaryParagraph(ctx, type)}
           <div style="display: flex; gap: 3px; margin-top: 20px;">${bar(coverage)}</div>
-          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #545454; margin-top: 10px;"><span>${coverageLine(coverage)}</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #545454; margin-top: 10px;"><span>${capitalize(escapeHtml(coverageLine(coverage))).replace("·", "&middot;")}</span></div>
         </div>`;
 }
 

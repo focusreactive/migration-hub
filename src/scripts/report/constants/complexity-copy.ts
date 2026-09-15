@@ -1,6 +1,7 @@
 import type { ComplexityAreaId, Rating } from "../analysis/complexity.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
+import { clampSentences } from "../utils/clamp.ts";
 import { countLabel, countWord, sentenceCountLabel, sentenceCountWord } from "../utils/count.ts";
 import { FONT_SOURCE_LABEL } from "./font-source.ts";
 import { SOURCE_LABEL } from "./labels.ts";
@@ -209,3 +210,14 @@ export const COMPLEXITY_PARAGRAPHS: Record<ComplexityAreaId, ComplexityParagraph
   forms: formsParagraph,
   contentVolume: contentVolumeParagraph,
 };
+
+const COMPLEXITY_PARAGRAPH_SENTENCES = 3;
+
+export function complexityParagraph(
+  id: ComplexityAreaId,
+  metrics: ReportMetrics,
+  input: ReportInput,
+  rating: Rating,
+): string {
+  return clampSentences(COMPLEXITY_PARAGRAPHS[id](metrics, input, rating), COMPLEXITY_PARAGRAPH_SENTENCES);
+}

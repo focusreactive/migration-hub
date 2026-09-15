@@ -1,4 +1,5 @@
 import type { ReportInput } from "../types.ts";
+import { countLabel } from "../utils/count.ts";
 
 export interface GlobalCoverage {
   staticCovered: number;
@@ -55,4 +56,15 @@ export function coverageSpanPhrase(
 ): string {
   if (lowest === highest) return coveragePhrase(lowest, total, singular, plural);
   return `${lowest}–${highest} of ${total} ${plural}`;
+}
+
+export function coverageLine(coverage: GlobalCoverage): string {
+  const staticLabel = countLabel(coverage.staticCovered, "page-builder page", "page-builder pages");
+  const collectionsLabel = countLabel(
+    coverage.collectionsCovered,
+    "collection template page",
+    "collection template pages",
+  );
+
+  return `${staticLabel} · ${collectionsLabel}`;
 }

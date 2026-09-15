@@ -1,28 +1,17 @@
-// Transcribed from docs/design/report.design.html:619-635 (the risks & watch-outs band).
+import { riskBody } from "#report/sections/risks.ts";
+
 import type { RenderContext } from "../render-context.ts";
-import { clampSentences } from "../utils/clamp.ts";
 import { inlineMarkdown } from "../utils/inline-markdown.ts";
 
-const PLAN_FOR_MARKER = "*Plan for:*";
-
-// Risk titles are assembled entirely from a fixed vocabulary (platform names, counts,
-// canned phrases) — never from scraped page content — and sit in text content, never
-// an attribute, so quoting doesn't need escaping here. `&`/`<`/`>` still are, since a
-// platform label or count could in principle collide with markup-significant characters.
 function escapeTitle(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function body(risk: RenderContext["risks"][number]): string {
-  const parts = risk.body.split(PLAN_FOR_MARKER);
+  const { diagnosis, planFor } = riskBody(risk);
+  if (planFor === undefined) return inlineMarkdown(diagnosis);
 
-  if (parts.length !== 2) return inlineMarkdown(clampSentences(risk.body, 2));
-
-  const [before = "", after = ""] = parts;
-  const beforeHtml = inlineMarkdown(clampSentences(before, 2)).trimEnd();
-  const afterHtml = inlineMarkdown(clampSentences(after, 1));
-
-  return `${beforeHtml} <em>Plan for:</em>${afterHtml}`;
+  return `${inlineMarkdown(diagnosis)} <em>Plan for:</em>${inlineMarkdown(planFor)}`;
 }
 
 function card(risk: RenderContext["risks"][number]): string {

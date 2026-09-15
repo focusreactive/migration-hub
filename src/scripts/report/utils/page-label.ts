@@ -13,3 +13,7 @@ export function pageLabel(route: string): { name: string; slug: string } {
   const slug = segments.at(-1) ?? "";
   return { name: titleCase(slug), slug };
 }
+
+export function displayRoute(route: string): string {
+  return route === "/" ? "/home" : route;
+}

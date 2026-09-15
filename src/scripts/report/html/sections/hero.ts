@@ -1,9 +1,9 @@
 import { SOURCE_LABEL } from "#report/constants/labels.ts";
+import { narrativeParagraphs } from "#report/sections/narrative.ts";
 
 import type { Rating } from "../../analysis/complexity.ts";
 import type { RenderContext } from "../render-context.ts";
 import { ICON_EXTERNAL } from "../constants/svg.ts";
-import { clampSentences } from "../utils/clamp.ts";
 import { escapeAttr, escapeHtml } from "../utils/escape.ts";
 
 const COMPLEXITY_CHIP_STYLE: Record<Rating, string> = {
@@ -24,8 +24,9 @@ export function heroSection(ctx: RenderContext): string {
   const sourceLabel = SOURCE_LABEL[ctx.input.verdict];
   const hostname = escapeHtml(new URL(ctx.input.sourceUrl).hostname);
   const homeHref = escapeAttr(ctx.linker.href("/"));
-  const lead = escapeHtml(clampSentences(ctx.input.narrative.site, 2));
-  const body = escapeHtml(clampSentences(ctx.input.narrative.design, 4));
+  const narrative = narrativeParagraphs(ctx.input);
+  const lead = escapeHtml(narrative.site);
+  const body = escapeHtml(narrative.design);
   const complexityStyle = COMPLEXITY_CHIP_STYLE[ctx.overall];
   const image = heroImage(ctx);
 

@@ -1,24 +1,16 @@
-// Transcribed from docs/design/report.design.html:191-504 (the section library band).
 import type { DiscoveryContentKind } from "#ir/discovery.ts";
 import type { PagesData } from "#ir/pages.ts";
 import { KIND_LABEL } from "#report/constants/labels.ts";
 import { breakdown, kindsLabel } from "#report/sections/section-library.ts";
-import { collectionNameFromRoutePattern, collectionTemplateLabel } from "#report/utils/collection-name.ts";
+import { clampChars, clampSentences } from "#report/utils/clamp.ts";
 import { countLabel, countWord } from "#report/utils/count.ts";
+import { memberPageLabels } from "#report/utils/member-pages.ts";
 
 import type { RenderContext } from "../render-context.ts";
-import { clampChars, clampSentences } from "../utils/clamp.ts";
 import { escapeAttr, escapeHtml } from "../utils/escape.ts";
 import { summaryForType } from "../utils/section-index.ts";
 import { term } from "../utils/term.ts";
 
-// The card list is section (block) types only — never globals: the "sectionType"
-// glossary term is explicit that globals are never counted among section types, the
-// design's card grid (docs/design/report.design.html:237-499) shows no "Global" card,
-// and every metric this band binds to (sectionTypes, reusedSectionTypes, ...) is
-// computed from `blocks.types` alone (src/scripts/report/analysis/metrics.ts). Globals
-// are still exposed on RenderContext for other bands (e.g. the later page-composition
-// band's "G" badge) but do not enter this grid or its bar chart.
 interface LibraryCard {
   id: string;
   name: string;
@@ -65,35 +57,10 @@ function bar(card: LibraryCard, max: number): string {
   return `<span style="width: 16px; height: ${height}px; border-radius: 3px 3px 0 0; background: ${color};" title="${title}"></span>`;
 }
 
-// Not memberPagesList (src/scripts/report/sections/section-library.ts): that helper
-// backtick-quotes static routes, joins with ", " and appends a single trailing
-// "(collection template page(s))" clause — confirmed against the markdown regression
-// fixture's "Journal (collection template page)" cell. The design's data-pages wants
-// each collection member collapsed inline to "<Collection> template page" and the
-// whole list joined with " &middot; ", which is a different shape than a separator
-// swap can produce, so this resolves membership the same way memberPagesList does
-// (via collectionNameFromRoutePattern) but assembles the design's own format.
-function collectionMemberLabel(pages: PagesData, route: string): string | undefined {
-  const page = pages.pages.find((candidate) => candidate.route === route);
-  if (page?.kind !== "item") return undefined;
-
-  const collection = pages.collections.find((candidate) => candidate.key === page.collectionKey);
-  const name = collection === undefined ? route : collectionNameFromRoutePattern(collection.routePattern);
-  return collectionTemplateLabel(name);
-}
-
 export function memberPagesForCard(pages: PagesData, members: { route: string }[]): string {
-  const seen = new Set<string>();
-  const parts: string[] = [];
-
-  for (const member of members) {
-    const label = collectionMemberLabel(pages, member.route) ?? member.route;
-    if (seen.has(label)) continue;
-    seen.add(label);
-    parts.push(label);
-  }
-
-  return parts.join(" · ");
+  return memberPageLabels(pages, members)
+    .map((member) => member.label)
+    .join(" · ");
 }
 
 function dataKind(card: LibraryCard): string {

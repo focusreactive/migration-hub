@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { clampChars, clampSentences } from "../../../../../src/scripts/report/html/utils/clamp.ts";
+import { clampChars, clampSentences } from "../../../../../src/scripts/report/utils/clamp.ts";
 import { escapeAttr, escapeHtml } from "../../../../../src/scripts/report/html/utils/escape.ts";
 import { formatReportDate } from "../../../../../src/scripts/report/html/utils/format-date.ts";
 import { inlineMarkdown } from "../../../../../src/scripts/report/html/utils/inline-markdown.ts";
