@@ -1,4 +1,4 @@
-import { coverageOf, coveragePhrase, isFullCoverage, type GlobalCoverage } from "../analysis/global-coverage.ts";
+import { coverageLine, coverageOf, isFullCoverage } from "../analysis/global-coverage.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
 import { sentenceCountLabel } from "../utils/count.ts";
@@ -12,32 +12,7 @@ function collectionsClause(total: number): string {
   return ` and all ${wordNumber(total)} collection template pages`;
 }
 
-function appearsOnCell(coverage: GlobalCoverage): string {
-  if (isFullCoverage(coverage)) return `every page-builder page${collectionsClause(coverage.collectionsTotal)}`;
-
-  const parts: string[] = [];
-
-  if (coverage.staticTotal > 0) {
-    parts.push(
-      coveragePhrase(coverage.staticCovered, coverage.staticTotal, "page-builder page", "page-builder pages"),
-    );
-  }
-
-  if (coverage.collectionsTotal > 0) {
-    parts.push(
-      coveragePhrase(
-        coverage.collectionsCovered,
-        coverage.collectionsTotal,
-        "collection template page",
-        "collection template pages",
-      ),
-    );
-  }
-
-  return parts.join(" and ");
-}
-
-function leadLine(input: ReportInput, metrics: ReportMetrics): string {
+export function leadLine(input: ReportInput, metrics: ReportMetrics): string {
   const coverages = input.globals.types.map((type) => coverageOf(input, type.members));
   const subject = sentenceCountLabel(metrics.globals, "section is", "sections are");
 
@@ -70,7 +45,7 @@ export function globalsSection(input: ReportInput, metrics: ReportMetrics): stri
       input.globals.types.map((type) => [
         type.name,
         String(type.instanceCount),
-        appearsOnCell(coverageOf(input, type.members)),
+        coverageLine(coverageOf(input, type.members)),
       ]),
     ),
   ].join("\n");

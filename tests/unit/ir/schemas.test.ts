@@ -54,10 +54,38 @@ describe("discovery schemas", () => {
   it("accepts a shard with both lists", () => {
     const parsed = sectionsShardDataSchema.parse({
       route: "/about",
-      globals: [{ order: 0, role: "header", summary: "nav" }],
-      blocks: [{ order: 1, role: "hero", summary: "title" }],
+      globals: [{ order: 0, role: "header", summary: "nav", anchor: null }],
+      blocks: [
+        {
+          order: 1,
+          role: "hero",
+          summary: "title",
+          anchor: {
+            selector: "section.hero",
+            matchCount: 1,
+            y: 60,
+            height: 400,
+            tag: "section",
+            classes: ["hero"],
+            isFixed: false,
+            signature: "section.hero|400|Title",
+          },
+        },
+      ],
     });
     expect(parsed.blocks).toHaveLength(1);
+    expect(parsed.blocks[0]?.anchor?.selector).toBe("section.hero");
+    expect(parsed.globals[0]?.anchor).toBeNull();
+  });
+
+  it("rejects a section with no anchor field at all", () => {
+    expect(() =>
+      sectionsShardDataSchema.parse({
+        route: "/about",
+        globals: [],
+        blocks: [{ order: 0, role: "hero", summary: "title" }],
+      }),
+    ).toThrow();
   });
 
   it("rejects a nodeIds field that no longer exists", () => {
@@ -65,7 +93,7 @@ describe("discovery schemas", () => {
       sectionsShardDataSchema.parse({
         route: "/about",
         globals: [],
-        blocks: [{ order: 1, role: "hero", summary: "t", nodeIds: ["mig-1"] }],
+        blocks: [{ order: 1, role: "hero", summary: "t", anchor: null, nodeIds: ["mig-1"] }],
       }),
     ).toThrow();
   });

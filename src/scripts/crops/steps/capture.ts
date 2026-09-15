@@ -2,16 +2,21 @@ import { existsSync } from "node:fs";
 
 import { artifactPath, readArtifact, writeArtifact } from "#ir/artifact.ts";
 import {
-  cropAnchorsShardArtifactFor,
-  cropCandidatesShardArtifactFor,
+  cropHeroPath,
+  cropHeroRelativePath,
   cropIndexArtifact,
   cropShotPath,
   cropShotRelativePath,
-  type CropAnchor,
+  type CropHero,
   type CropMiss,
   type CropShot,
 } from "#ir/crops.ts";
-import { discoveryBlocksArtifact, discoveryGlobalsArtifact } from "#ir/discovery.ts";
+import {
+  discoveryBlocksArtifact,
+  discoveryGlobalsArtifact,
+  sectionsShardArtifactFor,
+  type Section,
+} from "#ir/discovery.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
 import { readManifest, withStep } from "#lib/manifest/index.ts";
 import { routeDir } from "#lib/route-dir.ts";
@@ -23,10 +28,11 @@ import type { CropTarget } from "../types.ts";
 import { planCaptures } from "../utils/crop-index.ts";
 import { cropTargets, groupTargetsByRoute } from "../utils/crop-targets.ts";
 
-async function readAnchors(projectPath: string, routeKey: string): Promise<CropAnchor[] | undefined> {
-  const def = cropAnchorsShardArtifactFor(routeKey);
+async function readSections(projectPath: string, routeKey: string): Promise<Section[] | undefined> {
+  const def = sectionsShardArtifactFor(routeKey);
   if (!existsSync(artifactPath(projectPath, def))) return undefined;
-  return (await readArtifact(projectPath, def)).anchors;
+  const shard = await readArtifact(projectPath, def);
+  return [...shard.globals, ...shard.blocks];
 }
 
 export async function runCropCapture(projectPath: string, force: boolean): Promise<void> {
@@ -54,10 +60,9 @@ export async function runCropCapture(projectPath: string, force: boolean): Promi
 
         for (const [route, targets] of grouped) {
           const routeKey = routeDir(route);
-          const anchors = await readAnchors(projectPath, routeKey);
-          const candidatesShard = await readArtifact(projectPath, cropCandidatesShardArtifactFor(routeKey));
+          const sections = await readSections(projectPath, routeKey);
 
-          const plan = planCaptures({ targets, anchors, candidates: candidatesShard.candidates, route });
+          const plan = planCaptures({ targets, sections, route });
           missing.push(...plan.missing);
           if (plan.requests.length === 0) continue;
 
@@ -85,8 +90,15 @@ export async function runCropCapture(projectPath: string, force: boolean): Promi
           }
         }
 
-        await writeArtifact(projectPath, cropIndexArtifact, { shots, missing });
-        return { shots: shots.length, missing: missing.length };
+        const heroShot = await driver.viewport(new URL("/", origin).toString());
+        let hero: CropHero | undefined;
+        if (heroShot !== undefined) {
+          await writeFileAtomic(cropHeroPath(projectPath), heroShot.jpeg);
+          hero = { relativePath: cropHeroRelativePath(), width: heroShot.width, height: heroShot.height };
+        }
+
+        await writeArtifact(projectPath, cropIndexArtifact, { shots, missing, ...(hero === undefined ? {} : { hero }) });
+        return { shots: shots.length, missing: missing.length, hero: hero !== undefined };
       },
       { force },
     );
@@ -98,6 +110,7 @@ export async function runCropCapture(projectPath: string, force: boolean): Promi
         targets: [...grouped.values()].reduce((total, targets) => total + targets.length, 0),
         shots: result?.shots ?? 0,
         missing: result?.missing ?? 0,
+        hero: result?.hero ?? false,
       }),
     );
   } finally {

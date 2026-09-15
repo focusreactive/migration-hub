@@ -1,11 +1,11 @@
-import type { CropAnchor, CropCandidate, CropMiss } from "#ir/crops.ts";
+import type { CropMiss } from "#ir/crops.ts";
+import type { Section } from "#ir/discovery.ts";
 
 import type { CaptureRequest, CropTarget } from "../types.ts";
 
 interface PlanArgs {
   targets: CropTarget[];
-  anchors: CropAnchor[] | undefined;
-  candidates: CropCandidate[];
+  sections: Section[] | undefined;
   route: string;
 }
 
@@ -13,34 +13,29 @@ export function planCaptures(args: PlanArgs): { requests: CaptureRequest[]; miss
   const requests: CaptureRequest[] = [];
   const missing: CropMiss[] = [];
 
-  if (args.anchors === undefined) {
+  if (args.sections === undefined) {
     for (const target of args.targets) {
-      missing.push({ typeId: target.typeId, route: args.route, order: target.order, reason: "NO_ANCHORS_SHARD" });
+      missing.push({ typeId: target.typeId, route: args.route, order: target.order, reason: "SECTIONS_SHARD_MISSING" });
     }
     return { requests, missing };
   }
 
-  const byOrder = new Map(args.anchors.map((anchor) => [anchor.order, anchor.candidateIndex]));
+  const byOrder = new Map(args.sections.map((section) => [section.order, section]));
 
   for (const target of args.targets) {
-    const candidateIndex = byOrder.get(target.order);
-    if (candidateIndex === undefined) {
-      missing.push({ typeId: target.typeId, route: args.route, order: target.order, reason: "NO_ANCHOR_FOR_ORDER" });
+    const section = byOrder.get(target.order);
+
+    if (section === undefined || section.anchor === null) {
+      missing.push({ typeId: target.typeId, route: args.route, order: target.order, reason: "NO_ELEMENT" });
       continue;
     }
 
-    const candidate = args.candidates[candidateIndex];
-    if (candidate === undefined) {
-      missing.push({
-        typeId: target.typeId,
-        route: args.route,
-        order: target.order,
-        reason: "CANDIDATE_OUT_OF_RANGE",
-      });
-      continue;
-    }
-
-    requests.push({ typeId: target.typeId, candidateIndex, signature: candidate.signature });
+    requests.push({
+      typeId: target.typeId,
+      selector: section.anchor.selector,
+      signature: section.anchor.signature,
+      isFixed: section.anchor.isFixed,
+    });
   }
 
   return { requests, missing };

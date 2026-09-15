@@ -2,6 +2,7 @@ import type { FormField, FormRecord } from "#ir/forms.ts";
 
 export interface DistinctForm {
   name: string | null;
+  label: string | undefined;
   action: string | null;
   method: string;
   fieldCount: number;
@@ -9,7 +10,7 @@ export interface DistinctForm {
   routes: string[];
 }
 
-function formSignature(form: FormRecord): string {
+export function formSignature(form: FormRecord): string {
   return JSON.stringify([form.name, form.action, form.method, form.fields]);
 }
 
@@ -41,6 +42,7 @@ export function distinctForms(forms: FormRecord[]): DistinctForm[] {
     if (existing === undefined) {
       groups.set(signature, {
         name: form.name,
+        label: form.label,
         action: form.action,
         method: form.method,
         fieldCount: form.fieldCount,
@@ -53,4 +55,12 @@ export function distinctForms(forms: FormRecord[]): DistinctForm[] {
   }
 
   return [...groups.values()].map((group) => ({ ...group, routes: [...group.routes].sort() })).sort(compareForms);
+}
+
+export function formDisplayName(form: Pick<DistinctForm, "name" | "label">): string {
+  return form.label ?? form.name ?? "Form";
+}
+
+export function fieldDisplayName(field: FormField): string {
+  return field.label ?? field.name;
 }

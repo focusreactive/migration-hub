@@ -1,39 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  cropAnchorsShardArtifactFor,
-  cropCandidatesShardArtifactFor,
-  cropIndexArtifact,
-  cropShotRelativePath,
-} from "../../../src/ir/crops.ts";
+import { cropIndexArtifact, cropShotRelativePath } from "../../../src/ir/crops.ts";
 
 describe("crop artifacts", () => {
   it("places each artifact under .assessment/artifacts/crops", () => {
-    expect(cropCandidatesShardArtifactFor("about-us").relativePath).toBe("crops/candidates/about-us.json");
-    expect(cropAnchorsShardArtifactFor("about-us").relativePath).toBe("crops/anchors/about-us.json");
     expect(cropIndexArtifact.relativePath).toBe("crops/index.json");
     expect(cropShotRelativePath("site-header")).toBe("crops/shots/site-header.jpg");
-  });
-
-  it("accepts a well-formed candidates shard", () => {
-    const shard = cropCandidatesShardArtifactFor("index").dataSchema.parse({
-      route: "/",
-      viewportWidth: 1440,
-      candidates: [
-        {
-          index: 0,
-          y: 0,
-          height: 60,
-          tag: "header",
-          classes: ["nav"],
-          textSnippet: "Home About",
-          isFixed: true,
-          signature: "header.nav|60|Home About",
-        },
-      ],
-    });
-
-    expect(shard.candidates[0]?.isFixed).toBe(true);
   });
 
   it("rejects a shot whose typeId is not a type id", () => {
@@ -45,12 +17,26 @@ describe("crop artifacts", () => {
     ).toThrow();
   });
 
-  it("rejects an anchors shard with a negative candidate index", () => {
+  it("accepts every reason a type can end up without a picture", () => {
+    const index = cropIndexArtifact.dataSchema.parse({
+      shots: [],
+      missing: [
+        { typeId: "style-guide-title", route: "/style-guide", order: 0, reason: "NO_ELEMENT" },
+        { typeId: "hero", route: "/", order: 1, reason: "SECTIONS_SHARD_MISSING" },
+        { typeId: "faq", route: "/", order: 2, reason: "SELECTOR_UNRESOLVED" },
+        { typeId: "cta", route: "/", order: 3, reason: "SIGNATURE_DRIFT" },
+        { typeId: "footer", route: "/", order: 4, reason: "CAPTURE_FAILED" },
+      ],
+    });
+
+    expect(index.missing).toHaveLength(5);
+  });
+
+  it("rejects a reason that is no longer part of the vocabulary", () => {
     expect(() =>
-      cropAnchorsShardArtifactFor("index").dataSchema.parse({
-        route: "/",
-        anchors: [{ order: 0, candidateIndex: -1 }],
-        unmappable: [],
+      cropIndexArtifact.dataSchema.parse({
+        shots: [],
+        missing: [{ typeId: "hero", route: "/", order: 0, reason: "NO_ANCHOR_FOR_ORDER" }],
       }),
     ).toThrow();
   });

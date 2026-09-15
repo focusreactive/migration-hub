@@ -17,15 +17,6 @@
       "etag": "\"71bf54ca12df7fd94d1c2f23c3d3f7a2\"",
       "sources": ["img-src", "img-srcset"],
       "duplicateOf": "0190e21a06581d29"
-    },
-    {
-      "assetId": "0a2f84d6f4c0540f",
-      "canonicalUrl": "https://framerusercontent.com/videos/reel.mp4",
-      "kind": "video",
-      "contentType": "video/mp4",
-      "etag": null,
-      "sources": ["video-urls"],
-      "duplicateOf": null
     }
   ]
 }

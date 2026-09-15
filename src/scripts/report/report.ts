@@ -1,21 +1,87 @@
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { readArtifact } from "#ir/artifact.ts";
 import { fontFamiliesArtifact, mediaAssetsArtifact } from "#ir/assets.ts";
+import { cropHeroPath, cropIndexArtifact, cropShotPath, type CropIndexData } from "#ir/crops.ts";
 import { detectArtifact } from "#ir/detect.ts";
-import { discoveryBlocksArtifact, discoveryGlobalsArtifact } from "#ir/discovery.ts";
+import {
+  discoveryBlocksArtifact,
+  discoveryGlobalsArtifact,
+  sectionsShardArtifactFor,
+  type SectionsShardData,
+} from "#ir/discovery.ts";
 import { formsArtifact } from "#ir/forms.ts";
 import { narrativeArtifact, type NarrativeData } from "#ir/narrative.ts";
-import { pagesArtifact } from "#ir/pages.ts";
+import { pagesArtifact, type PagesData } from "#ir/pages.ts";
 import { writeFileAtomic } from "#lib/fs.ts";
 import { readManifest, recordArtifact, withStep } from "#lib/manifest/index.ts";
+import { routeDir } from "#lib/route-dir.ts";
 import { loadRunConfig } from "#run-config/load.ts";
+import { captureRoutes } from "#stitch/utils/capture-routes.ts";
 
 import { REPORT_STEP_ID } from "./constants/ids.ts";
+import { renderHtmlReport } from "./html/render-html-report.ts";
 import { renderReport, type ReportInput } from "./render-report.ts";
 
 function reportPath(projectPath: string): string {
   return join(projectPath, "report.md");
+}
+
+function htmlReportPath(projectPath: string): string {
+  return join(projectPath, "report.html");
+}
+
+function isMissing(error: unknown): boolean {
+  return (error as NodeJS.ErrnoException).code === "ENOENT";
+}
+
+async function readShards(projectPath: string, pages: PagesData): Promise<SectionsShardData[]> {
+  const shards: SectionsShardData[] = [];
+
+  for (const route of captureRoutes(pages)) {
+    try {
+      shards.push(await readArtifact(projectPath, sectionsShardArtifactFor(routeDir(route))));
+    } catch (error) {
+      if (!isMissing(error)) throw error;
+    }
+  }
+
+  return shards;
+}
+
+async function readCrops(projectPath: string): Promise<CropIndexData> {
+  try {
+    return await readArtifact(projectPath, cropIndexArtifact);
+  } catch (error) {
+    if (!isMissing(error)) throw error;
+    return { shots: [], missing: [] };
+  }
+}
+
+async function readJpegs(projectPath: string, crops: CropIndexData): Promise<Map<string, Buffer>> {
+  const jpegs = new Map<string, Buffer>();
+
+  for (const shot of crops.shots) {
+    try {
+      jpegs.set(shot.typeId, await readFile(cropShotPath(projectPath, shot.typeId)));
+    } catch (error) {
+      if (!isMissing(error)) throw error;
+    }
+  }
+
+  return jpegs;
+}
+
+async function readHeroJpeg(projectPath: string, crops: CropIndexData): Promise<Buffer | undefined> {
+  if (crops.hero === undefined) return undefined;
+
+  try {
+    return await readFile(cropHeroPath(projectPath));
+  } catch (error) {
+    if (!isMissing(error)) throw error;
+    return undefined;
+  }
 }
 
 async function readNarrative(projectPath: string): Promise<NarrativeData> {
@@ -73,6 +139,21 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
       const path = reportPath(projectPath);
       await writeFileAtomic(path, renderReport(input));
       await recordArtifact(projectPath, REPORT_STEP_ID, "report", path);
+
+      const crops = await readCrops(projectPath);
+      const htmlPath = htmlReportPath(projectPath);
+      await writeFileAtomic(
+        htmlPath,
+        renderHtmlReport({
+          ...input,
+          shards: await readShards(projectPath, pages),
+          crops,
+          jpegs: await readJpegs(projectPath, crops),
+          heroJpeg: await readHeroJpeg(projectPath, crops),
+          generatedAt: new Date(),
+        }),
+      );
+      await recordArtifact(projectPath, REPORT_STEP_ID, "report-html", htmlPath);
     },
     { force },
   );
@@ -82,6 +163,7 @@ export async function runReport(projectPath: string, force: boolean): Promise<vo
       step: REPORT_STEP_ID,
       status: wasSkipped ? "skipped" : "done",
       reportPath: reportPath(projectPath),
+      htmlReportPath: htmlReportPath(projectPath),
     }),
   );
 }

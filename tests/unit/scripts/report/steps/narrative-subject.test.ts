@@ -36,8 +36,8 @@ describe("narrativeSubject", () => {
     await writeJson(join(artifacts, "discovery", "globals.json"), { types: [] });
     await writeJson(join(artifacts, "discovery", "sections", "index.json"), {
       route: "/",
-      globals: [{ order: 0, role: "footer", summary: "Dark footer with a lime newsletter card." }],
-      blocks: [{ order: 1, role: "hero", summary: "Centered hero with a rounded office photo." }],
+      globals: [{ order: 0, role: "footer", summary: "Dark footer with a lime newsletter card.", anchor: null }],
+      blocks: [{ order: 1, role: "hero", summary: "Centered hero with a rounded office photo.", anchor: null }],
     });
     await mkdir(join(artifacts, "stitch", "index"), { recursive: true });
     await writeFile(join(artifacts, "stitch", "index", "desktop.png"), "png", "utf8");

@@ -5,10 +5,22 @@ import { z } from "zod";
 import type { ArtifactDef } from "#ir/artifact.ts";
 import { typeIdSchema } from "#ir/common.ts";
 
+export const sectionAnchorSchema = z.strictObject({
+  selector: z.string().min(1),
+  matchCount: z.number().int().positive(),
+  y: z.number().int(),
+  height: z.number().int().nonnegative(),
+  tag: z.string().min(1),
+  classes: z.array(z.string()),
+  isFixed: z.boolean(),
+  signature: z.string().min(1),
+});
+
 export const sectionSchema = z.strictObject({
   order: z.number().int().nonnegative(),
   role: z.string().min(1),
   summary: z.string(),
+  anchor: sectionAnchorSchema.nullable(),
 });
 
 export const sectionsShardDataSchema = z.strictObject({
@@ -51,6 +63,7 @@ export const discoveryBlocksDataSchema = z.strictObject({
   types: z.array(discoveryBlockTypeSchema),
 });
 
+export type SectionAnchor = z.infer<typeof sectionAnchorSchema>;
 export type Section = z.infer<typeof sectionSchema>;
 export type SectionsShardData = z.infer<typeof sectionsShardDataSchema>;
 export type Member = z.infer<typeof memberSchema>;

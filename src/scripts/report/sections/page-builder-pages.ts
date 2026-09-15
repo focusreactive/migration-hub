@@ -1,7 +1,7 @@
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
 import { sentenceCountLabel } from "../utils/count.ts";
-import { pageLabel } from "../utils/page-label.ts";
+import { displayRoute, pageLabel } from "../utils/page-label.ts";
 import { table } from "../utils/table.ts";
 
 export function pageBuilderPagesSection(input: ReportInput, metrics: ReportMetrics): string {
@@ -25,11 +25,8 @@ export function pageBuilderPagesSection(input: ReportInput, metrics: ReportMetri
       + "rather than driven by a template.",
     "",
     table(
-      ["Page", "Slug"],
-      pageBuilderPages.map((page) => {
-        const label = pageLabel(page.route);
-        return [label.name, `\`${label.slug}\``];
-      }),
+      ["Page", "Route"],
+      pageBuilderPages.map((page) => [pageLabel(page.route).name, `\`${displayRoute(page.route)}\``]),
     ),
   ].join("\n");
 }

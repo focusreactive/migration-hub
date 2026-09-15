@@ -1,6 +1,7 @@
 import type { ComplexityAreaId, Rating } from "../analysis/complexity.ts";
 import type { ReportMetrics } from "../analysis/metrics.ts";
 import type { ReportInput } from "../types.ts";
+import { clampSentences } from "../utils/clamp.ts";
 import { countLabel, countWord, sentenceCountLabel, sentenceCountWord } from "../utils/count.ts";
 import { FONT_SOURCE_LABEL } from "./font-source.ts";
 import { SOURCE_LABEL } from "./labels.ts";
@@ -16,6 +17,13 @@ function hasSingleDynamicSegment(routePattern: string): boolean {
   return routePattern.split("/").filter((segment) => segment.startsWith(":")).length === 1;
 }
 
+export function licenseClause(metrics: ReportMetrics): string {
+  return metrics.licensedFonts === 0 ?
+      "nothing licensed, nothing self-hosted, nothing to re-purchase"
+    : `${countLabel(metrics.licensedFonts, "family", "families")} licensed or self-hosted and in need of a `
+        + `licence check before ${metrics.licensedFonts === 1 ? "it moves" : "they move"}`;
+}
+
 function typeSentence(metrics: ReportMetrics, input: ReportInput): string {
   if (metrics.fonts === 0) {
     return "No web font family is loaded at all — nothing licensed, nothing self-hosted, nothing to re-purchase.";
@@ -23,42 +31,36 @@ function typeSentence(metrics: ReportMetrics, input: ReportInput): string {
 
   const singleFamily = input.fonts.families.length === 1 ? input.fonts.families[0] : undefined;
   const fontsClause =
-    singleFamily === undefined
-      ? `${countLabel(metrics.fonts, "typeface", "typefaces")} across the type system`
-      : `One typeface, ${singleFamily.family}, pulled from ${FONT_SOURCE_LABEL[singleFamily.classification]} in `
-        + `${countLabel(singleFamily.weights.length, "weight", "weights")} and `
-        + `${countLabel(singleFamily.styles.length, "style", "styles")}`;
+    singleFamily === undefined ?
+      `${countLabel(metrics.fonts, "typeface", "typefaces")} across the type system`
+    : `One typeface, ${singleFamily.family}, pulled from ${FONT_SOURCE_LABEL[singleFamily.classification]} in `
+      + `${countLabel(singleFamily.weights.length, "weight", "weights")} and `
+      + `${countLabel(singleFamily.styles.length, "style", "styles")}`;
 
-  const licenseClause =
-    metrics.licensedFonts === 0
-      ? "nothing licensed, nothing self-hosted, nothing to re-purchase"
-      : `${countLabel(metrics.licensedFonts, "family", "families")} licensed or self-hosted and in need of a `
-        + `licence check before ${metrics.licensedFonts === 1 ? "it moves" : "they move"}`;
-
-  return `${fontsClause} — ${licenseClause}, and \`next/font\` handles it with no layout shift.`;
+  return `${fontsClause} — ${licenseClause(metrics)}, and \`next/font\` handles it with no layout shift.`;
 }
 
 function mediaSentence(metrics: ReportMetrics): string {
   if (metrics.images === 0) {
-    return metrics.videos === 0
-      ? "There is no image or video library to carry over."
+    return metrics.videos === 0 ?
+        "There is no image or video library to carry over."
       : `The media library is ${countLabel(metrics.videos, "video", "videos")} and no images at all.`;
   }
 
   const videoClause =
-    metrics.videos === 0
-      ? "no video anywhere on the site"
-      : `${countLabel(metrics.videos, "video", "videos")} alongside them`;
+    metrics.videos === 0 ?
+      "no video anywhere on the site"
+    : `${countLabel(metrics.videos, "video", "videos")} alongside them`;
 
   return `The media library is ${countLabel(metrics.images, "unique image", "unique images")}, with ${videoClause}.`;
 }
 
 function designSystemParagraph(metrics: ReportMetrics, input: ReportInput): string {
   const hostingClause =
-    metrics.assetHosts.length === 0
-      ? ""
-      : ` The only real task here is re-hosting: the assets are served from ${joinHosts(metrics.assetHosts)}, `
-        + "and those URLs stop working when the site is unpublished.";
+    metrics.assetHosts.length === 0 ?
+      ""
+    : ` The only real task here is re-hosting: the assets are served from ${joinHosts(metrics.assetHosts)}, `
+      + "and those URLs stop working when the site is unpublished.";
 
   return `${typeSentence(metrics, input)} ${mediaSentence(metrics)}${hostingClause}`;
 }
@@ -90,13 +92,13 @@ function formsParagraph(metrics: ReportMetrics, input: ReportInput): string {
   }
 
   const postClause =
-    metrics.platformHandledForms === metrics.forms
-      ? metrics.forms === 1
-        ? `it does not post to an endpoint of its own — ${platform}'s built-in submission handler takes it`
-        : `none of them post to an endpoint of their own — ${platform}'s built-in submission handler takes them`
-      : `${countLabel(metrics.platformHandledForms, "of them does", "of them do")} not post to an endpoint of `
-        + `${metrics.platformHandledForms === 1 ? "its" : "their"} own, relying on ${platform}'s built-in `
-        + "submission handler instead";
+    metrics.platformHandledForms === metrics.forms ?
+      metrics.forms === 1 ?
+        `it does not post to an endpoint of its own — ${platform}'s built-in submission handler takes it`
+      : `none of them post to an endpoint of their own — ${platform}'s built-in submission handler takes them`
+    : `${countLabel(metrics.platformHandledForms, "of them does", "of them do")} not post to an endpoint of `
+      + `${metrics.platformHandledForms === 1 ? "its" : "their"} own, relying on ${platform}'s built-in `
+      + "submission handler instead";
 
   return (
     `${sentenceCountLabel(metrics.forms, "form collects", "forms collect")} input, and ${postClause}. `
@@ -114,13 +116,12 @@ function contentModelParagraph(metrics: ReportMetrics, input: ReportInput): stri
     );
   }
 
-  const singleSegment = input.pages.collections.every((collection) =>
-    hasSingleDynamicSegment(collection.routePattern),
-  );
+  const singleSegment = input.pages.collections.every((collection) => hasSingleDynamicSegment(collection.routePattern));
 
-  const shapeClause = singleSegment
-    ? metrics.collections === 1
-      ? ", with a single dynamic segment in its route"
+  const shapeClause =
+    singleSegment ?
+      metrics.collections === 1 ?
+        ", with a single dynamic segment in its route"
       : ", each with a single dynamic segment in its route"
     : "";
 
@@ -150,25 +151,25 @@ function pageCompositionParagraph(metrics: ReportMetrics, _input: ReportInput, r
     const count = countWord(metrics.singleUseSectionTypes);
 
     sentences.push(
-      rating === "Low"
-        ? `${surface}, of which ${count} ${verb} exactly once.`
-        : `${surface} is a wide surface, and it is wide rather than deep — ${count} of those types ${verb} `
+      rating === "Low" ?
+        `${surface}, of which ${count} ${verb} exactly once.`
+      : `${surface} is a wide surface, and it is wide rather than deep — ${count} of those types ${verb} `
           + "exactly once.",
     );
     sentences.push(
       "A section used once still needs a schema, a component and a round of visual QA, so a long tail costs "
-      + "nearly as much as a reused set of the same size while giving back none of the leverage.",
+        + "nearly as much as a reused set of the same size while giving back none of the leverage.",
     );
   }
 
   if (metrics.dualSourceSectionTypes > 0) {
     sentences.push(
       `${sentenceCountWord(metrics.dualSourceSectionTypes)} `
-      + `${metrics.dualSourceSectionTypes === 1 ? "type appears" : "types appear"} both as free-standing `
-      + "page-builder blocks and inside collection template pages, so "
-      + `${metrics.dualSourceSectionTypes === 1 ? "that component has" : "those components have"} to accept `
-      + "content from two different sources — worth deciding deliberately at the start rather than "
-      + "retrofitting later.",
+        + `${metrics.dualSourceSectionTypes === 1 ? "type appears" : "types appear"} both as free-standing `
+        + "page-builder blocks and inside collection template pages, so "
+        + `${metrics.dualSourceSectionTypes === 1 ? "that component has" : "those components have"} to accept `
+        + "content from two different sources — worth deciding deliberately at the start rather than "
+        + "retrofitting later.",
     );
   }
 
@@ -190,11 +191,11 @@ function contentVolumeParagraph(metrics: ReportMetrics, _input: ReportInput, rat
   }
 
   const passClause =
-    rating === "Low"
-      ? "That fits into a single automated migration pass with room to review every record by hand afterwards, "
-        + "and it keeps the content freeze short."
-      : "That is more than a record-by-record read-through can cover, so the import runs in batches with "
-        + "sampled checks, and the content freeze has to be planned around that.";
+    rating === "Low" ?
+      "That fits into a single automated migration pass with room to review every record by hand afterwards, "
+      + "and it keeps the content freeze short."
+    : "That is more than a record-by-record read-through can cover, so the import runs in batches with "
+      + "sampled checks, and the content freeze has to be planned around that.";
 
   return (
     `${sentenceCountLabel(metrics.collectionDocuments, "published document", "published documents")} across `
@@ -209,3 +210,14 @@ export const COMPLEXITY_PARAGRAPHS: Record<ComplexityAreaId, ComplexityParagraph
   forms: formsParagraph,
   contentVolume: contentVolumeParagraph,
 };
+
+const COMPLEXITY_PARAGRAPH_SENTENCES = 3;
+
+export function complexityParagraph(
+  id: ComplexityAreaId,
+  metrics: ReportMetrics,
+  input: ReportInput,
+  rating: Rating,
+): string {
+  return clampSentences(COMPLEXITY_PARAGRAPHS[id](metrics, input, rating), COMPLEXITY_PARAGRAPH_SENTENCES);
+}
