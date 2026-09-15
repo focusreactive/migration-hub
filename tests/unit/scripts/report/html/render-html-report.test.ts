@@ -73,4 +73,11 @@ describe("renderHtmlReport", () => {
 
     expect(html.split("<div").length).toBe(html.split("</div>").length);
   });
+
+  it("degrades every screenshot to a placeholder when no crop was captured", async () => {
+    const html = renderHtmlReport(await loadFixtureInput());
+
+    expect(html).toContain("NO SHOT");
+    expect(html).toContain("var SHOTS={}");
+  });
 });
