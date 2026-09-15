@@ -14,6 +14,8 @@
       .divider { height: 8px; background: #999999; }
       footer { height: 200px; background: #222; color: #fff; }
       .platform-badge { position: fixed; bottom: 12px; right: 12px; height: 28px; padding: 0 40px; color: #000; }
+      .mobile-only { display: none; }
+      .spacer-hidden { display: none; height: 40px; }
       .platform-badge { visibility: visible !important; }
     </style>
   </head>
@@ -22,6 +24,8 @@
       <header class="nav">Site header</header>
       <section class="s1 hero">Hero band</section>
       <section class="s2 logos">Logo strip</section>
+      <nav class="nav mobile-only">Site header</nav>
+      <div class="spacer-hidden"></div>
       <div class="divider"></div>
       <section class="s3 services">Services accordion</section>
       <footer class="site-footer">Site footer</footer>

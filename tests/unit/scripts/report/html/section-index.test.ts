@@ -79,8 +79,8 @@ describe("summaryForType", () => {
   const SHARDS = [
     {
       route: "/",
-      globals: [{ order: 0, role: "header", summary: "Sticky top bar with the wordmark." }],
-      blocks: [{ order: 1, role: "hero", summary: "Full-width photo with a headline." }],
+      globals: [{ order: 0, role: "header", summary: "Sticky top bar with the wordmark.", anchor: null }],
+      blocks: [{ order: 1, role: "hero", summary: "Full-width photo with a headline.", anchor: null }],
     },
   ];
 

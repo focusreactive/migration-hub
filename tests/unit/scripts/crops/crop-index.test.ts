@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { Section } from "../../../../src/ir/discovery.ts";
 import { planCaptures } from "../../../../src/scripts/crops/utils/crop-index.ts";
 
 const TARGETS = [
@@ -8,66 +9,80 @@ const TARGETS = [
   { typeId: "logos", name: "Logo strip", route: "/", order: 2, isGlobal: false },
 ];
 
-const CANDIDATES = [
-  { index: 0, y: 0, height: 60, tag: "header", classes: [], textSnippet: "", isFixed: true, signature: "header|60|" },
-  { index: 1, y: 60, height: 400, tag: "section", classes: [], textSnippet: "", isFixed: false, signature: "s|400|" },
-];
+function section(order: number, anchor: Section["anchor"]): Section {
+  return { order, role: `role-${order}`, summary: `summary ${order}`, anchor };
+}
+
+const HEADER_ANCHOR = {
+  selector: "header.nav",
+  matchCount: 1,
+  y: 0,
+  height: 60,
+  tag: "header",
+  classes: ["nav"],
+  isFixed: true,
+  signature: "header.nav|60|",
+};
+
+const HERO_ANCHOR = {
+  selector: "section.hero",
+  matchCount: 1,
+  y: 60,
+  height: 400,
+  tag: "section",
+  classes: ["hero"],
+  isFixed: false,
+  signature: "section.hero|400|Hero band",
+};
 
 describe("planCaptures", () => {
-  it("turns each anchored target into a request carrying the stored signature", () => {
+  it("turns each anchored target into a request carrying the stored selector and signature", () => {
     const { requests, missing } = planCaptures({
       targets: TARGETS.slice(0, 2),
-      anchors: [
-        { order: 0, candidateIndex: 0 },
-        { order: 1, candidateIndex: 1 },
-      ],
-      candidates: CANDIDATES,
+      sections: [section(0, HEADER_ANCHOR), section(1, HERO_ANCHOR)],
       route: "/",
     });
 
     expect(missing).toEqual([]);
     expect(requests).toEqual([
-      { typeId: "site-header", candidateIndex: 0, signature: "header|60|", isFixed: true },
-      { typeId: "hero", candidateIndex: 1, signature: "s|400|", isFixed: false },
+      { typeId: "site-header", selector: "header.nav", signature: "header.nav|60|", isFixed: true },
+      { typeId: "hero", selector: "section.hero", signature: "section.hero|400|Hero band", isFixed: false },
     ]);
   });
 
-  it("records a target whose order has no anchor", () => {
+  it("records a target whose section declared it has no element", () => {
+    const { requests, missing } = planCaptures({
+      targets: TARGETS.slice(0, 2),
+      sections: [section(0, HEADER_ANCHOR), section(1, null)],
+      route: "/",
+    });
+
+    expect(requests).toHaveLength(1);
+    expect(missing).toEqual([{ typeId: "hero", route: "/", order: 1, reason: "NO_ELEMENT" }]);
+  });
+
+  it("treats an order the shard never mentions as a section with no element", () => {
     const { requests, missing } = planCaptures({
       targets: TARGETS,
-      anchors: [{ order: 0, candidateIndex: 0 }],
-      candidates: CANDIDATES,
+      sections: [section(0, HEADER_ANCHOR)],
       route: "/",
     });
 
     expect(requests).toHaveLength(1);
     expect(missing).toEqual([
-      { typeId: "hero", route: "/", order: 1, reason: "NO_ANCHOR_FOR_ORDER" },
-      { typeId: "logos", route: "/", order: 2, reason: "NO_ANCHOR_FOR_ORDER" },
+      { typeId: "hero", route: "/", order: 1, reason: "NO_ELEMENT" },
+      { typeId: "logos", route: "/", order: 2, reason: "NO_ELEMENT" },
     ]);
   });
 
-  it("records a target whose candidate index no longer exists", () => {
-    const { requests, missing } = planCaptures({
-      targets: TARGETS.slice(0, 1),
-      anchors: [{ order: 0, candidateIndex: 7 }],
-      candidates: CANDIDATES,
-      route: "/",
-    });
+  it("records every target on a route with no sections shard", () => {
+    const { requests, missing } = planCaptures({ targets: TARGETS, sections: undefined, route: "/" });
 
     expect(requests).toEqual([]);
-    expect(missing).toEqual([{ typeId: "site-header", route: "/", order: 0, reason: "CANDIDATE_OUT_OF_RANGE" }]);
-  });
-
-  it("records every target on a route with no anchors shard", () => {
-    const { requests, missing } = planCaptures({
-      targets: TARGETS,
-      anchors: undefined,
-      candidates: CANDIDATES,
-      route: "/",
-    });
-
-    expect(requests).toEqual([]);
-    expect(missing.map((miss) => miss.reason)).toEqual(["NO_ANCHORS_SHARD", "NO_ANCHORS_SHARD", "NO_ANCHORS_SHARD"]);
+    expect(missing.map((miss) => miss.reason)).toEqual([
+      "SECTIONS_SHARD_MISSING",
+      "SECTIONS_SHARD_MISSING",
+      "SECTIONS_SHARD_MISSING",
+    ]);
   });
 });

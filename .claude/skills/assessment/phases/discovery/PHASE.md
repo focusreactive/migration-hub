@@ -4,7 +4,8 @@ Builds the two site-wide inventories the report is built from —
 `discovery/blocks.json` and `discovery/globals.json` — in two judged passes:
 first every route in the capture set is segmented into its own sections
 (globals vs. content), then all of those per-route sections are folded into
-site-wide types. One script, nine manifest steps.
+site-wide types, with each section carrying how it is found in the markup.
+One script, nine manifest steps.
 
 The capture set is `stitch`'s (see its phase doc): every static route, plus
 one exemplar item route per CMS collection. A page-builder block and a
@@ -39,20 +40,22 @@ error at once as `{"ok":false,"errors":[…]}` and writes nothing.
 
 Segments every route in the capture set — static pages and collection
 exemplars alike — into its visible sections, splitting them into `globals`
-and `blocks` in the same pass — there is no separate globals step in this
-pipeline, and no separate step for collection-exemplar routes either: a
-collection item template has a header, a footer and content sections just
-like a static page, so the same split applies. This step never looks at
-where a route came from — that distinction is resolved later, from the route
-alone, when Step 2 computes each type's `kinds`.
+and `blocks`, and in the same pass records **how each section is found in the
+markup**. There is no separate globals step in this pipeline, and no separate
+step for collection-exemplar routes either: a collection item template has a
+header, a footer and content sections just like a static page, so the same
+split applies. This step never looks at where a route came from — that
+distinction is resolved later, from the route alone, when Step 2 computes each
+type's `kinds`.
 
 ```
 pnpm tsx src/scripts/discovery/index.ts --project <projectPath> --sections-schema
 ```
 
 prints the JSON Schema a response must satisfy:
-`{route, globals: [{order, role, summary}], blocks: [{order, role,
-summary}]}`.
+`{route, globals: [{order, role, summary, anchor}], blocks: [{order, role,
+summary, anchor}]}`, where `anchor` is either `{selector, matchCount}` or
+`{noElement: true}` and nothing else.
 
 Get the remaining routes next — no `--route`:
 
@@ -68,17 +71,23 @@ A route drops off the list when its shard is written, so this is the progress
 query for the whole fan-out.
 
 **Fan out one subagent per remaining route, all at once, in a single wave,
-with no cap on how many run in parallel.** This is not an optimization choice
-— it is what was run and verified: six routes, six subagents, one wave, five
-accepted on the first attempt. Each subagent:
+with no cap on how many run in parallel.** Nothing here opens a browser, so
+there is nothing for the routes to contend over.
+
+Each subagent:
 
 1. Runs `--sections-subject --route <route>`, which prints
-   `{route, stitchPngPath, responsePath}` — the route's own `desktop.png` and
-   the exact path to write the response to.
-2. Reads that `desktop.png` and decides the section split.
-3. Writes its response as JSON to `responsePath`.
-4. Runs `--sections-accept --route <route>` itself, and keeps fixing and
+   `{route, stitchPngPath, htmlPath, viewportWidth, responsePath}`.
+2. Reads that `desktop.png` and decides the section split **from the picture**.
+3. Reads `htmlPath` — the page's mirrored markup — and, for each band it
+   already decided on, names the element that band is.
+4. Writes its response as JSON to `responsePath`.
+5. Runs `--sections-accept --route <route>` itself, and keeps fixing and
    rewriting the response until that command exits 0.
+
+The subagent never renders the page; acceptance does. That division is what
+keeps the fan-out parallel while still checking every claim against the real
+rendering.
 
 Give every subagent this instruction verbatim — it is the rule the whole
 report's block/global split depends on:
@@ -90,33 +99,76 @@ report's block/global split depends on:
 > **Глобалы** — это хедер, футер и фиксированные элементы, повторяющиеся на всём сайте: cookie-баннер, announcement bar, плавающая кнопка.
 >
 > Каждая секция попадает ровно в один из двух списков. Хедер и футер никогда не попадают в `blocks`.
+>
+> **Секция — это одна полоса макета, а не группа полос.** Не записывай одной секцией то, что на странице читается как несколько самостоятельных полос: если внутри того, что ты собрался назвать секцией, лежат блоки со своими заголовками, фонами и назначением, это несколько секций, и каждая получает свой `order`.
+>
+> Списки плоские: ни одна секция не содержит другую секцию из этих же списков. Если в `summary` тянет написать «секция с заголовком и тремя блоками внутри» или перечислить через запятую несколько разных полос — это верный признак, что ты слил в одну секцию несколько.
+>
+> Общая карточка, панель, рамка или один фон — не повод объединять: две полосы разного назначения на одном сером фоне или внутри одной белой карточки это две секции.
+>
+> Обратное тоже верно, дробить внутрь не нужно: эйбрау, заголовок, кнопка, сетка карточек внутри одной полосы — не самостоятельные секции. Граница проходит там, где меняется назначение полосы, а не там, где начинается следующий элемент внутри неё.
 
-**This rule is load-bearing and the validator does not enforce it.**
-Acceptance checks that the response is for the route it was asked about, that
-no two sections share an `order`, and that `order` runs `0, 1, 2, …` with no
-gaps across `globals` and `blocks` together (`ROUTE_MISMATCH`,
-`DUPLICATE_ORDER`, `ORDER_NOT_CONTIGUOUS`) — it never looks at which list a
-`header` or `footer`-shaped section landed in. This was measured, not assumed:
-across six real routes, one subagent put `footer` into `blocks` and acceptance
-accepted it anyway, because nothing in the code checks that a role belongs to
-its category. Tell every subagent this explicitly: before running
-`--sections-accept`, re-read your own `globals` and `blocks` arrays and
-confirm nothing that is a header, footer, cookie banner, announcement bar or
-floating button ended up in `blocks` — acceptance passing is not proof this
-rule was followed.
+Then, and only then, the anchoring instruction — also verbatim:
 
-**A free-tier Framer site's screenshot includes the hosting platform's own
-chrome** — a "Made in Framer" badge, a floating "Get … for Free" bar, a
-template-promotion card — fixed elements captured at their natural position on
-the page. Tell every subagent to **ignore these**: they belong to the hosting
-platform, not the site, and disappear on migration. Treating one as a global
-or a block manufactures a phantom global on every free-tier site. This was
-verified in practice: subagents told about the chrome correctly ignored it.
+> **Сначала раздели страницу по картинке. Только потом, не меняя разбиения,
+> подбери каждой полосе её разметку.** Список элементов — для привязки, а не
+> для сегментации: если полосе не находится подходящий элемент, это
+> `noElement`, а не повод объединить её с соседней или разрезать иначе.
+>
+> Открой `htmlPath` и найди для каждой полосы её элемент в разметке.
+> `selector` — любой CSS-селектор, который его находит; `matchCount` —
+> сколько **видимых** узлов он находит.
+>
+> Про видимость важно: в шаблонах обычно лежит второй, скрытый экземпляр той
+> же полосы для мобильной вёрстки. В HTML он выглядит так же, как настоящий, а
+> на скриншоте его нет. Скрытые узлы не считаются и не снимаются, поэтому если
+> селектор цепляет и десктопный, и мобильный вариант — сужай его до видимого,
+> а `matchCount` ставь по видимым.
+>
+> Полоса может быть не одним элементом, а **непрерывным рядом соседей** —
+> заголовок плюс сетка под ним. Тогда селектор должен находить весь ряд, и
+> только его: узлы обязаны быть соседями подряд, без посторонних между ними.
+>
+> **Никогда не привязывай полосу к контейнеру, внутри которого лежат другие
+> полосы.** Обёртка во всю страницу — это не секция; если полоса есть только
+> внутри такой обёртки и своего элемента у неё нет, ответ — `{"noElement": true}`.
+>
+> `noElement` — это нормальный исход, а не поражение: на странице бывает
+> разметка грубее, чем её визуальные полосы. Секция без элемента получит в
+> отчёте подписанный плейсхолдер, а неверный якорь поставит рядом с названием
+> секции чужую картинку.
+
+**The hosting platform's own chrome is not a section.** A "Made in Webflow"
+badge, a Framer "Get … for Free" bar, a template-promotion card — these
+belong to the host, not the site, and disappear on migration. Ignore them:
+treating one as a global manufactures a phantom global on every free-tier
+site.
+
+Acceptance resolves every selector against the live page before it writes
+anything, so a wrong anchor fails the run rather than reaching the report.
+Alongside the ordering checks (`ROUTE_MISMATCH`, `DUPLICATE_ORDER`,
+`ORDER_NOT_CONTIGUOUS`) it reports:
+
+| code | meaning |
+| --- | --- |
+| `SELECTOR_INVALID` | the selector could not be queried |
+| `SELECTOR_NO_MATCH` | it matches nothing visible on this route |
+| `SELECTOR_COUNT_MISMATCH` | it matches a different number of **visible** nodes than `matchCount` says |
+| `SELECTOR_NOT_CONTIGUOUS` | the matched nodes are not consecutive siblings |
+| `ANCHOR_SWALLOWS_SECTION` | this anchor's box contains another section's box |
+| `ANCHOR_NOT_MONOTONIC` | a later section anchors higher up the page |
+| `ANCHOR_COVERS_PAGE` | one band claims most of a page split into several |
+
+`ANCHOR_SWALLOWS_SECTION` and `ANCHOR_COVERS_PAGE` are what make a wrapper
+crop impossible. Both compare boxes, so neither can see a wrapper whose
+neighbours were all declared `noElement` and which is not itself most of the
+page — that residual case is why the "never anchor a container holding other
+bands" instruction above is stated to the subagent as well.
 
 Acceptance's success output names what is still missing:
 
 ```json
-{ "ok": true, "route": "/", "globals": <n>, "blocks": <n>, "remaining": ["/about"] }
+{ "ok": true, "route": "/", "globals": 2, "blocks": 9, "anchored": 9, "noElement": 2, "remaining": ["/about"] }
 ```
 
 `discovery:sections:subject`, `discovery:sections:judge` and
@@ -216,7 +268,7 @@ Under `<projectPath>/.assessment/artifacts/discovery/`:
 
 | path              | holds                                                                             |
 | ----------------- | ---------------------------------------------------------------------------------- |
-| `sections/<routeKey>.json` | the per-route shard Step 1 wrote: `{route, globals, blocks}`             |
+| `sections/<routeKey>.json` | the per-route shard Step 1 wrote: `{route, globals, blocks}`, each section carrying `anchor` — `{selector, matchCount, y, height, tag, classes, isFixed, signature}` or `null` |
 | `blocks.json`     | site-wide block types: `{types: [{id, name, role, instanceCount, members, exemplar, kinds}]}` |
 | `globals.json`    | the same shape minus `kinds`, for globals (header, footer, cookie banner, …)       |
 

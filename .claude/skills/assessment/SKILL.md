@@ -48,10 +48,10 @@ Ten phases, in the order the skill runs them:
 Every phase's status command prints **one line of JSON** to stdout and exits
 0, or prints an error to stderr and exits 1 (2 on a usage error). Every phase
 except `init-project` and `discovery` takes `--project <projectPath>
-[--force]`; `--force` re-runs a step already marked `done`. `discovery` and
-`crops` are driven by a model rather than by code and have their own flag
-sets, including flags that print a multi-line JSON Schema instead of a status
-line — two in `discovery`, one in `crops`. See each phase's doc.
+[--force]`; `--force` re-runs a step already marked `done`. `discovery` is
+driven by a model rather than by code and has its own flag set, including two
+flags that print a multi-line JSON Schema instead of a status line. `crops`
+takes only `--capture` and `--state`. See each phase's doc.
 
 ## Determining the next step
 
@@ -78,8 +78,8 @@ status. A step you see reported `"skipped"` still reads `"done"` in
 `forms` is five (`forms`, `forms:names:{schema,subject,judge,accept}`);
 `discovery` is nine (`discovery:sections:{schema,subject,judge,accept}`,
 `discovery:dedup:{schema,subject,judge,accept}`, `discovery:finalize`);
-`crops` is six (`crops:candidates`, `crops:anchors:{schema,subject,judge,accept}`,
-`crops:capture`). Every other phase is exactly one step, named after the phase.
+`crops` is one (`crops:capture`). Every other phase is exactly one step, named
+after the phase.
 
 When every phase is done, run `phases/report/PHASE.md` last — it fails loudly
 if any input phase never finished, so it doubles as a completeness check.

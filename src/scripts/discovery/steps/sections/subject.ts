@@ -2,7 +2,9 @@ import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { readArtifact } from "#ir/artifact.ts";
+import { ANCHOR_VIEWPORT } from "#lib/anchor/constants.ts";
 import { pagesArtifact } from "#ir/pages.ts";
+import { MIRROR_DIR, pageMirrorPathForRoute } from "#lib/mirror-store/paths.ts";
 import { routeDir } from "#lib/route-dir.ts";
 import { stitchPngPath } from "#stitch/stitch.ts";
 import { captureRoutes } from "#stitch/utils/capture-routes.ts";
@@ -28,6 +30,8 @@ export async function runSectionsSubject(projectPath: string, route: string | un
     JSON.stringify({
       route,
       stitchPngPath: stitchPngPath(projectPath, route),
+      htmlPath: join(projectPath, MIRROR_DIR, pageMirrorPathForRoute(route)),
+      viewportWidth: ANCHOR_VIEWPORT.width,
       responsePath,
     }),
   );

@@ -65,7 +65,7 @@ export async function loadFixtureInputWithCrops(): Promise<HtmlReportInput> {
       {
         route: "/",
         globals: [],
-        blocks: [{ order: 0, role: "hero", summary: CROPPED_TYPE_SUMMARY }],
+        blocks: [{ order: 0, role: "hero", summary: CROPPED_TYPE_SUMMARY, anchor: null }],
       },
     ],
     crops: {
